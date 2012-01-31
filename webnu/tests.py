@@ -10,7 +10,7 @@ class ViewTests(unittest.TestCase):
         testing.tearDown()
 
     def test_my_view(self):
-        from matplotlib_pylons_test.views import my_view
+        from webnu.views import my_view
         request = testing.DummyRequest()
         info = my_view(request)
-        self.assertEqual(info['project'], 'matplotlib_pylons_test')
+        self.assertEqual(info['project'], 'webnu')

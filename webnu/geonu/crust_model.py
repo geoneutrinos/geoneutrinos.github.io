@@ -5,7 +5,7 @@ import logging
 
 class CrustModel:
     def __init__(self):
-        pkl_file = open('matplotlib_pylons_test/geonu/crust_model_v2.pkl', 'rb')
+        pkl_file = open('webnu/geonu/crust_model_v2.pkl', 'rb')
         self.crust_model = pickle.load(pkl_file)
     
     def config(self, **kwargs):

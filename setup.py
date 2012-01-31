@@ -8,9 +8,9 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = ['pyramid', 'pyramid_debugtoolbar']
 
-setup(name='matplotlib_pylons_test',
+setup(name='webnu',
       version='0.0',
-      description='matplotlib_pylons_test',
+      description='webnu',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Programming Language :: Python",
@@ -27,10 +27,10 @@ setup(name='matplotlib_pylons_test',
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="matplotlib_pylons_test",
+      test_suite="webnu",
       entry_points = """\
       [paste.app_factory]
-      main = matplotlib_pylons_test:main
+      main = webnu:main
       """,
       paster_plugins=['pyramid'],
       )

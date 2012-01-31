@@ -1,2 +1,2 @@
 include *.txt *.ini *.cfg *.rst
-recursive-include matplotlib_pylons_test *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml
+recursive-include webnu *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml

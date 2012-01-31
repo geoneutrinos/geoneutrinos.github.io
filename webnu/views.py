@@ -7,12 +7,12 @@ from geonu.crust_model import CrustModel
 import logging
 
 def my_view(request):
-    return {'project':'matplotlib_pylons_test'}
+    return {'project':'webnu'}
 
 def render_plot(request):
     response = Response(content_type='image/png')
     try:
-        image = open('matplotlib_pylons_test/static/images/test.png', 'rb')
+        image = open('webnu/static/images/test.png', 'rb')
         response.app_iter = image
 
         logging.info('Map: Using cached image')
@@ -37,9 +37,9 @@ def render_plot(request):
 
         plt.subplots_adjust(left = 0 , right = 1, top = 1, bottom = 0, wspace = 0,
                 hspace = 0)
-        plt.savefig('matplotlib_pylons_test/static/images/test.png',
+        plt.savefig('webnu/static/images/test.png',
                 bbox_inches = 'tight',
                 dpi = 115, transparent = True, pad_inches = 0.01)
 
-        response.app_iter = open('matplotlib_pylons_test/static/images/test.png', 'rb')
+        response.app_iter = open('webnu/static/images/test.png', 'rb')
         return response
