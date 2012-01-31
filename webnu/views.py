@@ -5,14 +5,18 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from geonu.crust_model import CrustModel
 import logging
+import os
 
 def my_view(request):
     return {'project':'webnu'}
 
 def render_plot(request):
     response = Response(content_type='image/png')
+    here = os.path.dirname(__file__)
+    image_path = os.path.join(here,'static','images','test.png')
     try:
-        image = open('webnu/static/images/test.png', 'rb')
+     
+        image = open(image_path, 'rb')
         response.app_iter = image
 
         logging.info('Map: Using cached image')
@@ -41,5 +45,5 @@ def render_plot(request):
                 bbox_inches = 'tight',
                 dpi = 115, transparent = True, pad_inches = 0.01)
 
-        response.app_iter = open('webnu/static/images/test.png', 'rb')
+        response.app_iter = open(image_path, 'rb')
         return response

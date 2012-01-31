@@ -2,10 +2,12 @@ import numpy as np
 import pickle
 import sys
 import logging
+import os
 
 class CrustModel:
     def __init__(self):
-        pkl_file = open('webnu/geonu/crust_model_v2.pkl', 'rb')
+        here = os.path.dirname(__file__)
+        pkl_file = open(os.path.join(here, 'crust_model_v2.pkl'), 'rb')
         self.crust_model = pickle.load(pkl_file)
     
     def config(self, **kwargs):
