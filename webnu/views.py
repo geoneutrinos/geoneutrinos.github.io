@@ -26,7 +26,7 @@ def render_plot(request):
     filename = filename + u'.png'
     logging.info('Filename:' + filename)
     here = os.path.dirname(__file__)
-    image_path = os.path.join(here,'static','images', filename)
+    image_path = os.path.join(here,'static','images', 'maps', filename)
     try:
         image = open(image_path, 'rb')
         response.app_iter = image
