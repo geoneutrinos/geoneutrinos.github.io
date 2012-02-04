@@ -1,21 +1,33 @@
 from pyramid.response import Response
+
 import matplotlib
 matplotlib.use('Agg')
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from geonu.crust_model import CrustModel
+
 import logging
 import os
+
+# Localization to make unicode sorting easy
+import locale
+locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+
 
 def my_view(request):
     return {'project':'webnu'}
 
 def render_plot(request):
     response = Response(content_type='image/png')
+    filename = u''
+
+    for key in sorted(request.GET.keys(), cmp=locale.strcoll):
+        filename = filename + u'_' + key.lower() + u'.' + request.GET[key].lower()
+    filename = filename + u'.png'
+    logging.info('Filename:' + filename)
     here = os.path.dirname(__file__)
-    image_path = os.path.join(here,'static','images','test.png')
+    image_path = os.path.join(here,'static','images', filename)
     try:
-     
         image = open(image_path, 'rb')
         response.app_iter = image
 
@@ -41,8 +53,8 @@ def render_plot(request):
 
         plt.subplots_adjust(left = 0 , right = 1, top = 1, bottom = 0, wspace = 0,
                 hspace = 0)
-        plt.savefig('webnu/static/images/test.png',
-                bbox_inches = 'tight',
+        plt.savefig(image_path,
+                bbox_inches = 'tight', format='png', 
                 dpi = 115, transparent = True, pad_inches = 0.01)
 
         response.app_iter = open(image_path, 'rb')
