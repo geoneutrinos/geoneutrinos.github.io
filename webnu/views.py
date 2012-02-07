@@ -23,6 +23,7 @@ def render_plot(request):
 
     for key in sorted(request.GET.keys(), cmp=locale.strcoll):
         filename = filename + u'_' + key.lower() + u'.' + request.GET[key].lower()
+
     filename = filename + u'.png'
     logging.info('Filename:' + filename)
     here = os.path.dirname(__file__)
@@ -33,15 +34,14 @@ def render_plot(request):
 
         logging.info('Map: Using cached image')
         return response
-    except IOError:
+    except IOError: #assuming the map hasn't been generated yet
         logging.info('Map: Generating New Image')
         m = Basemap(projection = 'cyl',
                     llcrnrlat = -89, llcrnrlon = -180,
                     urcrnrlat = 89, urcrnrlon = 180,
                     resolution = 'l')
         crust = CrustModel()
-        get = request.GET
-        crust.config(**get)
+        crust.config(**request.GET)
         
         lons, lats, data = crust.griddata()
         nx = len(lons)
