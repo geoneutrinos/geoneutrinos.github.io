@@ -5,18 +5,28 @@ import logging
 import os
 
 class CrustModel:
-    def __init__(self):
-        here = os.path.dirname(__file__)
-        pkl_file = open(os.path.join(here, 'crust_model_v2.pkl'), 'rb')
-        self.crust_model = pickle.load(pkl_file)
-    
-    def config(self, **kwargs):
+    def thickness(self):
         pass
+
+    def config(self, **kwargs):
+        for key in kwargs:
+            key = key.lower()
+            if key == u'layers':
+                logging.info('layers found in GET')
+                self.select_layers(kwargs[key])
+            elif key == u'output':
+                logging.info('output foudn in GET')
+                self.select_output(kwargs[key])
+            else:
+                raise ValueError('Unknown key found in GET request')
+
     def set_concentrations(self, layers={}, u={}, k={}, th={}):
         pass
+
     def select_layers(self, layers = "umlsh"):
-        return self.layers
-    def output_param(self, output = "t"):
+        self.layers = layers
+
+    def select_output(self, output = "t"):
         """Selects the output for the griddata function
 
         The following parameters are ok:
@@ -25,8 +35,19 @@ class CrustModel:
             q, heat in watts (J/s)
             c, neutrino quanta per second
         """
+        output = output.lower()
+        if output == u't':
+            self.thickness()
+        elif output == u'p':
+            self.output = 'density'
+        elif output == u'q':
+            self.output = 'heat'
+        elif output == u'v':
+            self.output = 'geonuflux'
+        else:
+            raise ValueError('no valid output parameter was found')
 
-        return self.output
+
     def griddata(self):
         """Dump the contents of a CrustModel instance to a grid format
 
@@ -59,6 +80,11 @@ class CrustModel:
         
         return (lons + 1,lats - 1,data) # coords need to be centerpoint
 
+    def __init__(self):
+        here = os.path.dirname(__file__)
+        pkl_file = open(os.path.join(here, 'crust_model_v2.pkl'), 'rb')
+        self.crust_model = pickle.load(pkl_file)
+    
 if __name__ == "__main__":
     print "This is the CrustModel class for the geonu project, running as a"
     print "script will do tests on the class to help with debugging"
