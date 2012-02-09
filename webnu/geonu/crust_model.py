@@ -6,7 +6,15 @@ import os
 
 class CrustModel:
     def thickness(self):
-        pass
+        thickness = np.zeros((self.crust_model.shape[0],1))
+        if 's' in self.layers:
+            thickness = thickness + np.reshape(self.crust_model[:,12],(-1,1))
+        if 'h' in self.layers:
+            thickness = thickness + np.reshape(self.crust_model[:,13],(-1,1))
+        if 'u' in self.layers:
+            thickness = thickness + np.reshape(self.crust_model[:,14],(-1,1))
+
+        self.dataout = np.append(self.crust_model, thickness, axis=1)
 
     def config(self, **kwargs):
         for key in kwargs:
@@ -24,7 +32,7 @@ class CrustModel:
         pass
 
     def select_layers(self, layers = "umlsh"):
-        self.layers = layers
+        self.layers = layers.lower()
 
     def select_output(self, output = "t"):
         """Selects the output for the griddata function
@@ -56,8 +64,8 @@ class CrustModel:
         format sutable for giving to the imgshow and transform scalar methods
         of matplotlib with basemap.
         """
-        lons = np.unique(self.crust_model[:,0])
-        lats = np.unique(self.crust_model[:,1])
+        lons = np.unique(self.dataout[:,0])
+        lats = np.unique(self.dataout[:,1])
 
         #for now it is probably best to just dump one layer untill a some sort
         # of output state is defined, this will be the thickness of the
@@ -72,11 +80,11 @@ class CrustModel:
         for index, point in np.ndenumerate(lats):
             lat[point] = index[0]
 
-        for point in self.crust_model:
+        for point in self.dataout:
             lon_p = point[0]
             lat_p = point[1]
 
-            data[lat[lat_p],lon[lon_p]] = point[15]
+            data[lat[lat_p],lon[lon_p]] = point[17]
         
         return (lons + 1,lats - 1,data) # coords need to be centerpoint
 
