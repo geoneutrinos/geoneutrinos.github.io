@@ -13,6 +13,10 @@ class CrustModel:
             thickness = thickness + np.reshape(self.crust_model[:,13],(-1,1))
         if 'u' in self.layers:
             thickness = thickness + np.reshape(self.crust_model[:,14],(-1,1))
+        if 'm' in self.layers:
+            thickness = thickness + np.reshape(self.crust_model[:,15],(-1,1))
+        if 'l' in self.layers:
+            thickness = thickness + np.reshape(self.crust_model[:,16],(-1,1))
 
         self.dataout = np.append(self.crust_model, thickness, axis=1)
 

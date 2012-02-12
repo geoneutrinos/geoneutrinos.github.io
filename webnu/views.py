@@ -22,7 +22,7 @@ def render_plot(request):
     filename = u''
 
     for key in sorted(request.GET.keys(), cmp=locale.strcoll):
-        value = ''.join(sorted(list(request.GET[key].lower()),
+        value = ''.join(sorted(list(set(request.GET[key].lower())),
             cmp=locale.strcoll))
         filename = filename + u'_' + key.lower() + u'.' + value
 
