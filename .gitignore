@@ -1,0 +1,10 @@
+.DS_Store
+*.egg
+*.egg-info
+*.pyc
+*.pt.py
+*.txt.py
+.coverage
+env*/
+*.pkl
+/static/images/maps/*
