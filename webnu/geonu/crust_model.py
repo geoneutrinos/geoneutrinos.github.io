@@ -7,16 +7,19 @@ import os
 class CrustModel:
     def thickness(self):
         thickness = np.zeros((self.crust_model.shape[0],1))
-        if 's' in self.layers:
-            thickness = thickness + np.reshape(self.crust_model[:,12],(-1,1))
-        if 'h' in self.layers:
-            thickness = thickness + np.reshape(self.crust_model[:,13],(-1,1))
-        if 'u' in self.layers:
-            thickness = thickness + np.reshape(self.crust_model[:,14],(-1,1))
-        if 'm' in self.layers:
-            thickness = thickness + np.reshape(self.crust_model[:,15],(-1,1))
-        if 'l' in self.layers:
-            thickness = thickness + np.reshape(self.crust_model[:,16],(-1,1))
+        for code in self.layers:
+            if 's' == code :
+                thickness += np.reshape(self.crust_model[:,12],(-1,1))
+            elif 'h' == code:
+                thickness += np.reshape(self.crust_model[:,13],(-1,1))
+            elif 'u' == code:
+                thickness += np.reshape(self.crust_model[:,14],(-1,1))
+            elif 'm' == code:
+                thickness += np.reshape(self.crust_model[:,15],(-1,1))
+            elif 'l' == code:
+                thickness += np.reshape(self.crust_model[:,16],(-1,1))
+            else:
+                raise ValueError('invalid crust code')
 
         self.dataout = np.append(self.crust_model, thickness, axis=1)
 
