@@ -38,12 +38,16 @@ def render_plot(request):
         return response
     except IOError: #assuming the map hasn't been generated yet
         logging.info('Map: Generating New Image')
+
+        # Do the fast thing before (crust model) before doing the slow thing
+        # that is the basemap init
+        crust = CrustModel()
+        crust.config(**request.GET)
+        
         m = Basemap(projection = 'cyl',
                     llcrnrlat = -89, llcrnrlon = -180,
                     urcrnrlat = 89, urcrnrlon = 180,
                     resolution = 'l')
-        crust = CrustModel()
-        crust.config(**request.GET)
         
         lons, lats, data = crust.griddata()
         nx = len(lons)

@@ -11,4 +11,6 @@ def main(global_config, **settings):
     config.add_route('plot', '/plot.png')
     config.add_view('webnu.views.render_plot',
                     route_name='plot')
+    config.add_route('default', '/')
+    config.add_view(route_name='default', renderer='templates/layout.jinja2')
     return config.make_wsgi_app()
