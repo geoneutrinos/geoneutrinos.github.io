@@ -5,6 +5,26 @@ import logging
 import os
 
 class CrustModel:
+    
+    #Locations of Data!
+    LON = 0         # Longetude
+    LAT = 1         # Latitude
+    OCEAN_F = 2     # Oceanic Crust Flag
+    ICE_P = 3       # Ice density
+    H2O_P = 4       # Water density
+    SFTSD_P = 5     # soft sediment Density
+    HDSD_P = 6      # hard sediment density
+    UPCST_P = 7     # upper crust density
+    MDCST_P = 8     # millde crust density
+    LOCST_P = 9     # power crust density
+    ICE_T = 10      # ice thickness
+    H2O_T = 11      # water thickness
+    SFTSD_T = 12    # soft sediment thickness
+    HDSD_T = 13     # hard sediment thickness
+    UPCST_T = 14    # upper crust thickness
+    MDCST_T = 15    # middle crust thickness
+    LOCST_T = 16    # lower crust thickness
+
     def thickness(self):
         thickness = np.zeros((self.crust_model.shape[0],1))
         for code in self.layers:
@@ -20,8 +40,27 @@ class CrustModel:
                 thickness += np.reshape(self.crust_model[:,16],(-1,1))
             else:
                 raise ValueError('invalid crust code')
+        
+        return thickness
 
-        self.dataout = np.append(self.crust_model, thickness, axis=1)
+ 
+    def density(self):
+        density = np.zeros((self.crust_model.shape[0],1))
+        for code in self.layers:
+            if 's' == code :
+                density += np.reshape(self.crust_model[:,5],(-1,1))
+            elif 'h' == code:
+                density += np.reshape(self.crust_model[:,6],(-1,1))
+            elif 'u' == code:
+                density += np.reshape(self.crust_model[:,7],(-1,1))
+            elif 'm' == code:
+                density += np.reshape(self.crust_model[:,8],(-1,1))
+            elif 'l' == code:
+                density += np.reshape(self.crust_model[:,9],(-1,1))
+            else:
+                raise ValueError('invalid crust code')
+        
+        return density
 
     def config(self, **kwargs):
         for key in kwargs:
@@ -52,9 +91,12 @@ class CrustModel:
         """
         output = output.lower()
         if output == u't':
-            self.thickness()
+            self.dataout = np.append(self.crust_model, self.thickness(), axis=1)
         elif output == u'p':
-            self.output = 'density'
+            if len(self.layers) == 1:
+                self.dataout = np.append(self.crust_model, self.density(), axis=1)
+            else:
+                raise ValueError('density only accepts one layer')
         elif output == u'q':
             self.output = 'heat'
         elif output == u'v':
