@@ -7,4 +7,4 @@
 .coverage
 env*/
 *.pkl
-/static/images/maps/*
+_*.png
