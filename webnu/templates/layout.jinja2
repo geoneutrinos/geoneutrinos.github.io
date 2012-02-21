@@ -3,9 +3,40 @@
   {% block head %}
   <title>{% block title %} Homepage {% endblock %}</title>
   {% endblock %}
+  <link rel="stylesheet" type="text/css" href="/css/common.css" />
+  <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript">
+    function updateThings(){
+      var values = [];
+      var plotsrc = "";
+      $('input[name=layer]:checked').each(function(){
+        values.push($(this).val());
+      });
+      plotsrc = "plot.png?layers=" + values.join("") + "&output=t";
+      $('#t').val(plotsrc);
+      $('img').attr('src', plotsrc);
+    }
+    $(document).ready(function() {
+    // do stuff
+    $('input').click(updateThings);
+    updateThings;
+    });
+  </script>
 </head>
 <body>
-  <div id="content">{% block content %} Some Stuff {% endblock %}</div>
-  <div id="testimg"><img src='/plot.png?layers=umlsh&output=t' /></div>
+  <div id="content">{% block content %}
+  <div id="testimg">
+    <select>
+      <option>Thickness</option>
+    </select>
+    <input id='s' type="checkbox" name="layer" value="s" /><label for="s">Soft Sediments</label>
+    <input id='h' type="checkbox" name="layer" value="h" /><label for="h">Hard Sediment</label>
+    <input id='u' type="checkbox" name="layer" value="u" /><label for="u">Upper Crust</label>
+    <input id='m' type="checkbox" name="layer" value="m" /><label for="m">Middle Crust</label>
+    <input id='l' type="checkbox" name="layer" value="l" /><label for="l">Lower Crust</label>
+    <img src='/plot.png?layers=&output=t' />
+    <textarea id='t'></textarea>
+    </div>
+{% endblock %}</div>
 </body
 </html>
