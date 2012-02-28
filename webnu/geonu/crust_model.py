@@ -43,7 +43,10 @@ class CrustModel:
         
         return thickness
 
- 
+    def oceanic(self):
+        oceanic = np.reshape(self.crust_model[:,2],(-1,1))
+        return oceanic
+
     def density(self):
         density = np.zeros((self.crust_model.shape[0],1))
         for code in self.layers:
@@ -101,6 +104,8 @@ class CrustModel:
             self.output = 'heat'
         elif output == u'v':
             self.output = 'geonuflux'
+        elif output == u'o':
+            self.dataout = np.append(self.crust_model, self.oceanic(), axis=1)
         else:
             raise ValueError('no valid output parameter was found')
 

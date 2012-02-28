@@ -9,7 +9,7 @@ import logging
 
 # Localization to make unicode sorting easy
 import locale
-locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 def filename(request):
     filename = u''
@@ -38,7 +38,7 @@ def plot(request, image_path):
     lons, lats, data = crust.griddata()
     nx = len(lons)
     ny = len(lats)
-    map_data = m.transform_scalar(data, lons, lats, nx, ny)
+    map_data = m.transform_scalar(data, lons, lats, nx, ny, order=0)
     im_data = m.imshow(map_data, interpolation = 'nearest')
     m.drawcoastlines(linewidth = 0.2)
     plt.axis('off')
