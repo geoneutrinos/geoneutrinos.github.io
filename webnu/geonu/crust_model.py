@@ -3,9 +3,10 @@ import pickle
 import sys
 import logging
 import os
+import math
 
-class CrustModel:
-    
+class Layer:
+
     #Locations of Data!
     LON = 0         # Longetude
     LAT = 1         # Latitude
@@ -24,6 +25,29 @@ class CrustModel:
     UPCST_T = 14    # upper crust thickness
     MDCST_T = 15    # middle crust thickness
     LOCST_T = 16    # lower crust thickness
+
+class memoize(object):
+    def __init__(self, fn):
+        self.fn = fn
+        self.memo = {}
+    def __call__(self, *args):
+        if not self.memo.has_key(args):
+            self.memo[args] = self.fn(*args)
+        return self.memo[args]
+
+    def __repr__(self):
+        """Return the function's docstring."""
+        return self.func.__doc__
+
+    
+class CrustModel:
+
+    @memoize
+    def area(north_lat, south_lat, earth_radius=600):
+        lon_width = math.radians(2) # degrees
+        dLat = math.sin(math.radians(north_lat)) - math.sin(math.radians(south_lat))
+        area = (earth_radius ** 2 * lon_width * dLat)
+        return area
 
     def thickness(self):
         thickness = np.zeros((self.crust_model.shape[0],1))
@@ -64,6 +88,31 @@ class CrustModel:
                 raise ValueError('invalid crust code')
         
         return density
+
+    def mass(self):
+        mass = np.zeros((self.crust_model.shape[0],11))
+        mass = np.append(self.crust_model, mass, axis=1)
+        logging.info('starting mass loop')
+        # We need to convert the model units into SI so that the results will
+        # be in kg, for this a factor of 1000 is added from 1g/cc in kg/m^3 and
+        # a factor of 10^9 is added from km^3 to m^3
+        coef = 1000 * 1000000000
+        for i, point in enumerate(mass):
+            mass[i,17] = self.area(point[1], point[1] - 2, 6371)
+            if point[2] == 0:
+                mass[i,18] = point[5] * point[12] * mass[i,17] * coef 
+                mass[i,19] = point[6] * point[13] * mass[i,17] * coef 
+                mass[i,20] = point[7] * point[14] * mass[i,17] * coef 
+                mass[i,21] = point[8] * point[15] * mass[i,17] * coef 
+                mass[i,22] = point[9] * point[16] * mass[i,17] * coef 
+            if point[2] == 1:
+                mass[i,23] = point[5] * point[12] * mass[i,17] * coef 
+                mass[i,24] = point[6] * point[13] * mass[i,17] * coef 
+                mass[i,25] = point[7] * point[14] * mass[i,17] * coef 
+                mass[i,26] = point[8] * point[15] * mass[i,17] * coef 
+                mass[i,27] = point[9] * point[16] * mass[i,17] * coef 
+        logging.info('mass loop done')
+        return mass
 
     def config(self, **kwargs):
         for key in kwargs:
@@ -106,6 +155,8 @@ class CrustModel:
             self.output = 'geonuflux'
         elif output == u'o':
             self.dataout = np.append(self.crust_model, self.oceanic(), axis=1)
+        elif output == u'm':
+            self.dataout = self.mass()
         else:
             raise ValueError('no valid output parameter was found')
 
