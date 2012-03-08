@@ -5,26 +5,36 @@ import logging
 import os
 import math
 
-class Layer:
+class Column:
+    def __init__(self):
+        self.columns = { 'LON':0,         # Longetude
+            'LAT':1,         # Latitude
+            'OCEAN_F':2,     # Oceanic Crust Flag
+            'ICE_P':3,       # Ice density
+            'H2O_P':4,       # Water density
+            'SFTSD_P':5,     # soft sediment Density
+            'HDSD_P':6,      # hard sediment density
+            'UPCST_P':7,     # upper crust density
+            'MDCST_P':8,     # millde crust density
+            'LOCST_P':9,     # power crust density
+            'ICE_T':10,      # ice thickness
+            'H2O_T':11,      # water thickness
+            'SFTSD_T':12,    # soft sediment thickness
+            'HDSD_T':13,     # hard sediment thickness
+            'UPCST_T':14,    # upper crust thickness
+            'MDCST_T':15,    # middle crust thickness
+            'LOCST_T':16}    # lower crust thickness
 
-    #Locations of Data!
-    LON = 0         # Longetude
-    LAT = 1         # Latitude
-    OCEAN_F = 2     # Oceanic Crust Flag
-    ICE_P = 3       # Ice density
-    H2O_P = 4       # Water density
-    SFTSD_P = 5     # soft sediment Density
-    HDSD_P = 6      # hard sediment density
-    UPCST_P = 7     # upper crust density
-    MDCST_P = 8     # millde crust density
-    LOCST_P = 9     # power crust density
-    ICE_T = 10      # ice thickness
-    H2O_T = 11      # water thickness
-    SFTSD_T = 12    # soft sediment thickness
-    HDSD_T = 13     # hard sediment thickness
-    UPCST_T = 14    # upper crust thickness
-    MDCST_T = 15    # middle crust thickness
-    LOCST_T = 16    # lower crust thickness
+    def size(self,):
+        return len(self.columns)
+
+    def __getattr__(self, name):
+        logging.info(name)
+        try:
+            return self.columns[name]
+        except:
+            raise AttributeError
+
 
 class memoize(object):
     def __init__(self, fn):
@@ -53,7 +63,7 @@ class CrustModel:
         thickness = np.zeros((self.crust_model.shape[0],1))
         for code in self.layers:
             if 's' == code :
-                thickness += np.reshape(self.crust_model[:,12],(-1,1))
+                thickness += np.reshape(self.crust_model[:,self.l.SFTSD_T],(-1,1))
             elif 'h' == code:
                 thickness += np.reshape(self.crust_model[:,13],(-1,1))
             elif 'u' == code:
@@ -197,6 +207,7 @@ class CrustModel:
         here = os.path.dirname(__file__)
         pkl_file = open(os.path.join(here, 'crust_model_v2.pkl'), 'rb')
         self.crust_model = pickle.load(pkl_file)
+        self.l = Column()
     
 if __name__ == "__main__":
     print "This is the CrustModel class for the geonu project, running as a"
