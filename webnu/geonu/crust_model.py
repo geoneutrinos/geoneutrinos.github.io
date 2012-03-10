@@ -23,13 +23,13 @@ class Column:
             'HDSD_T':13,     # hard sediment thickness
             'UPCST_T':14,    # upper crust thickness
             'MDCST_T':15,    # middle crust thickness
-            'LOCST_T':16}    # lower crust thickness
+            'LOCST_T':16,
+            'THICKNESS':17}    # lower crust thickness
 
     def size(self,):
         return len(self.columns)
 
     def __getattr__(self, name):
-        logging.info(name)
         try:
             return self.columns[name]
         except:
@@ -60,23 +60,22 @@ class CrustModel:
         return area
 
     def thickness(self):
-        thickness = np.zeros((self.crust_model.shape[0],1))
-        for code in self.layers:
-            if 's' == code :
-                thickness += np.reshape(self.crust_model[:,self.l.SFTSD_T],(-1,1))
-            elif 'h' == code:
-                thickness += np.reshape(self.crust_model[:,13],(-1,1))
-            elif 'u' == code:
-                thickness += np.reshape(self.crust_model[:,14],(-1,1))
-            elif 'm' == code:
-                thickness += np.reshape(self.crust_model[:,15],(-1,1))
-            elif 'l' == code:
-                thickness += np.reshape(self.crust_model[:,16],(-1,1))
-            else:
-                raise ValueError('invalid crust code')
         
-        return thickness
-
+        for i, point in enumerate(self.crust_model):
+            for code in self.layers:
+                if 's' == code :
+                    self.crust_model[i, self.C.SFTSD_T] += point[self.C.SFTSD_T]
+                elif 'h' == code:
+                    thickness += np.reshape(self.crust_model[:,13],(-1,1))
+                elif 'u' == code:
+                    thickness += np.reshape(self.crust_model[:,14],(-1,1))
+                elif 'm' == code:
+                    thickness += np.reshape(self.crust_model[:,15],(-1,1))
+                elif 'l' == code:
+                    thickness += np.reshape(self.crust_model[:,16],(-1,1))
+                else:
+                    raise ValueError('invalid crust code')
+        
     def oceanic(self):
         oceanic = np.reshape(self.crust_model[:,2],(-1,1))
         return oceanic
@@ -206,8 +205,11 @@ class CrustModel:
     def __init__(self):
         here = os.path.dirname(__file__)
         pkl_file = open(os.path.join(here, 'crust_model_v2.pkl'), 'rb')
-        self.crust_model = pickle.load(pkl_file)
-        self.l = Column()
+        crust_model_load = pickle.load(pkl_file)
+        self.C = Column()
+        num_col = self.C.size()
+        padding = np.zeros((crust_model_load.shape[0],num_col-17))
+        self.crust_model = np.append(crust_model_load, padding, axis=1)
     
 if __name__ == "__main__":
     print "This is the CrustModel class for the geonu project, running as a"
