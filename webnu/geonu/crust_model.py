@@ -23,8 +23,15 @@ class Column:
             'HDSD_T':13,     # hard sediment thickness
             'UPCST_T':14,    # upper crust thickness
             'MDCST_T':15,    # middle crust thickness
-            'LOCST_T':16,
-            'THICKNESS':17}    # lower crust thickness
+            'LOCST_T':16,    # lower crust thickness
+            'THICKNESS':17,  # summed thickness
+            'SFTSD_M':18,    # soft sediment mass
+            'HDSD_M':19,     # hard sediment mass
+            'UPCST_M':20,    # uper crust mass
+            'MDCST_M':21,    # middle crust mass
+            'LOCST_M':22,    # lower crust mass
+            'AREA':23,       # the area of the block
+            'MASS':24}       # sum of masses
 
     def size(self,):
         return len(self.columns)
@@ -60,68 +67,79 @@ class CrustModel:
         return area
 
     def thickness(self):
-        
-        for i, point in enumerate(self.crust_model):
-            for code in self.layers:
-                if 's' == code :
-                    self.crust_model[i, self.C.SFTSD_T] += point[self.C.SFTSD_T]
-                elif 'h' == code:
-                    thickness += np.reshape(self.crust_model[:,13],(-1,1))
-                elif 'u' == code:
-                    thickness += np.reshape(self.crust_model[:,14],(-1,1))
-                elif 'm' == code:
-                    thickness += np.reshape(self.crust_model[:,15],(-1,1))
-                elif 'l' == code:
-                    thickness += np.reshape(self.crust_model[:,16],(-1,1))
-                else:
-                    raise ValueError('invalid crust code')
-        
-    def oceanic(self):
-        oceanic = np.reshape(self.crust_model[:,2],(-1,1))
-        return oceanic
-
-    def density(self):
-        density = np.zeros((self.crust_model.shape[0],1))
+        logging.info('Thickness: Start')
+        layers = []
         for code in self.layers:
             if 's' == code :
-                density += np.reshape(self.crust_model[:,5],(-1,1))
+                layers.append(self.C.SFTSD_T)
             elif 'h' == code:
-                density += np.reshape(self.crust_model[:,6],(-1,1))
+                layers.append(self.C.HDSD_T)
             elif 'u' == code:
-                density += np.reshape(self.crust_model[:,7],(-1,1))
+                layers.append(self.C.UPCST_T)
             elif 'm' == code:
-                density += np.reshape(self.crust_model[:,8],(-1,1))
+                layers.append(self.C.MDCST_T)
             elif 'l' == code:
-                density += np.reshape(self.crust_model[:,9],(-1,1))
+                layers.append(self.C.LOCST_T)
+            else:
+                raise ValueError('invalid crust code')
+
+        logging.info("Thickness: Layers are %s",layers)
+        for i, point in enumerate(self.crust_model): 
+            for layer in layers:
+                self.crust_model[i, self.C.THICKNESS] += point[layer]
+        logging.info('Thickness: Done')
+
+    def density(self):
+        for code in self.layers:
+            if 's' == code :
+                return self.C.SFTSD_P
+            elif 'h' == code:
+                return self.C.HDSD_P
+            elif 'u' == code:
+                return self.C.UPCST_P
+            elif 'm' == code:
+                return self.C.MDCST_P
+            elif 'l' == code:
+                return self.C.LOCST_P
             else:
                 raise ValueError('invalid crust code')
         
         return density
 
     def mass(self):
-        mass = np.zeros((self.crust_model.shape[0],11))
-        mass = np.append(self.crust_model, mass, axis=1)
         logging.info('starting mass loop')
         # We need to convert the model units into SI so that the results will
         # be in kg, for this a factor of 1000 is added from 1g/cc in kg/m^3 and
         # a factor of 10^9 is added from km^3 to m^3
         coef = 1000 * 1000000000
-        for i, point in enumerate(mass):
-            mass[i,17] = self.area(point[1], point[1] - 2, 6371)
-            if point[2] == 0:
-                mass[i,18] = point[5] * point[12] * mass[i,17] * coef 
-                mass[i,19] = point[6] * point[13] * mass[i,17] * coef 
-                mass[i,20] = point[7] * point[14] * mass[i,17] * coef 
-                mass[i,21] = point[8] * point[15] * mass[i,17] * coef 
-                mass[i,22] = point[9] * point[16] * mass[i,17] * coef 
-            if point[2] == 1:
-                mass[i,23] = point[5] * point[12] * mass[i,17] * coef 
-                mass[i,24] = point[6] * point[13] * mass[i,17] * coef 
-                mass[i,25] = point[7] * point[14] * mass[i,17] * coef 
-                mass[i,26] = point[8] * point[15] * mass[i,17] * coef 
-                mass[i,27] = point[9] * point[16] * mass[i,17] * coef 
+        for i, point in enumerate(self.crust_model):
+            self.crust_model[i,self.C.AREA] = self.area(point[1], point[1] - 2, 6371)
+            self.crust_model[i,18] = point[5] * point[12] * self.crust_model[i,self.C.AREA] * coef 
+            self.crust_model[i,19] = point[6] * point[13] * self.crust_model[i,self.C.AREA] * coef 
+            self.crust_model[i,20] = point[7] * point[14] * self.crust_model[i,self.C.AREA] * coef 
+            self.crust_model[i,21] = point[8] * point[15] * self.crust_model[i,self.C.AREA] * coef 
+            self.crust_model[i,22] = point[9] * point[16] * self.crust_model[i,self.C.AREA] * coef 
+
         logging.info('mass loop done')
-        return mass
+        layers = []
+        if self.dataout == self.C.MASS:
+            for code in self.layers:
+                if 's' == code :
+                    layers.append(self.C.SFTSD_M)
+                elif 'h' == code:
+                    layers.append(self.C.HDSD_M)
+                elif 'u' == code:
+                    layers.append(self.C.UPCST_M)
+                elif 'm' == code:
+                    layers.append(self.C.MDCST_M)
+                elif 'l' == code:
+                    layers.append(self.C.LOCST_M)
+                else:
+                    raise ValueError('invalid crust code')
+
+            for i, point in enumerate(self.crust_model):
+                for layer in layers:
+                    self.crust_model[i, self.C.MASS] += point[layer]
 
     def config(self, **kwargs):
         for key in kwargs:
@@ -152,10 +170,11 @@ class CrustModel:
         """
         output = output.lower()
         if output == u't':
-            self.dataout = np.append(self.crust_model, self.thickness(), axis=1)
+            self.thickness()
+            self.dataout = self.C.THICKNESS
         elif output == u'p':
             if len(self.layers) == 1:
-                self.dataout = np.append(self.crust_model, self.density(), axis=1)
+                self.dataout = self.density()
             else:
                 raise ValueError('density only accepts one layer')
         elif output == u'q':
@@ -163,9 +182,10 @@ class CrustModel:
         elif output == u'v':
             self.output = 'geonuflux'
         elif output == u'o':
-            self.dataout = np.append(self.crust_model, self.oceanic(), axis=1)
+            self.dataout = self.C.OCEAN_F
         elif output == u'm':
-            self.dataout = self.mass()
+            self.dataout = self.C.MASS
+            self.mass()
         else:
             raise ValueError('no valid output parameter was found')
 
@@ -178,8 +198,8 @@ class CrustModel:
         format sutable for giving to the imgshow and transform scalar methods
         of matplotlib with basemap.
         """
-        lons = np.unique(self.dataout[:,0])
-        lats = np.unique(self.dataout[:,1])
+        lons = np.unique(self.crust_model[:,0])
+        lats = np.unique(self.crust_model[:,1])
 
         #for now it is probably best to just dump one layer untill a some sort
         # of output state is defined, this will be the thickness of the
@@ -194,11 +214,11 @@ class CrustModel:
         for index, point in np.ndenumerate(lats):
             lat[point] = index[0]
 
-        for point in self.dataout:
+        for point in self.crust_model:
             lon_p = point[0]
             lat_p = point[1]
 
-            data[lat[lat_p],lon[lon_p]] = point[17]
+            data[lat[lat_p],lon[lon_p]] = point[self.dataout]
         
         return (lons + 1,lats - 1,data) # coords need to be centerpoint
 
