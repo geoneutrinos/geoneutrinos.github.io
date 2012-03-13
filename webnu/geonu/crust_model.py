@@ -31,8 +31,10 @@ class Column:
             'MDCST_M':21,    # middle crust mass
             'LOCST_M':22,    # lower crust mass
             'AREA':23,       # the area of the block
-            'MASS':24}       # sum of masses
-
+            'MASS':24,       # sum of masses
+            'U238':25,       # uranium concentration
+            'TH232':26,      # thorium concentration
+            'K40':27}        # potassium concentration
     def size(self,):
         return len(self.columns)
 
@@ -141,6 +143,18 @@ class CrustModel:
                 for layer in layers:
                     self.crust_model[i, self.C.MASS] += point[layer]
 
+    def concentrations(self, args):
+        conc = string.split(args, sep=',')
+        for i, point in enumerate(self.crust_model):
+            if point[self.C.OCEAN_F] == 0: # is continental crust
+                self.crust_model[i, self.C.U238] = conc[0]
+                self.crust_model[i, self.C.TH232] = conc[2]
+                self.crust_model[i, self.C.K40] = conc[4]
+            elif point[self.C.OCEAN_F] == 1: # is oceanic crust
+                self.crust_model[i, self.C.U238] = conc[1]
+                self.crust_model[i, self.C.TH232] = conc[3]
+                self.crust_model[i, self.C.K40] = conc[5]
+
     def config(self, **kwargs):
         for key in kwargs:
             key = key.lower()
@@ -150,6 +164,9 @@ class CrustModel:
             elif key == u'output':
                 logging.info('output foudn in GET')
                 self.select_output(kwargs[key])
+            elif key == u'uthk':
+                logging.info('concentrations found in GET')
+                self.concentrations(kwargs[key])
             else:
                 raise ValueError('Unknown key found in GET request')
 
