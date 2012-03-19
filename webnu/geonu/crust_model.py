@@ -4,6 +4,7 @@ import sys
 import logging
 import os
 import math
+import string
 
 class Column:
     def __init__(self):
@@ -32,9 +33,28 @@ class Column:
             'LOCST_M':22,    # lower crust mass
             'AREA':23,       # the area of the block
             'MASS':24,       # sum of masses
-            'U238':25,       # uranium concentration
-            'TH232':26,      # thorium concentration
-            'K40':27}        # potassium concentration
+            'HEAT':25,
+            'SFTSD_H':26,
+            'HDSD_H':27,
+            'UPCST_H':28,
+            'MDCST_H':29,
+            'LOCST_H':30,
+            'SFTSD_U238':31,
+            'SFTSD_TH232':32,
+            'SFTSD_K40':33,
+            'HDSD_U238':34,
+            'HDSD_TH232':35,
+            'HDSD_K40':36,
+            'UPCST_U238':37,
+            'UPCST_TH232':38,
+            'UPCST_K40':39,
+            'MDCST_U238':40,
+            'MDCST_TH232':41,
+            'MDCST_K40':42,
+            'LOCST_U238':43,
+            'LOCST_TH232':44,
+            'LOCST_K40':45,
+            }
     def size(self,):
         return len(self.columns)
 
@@ -123,8 +143,8 @@ class CrustModel:
             self.crust_model[i,22] = point[9] * point[16] * self.crust_model[i,self.C.AREA] * coef 
 
         logging.info('mass loop done')
-        layers = []
         if self.dataout == self.C.MASS:
+            layers = []
             for code in self.layers:
                 if 's' == code :
                     layers.append(self.C.SFTSD_M)
@@ -143,17 +163,77 @@ class CrustModel:
                 for layer in layers:
                     self.crust_model[i, self.C.MASS] += point[layer]
 
+    def heat(self):
+        self.mass()
+        self.compute_layer_conc()
+        for i, point in enumerate(self.crust_model):
+            if point[self.C.OCEAN_F] == 0:
+                self.crust_model[i, self.C.SFTSD_H] = (point[self.C.SFTSD_M] *
+                        self.conc['C_SFTSD_U238'])
+            elif point [self.C.OCEAN_F] == 1:
+                pass
+        layers = []
+        for code in self.layers:
+            if 's' == code :
+                layers.append(self.C.SFTSD_H)
+            elif 'h' == code:
+                layers.append(self.C.HDSD_H)
+            elif 'u' == code:
+                layers.append(self.C.UPCST_H)
+            elif 'm' == code:
+                layers.append(self.C.MDCST_H)
+            elif 'l' == code:
+                layers.append(self.C.LOCST_H)
+            else:
+                raise ValueError('invalid crust code')
+        for i, point in enumerate(self.crust_model):
+            for layer in layers:
+                self.crust_model[i, self.C.HEAT] += point[layer]
+
+
+    def compute_layer_conc(self):
+        for i, point in enumerate(self.crust_model):
+            if point[self.C.OCEAN_F] == 0:
+                self.crust_model[i, self.C.SFTSD_U238] = (point[self.C.SFTSD_M]
+                    * self.conc['C_SFTSD_U238'])
+                self.crust_model[i, self.C.SFTSD_TH232] = (point[self.C.SFTSD_M] *
+                        self.conc['C_SFTSD_TH232'])
+                self.crust_model[i, self.C.SFTSD_K40] = (point[self.C.SFTSD_M]
+                        * self.conc['C_SFTSD_K40'])
+
     def concentrations(self, args):
         conc = string.split(args, sep=',')
-        for i, point in enumerate(self.crust_model):
-            if point[self.C.OCEAN_F] == 0: # is continental crust
-                self.crust_model[i, self.C.U238] = conc[0]
-                self.crust_model[i, self.C.TH232] = conc[2]
-                self.crust_model[i, self.C.K40] = conc[4]
-            elif point[self.C.OCEAN_F] == 1: # is oceanic crust
-                self.crust_model[i, self.C.U238] = conc[1]
-                self.crust_model[i, self.C.TH232] = conc[3]
-                self.crust_model[i, self.C.K40] = conc[5]
+        self.conc['C_SFTSD_U238'] = conc[0]
+        logging.info(self.conc['C_SFTSD_U238'])
+        self.conc['C_HDSD_U238'] = conc[1]
+        self.conc['C_UPCST_U238'] = conc[2]
+        self.conc['C_MDCST_U238'] = conc[3]
+        self.conc['C_LOCST_U238'] = conc[4]
+        self.conc['O_SFTSD_U238'] = conc[5]
+        self.conc['O_HDSD_U238'] = conc[6]
+        self.conc['O_UPCST_U238'] = conc[7]
+        self.conc['O_MDCST_U238'] = conc[8]
+        self.conc['O_LOCST_U238'] = conc[9]
+        self.conc['C_SFTSD_TH232'] = conc[10]
+        self.conc['C_HDSD_TH232'] = conc[11]
+        self.conc['C_UPCST_TH232'] = conc[12]
+        self.conc['C_MDCST_TH232'] = conc[13]
+        self.conc['C_LOCST_TH232'] = conc[14]
+        self.conc['O_SFTSD_TH232'] = conc[15]
+        self.conc['O_HDSD_TH232'] = conc[16]
+        self.conc['O_UPCST_TH232'] = conc[17]
+        self.conc['O_MDCST_TH232'] = conc[18]
+        self.conc['O_LOCST_TH232'] = conc[19]
+        self.conc['C_SFTSD_K40'] = conc[20]
+        self.conc['C_HDSD_K40'] = conc[21]
+        self.conc['C_UPCST_K40'] = conc[22]
+        self.conc['C_MDCST_K40'] = conc[23]
+        self.conc['C_LOCST_K40'] = conc[24]
+        self.conc['O_SFTSD_K40'] = conc[25]
+        self.conc['O_HDSD_K40'] = conc[26]
+        self.conc['O_UPCST_K40'] = conc[27]
+        self.conc['O_MDCST_K40'] = conc[28]
+        self.conc['O_LOCST_K40'] = conc[29]
 
     def config(self, **kwargs):
         for key in kwargs:
@@ -161,17 +241,15 @@ class CrustModel:
             if key == u'layers':
                 logging.info('layers found in GET')
                 self.select_layers(kwargs[key])
-            elif key == u'output':
-                logging.info('output foudn in GET')
-                self.select_output(kwargs[key])
             elif key == u'uthk':
                 logging.info('concentrations found in GET')
                 self.concentrations(kwargs[key])
+            elif key == u'output':
+                logging.info('output foudn in GET')
+                self.concentrations(kwargs[u'uthk'])
+                self.select_output(kwargs[key])
             else:
                 raise ValueError('Unknown key found in GET request')
-
-    def set_concentrations(self, layers={}, u={}, k={}, th={}):
-        pass
 
     def select_layers(self, layers = "umlsh"):
         self.layers = layers.lower()
@@ -195,7 +273,8 @@ class CrustModel:
             else:
                 raise ValueError('density only accepts one layer')
         elif output == u'q':
-            self.output = 'heat'
+            self.dataout = self.C.HEAT
+            self.heat()
         elif output == u'v':
             self.output = 'geonuflux'
         elif output == u'o':
@@ -247,6 +326,7 @@ class CrustModel:
         num_col = self.C.size()
         padding = np.zeros((crust_model_load.shape[0],num_col-17))
         self.crust_model = np.append(crust_model_load, padding, axis=1)
+        self.conc = {}
     
 if __name__ == "__main__":
     print "This is the CrustModel class for the geonu project, running as a"
