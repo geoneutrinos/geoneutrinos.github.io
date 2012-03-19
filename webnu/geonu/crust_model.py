@@ -246,13 +246,21 @@ class CrustModel:
                 self.concentrations(kwargs[key])
             elif key == u'output':
                 logging.info('output foudn in GET')
-                self.concentrations(kwargs[u'uthk'])
                 self.select_output(kwargs[key])
             else:
                 raise ValueError('Unknown key found in GET request')
+        self.compute_output()
 
     def select_layers(self, layers = "umlsh"):
         self.layers = layers.lower()
+
+    def compute_output(self):
+        if self.dataout == self.C.THICKNESS:
+            self.thickness()
+        elif self.dataout == self.C.HEAT:
+            self.heat()
+        elif self.dataout == self.C.MASS:
+            self.mass()
 
     def select_output(self, output = "t"):
         """Selects the output for the griddata function
@@ -265,7 +273,6 @@ class CrustModel:
         """
         output = output.lower()
         if output == u't':
-            self.thickness()
             self.dataout = self.C.THICKNESS
         elif output == u'p':
             if len(self.layers) == 1:
@@ -274,14 +281,12 @@ class CrustModel:
                 raise ValueError('density only accepts one layer')
         elif output == u'q':
             self.dataout = self.C.HEAT
-            self.heat()
         elif output == u'v':
             self.output = 'geonuflux'
         elif output == u'o':
             self.dataout = self.C.OCEAN_F
         elif output == u'm':
             self.dataout = self.C.MASS
-            self.mass()
         else:
             raise ValueError('no valid output parameter was found')
 
