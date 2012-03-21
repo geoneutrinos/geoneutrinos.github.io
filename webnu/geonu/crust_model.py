@@ -203,10 +203,10 @@ class CrustModel:
 
     def concentrations(self, args):
         conc = string.split(args, sep=',')
-        self.conc['C_SFTSD_U238'] = conc[0]
+        self.conc['C_SFTSD_U238'] = float(conc[0])
         logging.info(self.conc['C_SFTSD_U238'])
-        self.conc['C_HDSD_U238'] = conc[1]
-        self.conc['C_UPCST_U238'] = conc[2]
+        self.conc['C_HDSD_U238'] = float(conc[1])
+        self.conc['C_UPCST_U238'] = float(conc[2])
         self.conc['C_MDCST_U238'] = conc[3]
         self.conc['C_LOCST_U238'] = conc[4]
         self.conc['O_SFTSD_U238'] = conc[5]
@@ -214,7 +214,7 @@ class CrustModel:
         self.conc['O_UPCST_U238'] = conc[7]
         self.conc['O_MDCST_U238'] = conc[8]
         self.conc['O_LOCST_U238'] = conc[9]
-        self.conc['C_SFTSD_TH232'] = conc[10]
+        self.conc['C_SFTSD_TH232'] = float(conc[10])
         self.conc['C_HDSD_TH232'] = conc[11]
         self.conc['C_UPCST_TH232'] = conc[12]
         self.conc['C_MDCST_TH232'] = conc[13]
@@ -224,7 +224,7 @@ class CrustModel:
         self.conc['O_UPCST_TH232'] = conc[17]
         self.conc['O_MDCST_TH232'] = conc[18]
         self.conc['O_LOCST_TH232'] = conc[19]
-        self.conc['C_SFTSD_K40'] = conc[20]
+        self.conc['C_SFTSD_K40'] = float(conc[20])
         self.conc['C_HDSD_K40'] = conc[21]
         self.conc['C_UPCST_K40'] = conc[22]
         self.conc['C_MDCST_K40'] = conc[23]
