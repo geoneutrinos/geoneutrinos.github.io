@@ -6,6 +6,7 @@ from crust_model import CrustModel
 
 from multiprocessing import Process
 import logging
+import string
 
 # Localization to make unicode sorting easy
 import locale
@@ -15,8 +16,11 @@ def filename(request):
     filename = u''
 
     for key in sorted(request.GET.keys(), cmp=locale.strcoll):
-        value = ''.join(sorted(list(set(request.GET[key].lower())),
-            cmp=locale.strcoll))
+        if key != u'uthk':
+            value = ''.join(sorted(list(set(request.GET[key].lower())),
+                cmp=locale.strcoll))
+        elif key == u'uthk':
+            value = request.GET[key]
         filename = filename + u'_' + key.lower() + u'.' + value
 
     filename = filename + u'.png'
