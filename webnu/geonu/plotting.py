@@ -35,14 +35,17 @@ def plot(request, image_path):
     crust = CrustModel()
     crust.config(**request.GET)
     
+    log.debug("Map: Basemap Init")
     m = Basemap(projection = 'cyl',
                 llcrnrlat = -89, llcrnrlon = -180,
                 urcrnrlat = 89, urcrnrlon = 180,
                 resolution = 'l')
-    
+    log.debug("Map: calling crust griddata")
     lons, lats, data = crust.griddata()
     nx = len(lons)
     ny = len(lats)
+
+    log.debug("Map: Transform Scalar")
     map_data = m.transform_scalar(data, lons, lats, nx, ny, order=0)
     im_data = m.imshow(map_data, interpolation = 'nearest')
     m.drawcoastlines(linewidth = 0.2)
@@ -50,9 +53,13 @@ def plot(request, image_path):
 
     plt.subplots_adjust(left = 0 , right = 1, top = 1, bottom = 0, wspace = 0,
             hspace = 0)
+
+    log.debug("Map: Writing map to file")
     plt.savefig(image_path,
             bbox_inches = 'tight', format='png', 
             dpi = 115, transparent = True, pad_inches = 0.01)
+
+    log.debug("Map: Done")
 
 def m_plot(request, image_path):
     p = Process(target=plot, args=(request, image_path,))

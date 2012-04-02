@@ -90,7 +90,7 @@ class CrustModel:
         return area
 
     def thickness(self):
-        logging.debug('Thickness: Start')
+        log.debug('Thickness: Start')
         layers = []
         for code in self.layers:
             if 's' == code :
@@ -165,15 +165,25 @@ class CrustModel:
                     self.crust_model[i, self.C.MASS] += point[layer]
 
     def heat(self):
+        u_heat = 98.5 # uW/KG from sdye 1111.6099
+        th_heat = 26.3 # uW/KG from sdye 1111.6099
+        k_heat = .00333 # uW/KG from sdye 1111.6099
+
+        log.debug("Heat: Calling mass()")
         self.mass()
+        log.debug("Heat: Calling compute_layer_conc()")
         self.compute_layer_conc()
         
+        log.debug("Heat: Starting Heat Loop")
         for i, point in enumerate(self.crust_model):
-            if point[self.C.OCEAN_F] == 0:
-                self.crust_model[i, self.C.SFTSD_H] = (point[self.C.SFTSD_M] *
-                        self.conc['C_SFTSD_U238'])
-            elif point [self.C.OCEAN_F] == 1:
-                pass
+            #Uranium!
+            self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_U238] * u_heat)
+            self.crust_model[i, self.C.HDSD_H] += (point[self.C.HDSD_U238] * u_heat)
+            self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_U238] * u_heat)
+            self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_U238] * u_heat)
+            self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_U238] * u_heat)
+
+        log.debug("Heat: Heat Loop Done")
         layers = []
         for code in self.layers:
             if 's' == code :
@@ -188,53 +198,85 @@ class CrustModel:
                 layers.append(self.C.LOCST_H)
             else:
                 raise ValueError('invalid crust code')
+        log.debug("Heat: Summing Requested Layers")
         for i, point in enumerate(self.crust_model):
             for layer in layers:
                 self.crust_model[i, self.C.HEAT] += point[layer]
 
+        log.debug("Heat: Done")
+
 
     def compute_layer_conc(self):
+        log.debug("Conc: starting concentraiton loop")
         for i, point in enumerate(self.crust_model):
             if point[self.C.OCEAN_F] == 0:
-                self.crust_model[i, self.C.SFTSD_U238] = (point[self.C.SFTSD_M]
-                    * self.conc['C_SFTSD_U238'])
-                self.crust_model[i, self.C.SFTSD_TH232] = (point[self.C.SFTSD_M] *
-                        self.conc['C_SFTSD_TH232'])
-                self.crust_model[i, self.C.SFTSD_K40] = (point[self.C.SFTSD_M]
-                        * self.conc['C_SFTSD_K40'])
+                self.crust_model[i, self.C.SFTSD_U238] =  (point[self.C.SFTSD_M] * self.conc['C_SFTSD_U238'])
+                self.crust_model[i, self.C.SFTSD_TH232] = (point[self.C.SFTSD_M] * self.conc['C_SFTSD_TH232'])
+                self.crust_model[i, self.C.SFTSD_K40] =   (point[self.C.SFTSD_M] * self.conc['C_SFTSD_K40'])
+                self.crust_model[i, self.C.HDSD_U238] =   (point[self.C.HDSD_M] *  self.conc['C_HDSD_U238'])
+                self.crust_model[i, self.C.HDSD_TH232] =  (point[self.C.HDSD_M] *  self.conc['C_HDSD_TH232'])
+                self.crust_model[i, self.C.HDSD_K40] =    (point[self.C.HDSD_M] *  self.conc['C_HDSD_K40'])
+                self.crust_model[i, self.C.UPCST_U238] =  (point[self.C.UPCST_M] * self.conc['C_UPCST_U238'])
+                self.crust_model[i, self.C.UPCST_TH232] = (point[self.C.UPCST_M] * self.conc['C_UPCST_TH232'])
+                self.crust_model[i, self.C.UPCST_K40] =   (point[self.C.UPCST_M] * self.conc['C_UPCST_K40'])
+                self.crust_model[i, self.C.MDCST_U238] =  (point[self.C.MDCST_M] * self.conc['C_MDCST_U238'])
+                self.crust_model[i, self.C.MDCST_TH232] = (point[self.C.MDCST_M] * self.conc['C_MDCST_TH232'])
+                self.crust_model[i, self.C.MDCST_K40] =   (point[self.C.MDCST_M] * self.conc['C_MDCST_K40'])
+                self.crust_model[i, self.C.LOCST_U238] =  (point[self.C.LOCST_M] * self.conc['C_LOCST_U238'])
+                self.crust_model[i, self.C.LOCST_TH232] = (point[self.C.LOCST_M] * self.conc['C_LOCST_TH232'])
+                self.crust_model[i, self.C.LOCST_K40] =   (point[self.C.LOCST_M] * self.conc['C_LOCST_K40'])
+            elif point[self.C.OCEAN_F] == 1:
+                self.crust_model[i, self.C.SFTSD_U238] =  (point[self.C.SFTSD_M] * self.conc['O_SFTSD_U238'])
+                self.crust_model[i, self.C.SFTSD_TH232] = (point[self.C.SFTSD_M] * self.conc['O_SFTSD_TH232'])
+                self.crust_model[i, self.C.SFTSD_K40] =   (point[self.C.SFTSD_M] * self.conc['O_SFTSD_K40'])
+                self.crust_model[i, self.C.HDSD_U238] =   (point[self.C.HDSD_M] *  self.conc['O_HDSD_U238'])
+                self.crust_model[i, self.C.HDSD_TH232] =  (point[self.C.HDSD_M] *  self.conc['O_HDSD_TH232'])
+                self.crust_model[i, self.C.HDSD_K40] =    (point[self.C.HDSD_M] *  self.conc['O_HDSD_K40'])
+                self.crust_model[i, self.C.UPCST_U238] =  (point[self.C.UPCST_M] * self.conc['O_UPCST_U238'])
+                self.crust_model[i, self.C.UPCST_TH232] = (point[self.C.UPCST_M] * self.conc['O_UPCST_TH232'])
+                self.crust_model[i, self.C.UPCST_K40] =   (point[self.C.UPCST_M] * self.conc['O_UPCST_K40'])
+                self.crust_model[i, self.C.MDCST_U238] =  (point[self.C.MDCST_M] * self.conc['O_MDCST_U238'])
+                self.crust_model[i, self.C.MDCST_TH232] = (point[self.C.MDCST_M] * self.conc['O_MDCST_TH232'])
+                self.crust_model[i, self.C.MDCST_K40] =   (point[self.C.MDCST_M] * self.conc['O_MDCST_K40'])
+                self.crust_model[i, self.C.LOCST_U238] =  (point[self.C.LOCST_M] * self.conc['O_LOCST_U238'])
+                self.crust_model[i, self.C.LOCST_TH232] = (point[self.C.LOCST_M] * self.conc['O_LOCST_TH232'])
+                self.crust_model[i, self.C.LOCST_K40] =   (point[self.C.LOCST_M] * self.conc['O_LOCST_K40'])
+        log.debug("Conc: loop done")
 
     def concentrations(self, args):
+
         conc = string.split(args, sep=',')
         self.conc['C_SFTSD_U238'] = float(conc[0])
         self.conc['C_HDSD_U238'] = float(conc[1])
         self.conc['C_UPCST_U238'] = float(conc[2])
-        self.conc['C_MDCST_U238'] = conc[3]
-        self.conc['C_LOCST_U238'] = conc[4]
-        self.conc['O_SFTSD_U238'] = conc[5]
-        self.conc['O_HDSD_U238'] = conc[6]
-        self.conc['O_UPCST_U238'] = conc[7]
-        self.conc['O_MDCST_U238'] = conc[8]
-        self.conc['O_LOCST_U238'] = conc[9]
+        self.conc['C_MDCST_U238'] = float(conc[3])
+        self.conc['C_LOCST_U238'] = float(conc[4])
+        self.conc['O_SFTSD_U238'] = float(conc[5])
+        self.conc['O_HDSD_U238'] = float(conc[6])
+        self.conc['O_UPCST_U238'] = float(conc[7])
+        self.conc['O_MDCST_U238'] = float(conc[8])
+        self.conc['O_LOCST_U238'] = float(conc[9])
         self.conc['C_SFTSD_TH232'] = float(conc[10])
-        self.conc['C_HDSD_TH232'] = conc[11]
-        self.conc['C_UPCST_TH232'] = conc[12]
-        self.conc['C_MDCST_TH232'] = conc[13]
-        self.conc['C_LOCST_TH232'] = conc[14]
-        self.conc['O_SFTSD_TH232'] = conc[15]
-        self.conc['O_HDSD_TH232'] = conc[16]
-        self.conc['O_UPCST_TH232'] = conc[17]
-        self.conc['O_MDCST_TH232'] = conc[18]
-        self.conc['O_LOCST_TH232'] = conc[19]
+        self.conc['C_HDSD_TH232'] = float(conc[11])
+        self.conc['C_UPCST_TH232'] = float(conc[12])
+        self.conc['C_MDCST_TH232'] = float(conc[13])
+        self.conc['C_LOCST_TH232'] = float(conc[14])
+        self.conc['O_SFTSD_TH232'] = float(conc[15])
+        self.conc['O_HDSD_TH232'] = float(conc[16])
+        self.conc['O_UPCST_TH232'] = float(conc[17])
+        self.conc['O_MDCST_TH232'] = float(conc[18])
+        self.conc['O_LOCST_TH232'] = float(conc[19])
         self.conc['C_SFTSD_K40'] = float(conc[20])
-        self.conc['C_HDSD_K40'] = conc[21]
-        self.conc['C_UPCST_K40'] = conc[22]
-        self.conc['C_MDCST_K40'] = conc[23]
-        self.conc['C_LOCST_K40'] = conc[24]
-        self.conc['O_SFTSD_K40'] = conc[25]
-        self.conc['O_HDSD_K40'] = conc[26]
-        self.conc['O_UPCST_K40'] = conc[27]
-        self.conc['O_MDCST_K40'] = conc[28]
-        self.conc['O_LOCST_K40'] = conc[29]
+        self.conc['C_HDSD_K40'] = float(conc[21])
+        self.conc['C_UPCST_K40'] = float(conc[22])
+        self.conc['C_MDCST_K40'] = float(conc[23])
+        self.conc['C_LOCST_K40'] = float(conc[24])
+        self.conc['O_SFTSD_K40'] = float(conc[25])
+        self.conc['O_HDSD_K40'] = float(conc[26])
+        self.conc['O_UPCST_K40'] = float(conc[27])
+        self.conc['O_MDCST_K40'] = float(conc[28])
+        self.conc['O_LOCST_K40'] = float(conc[29])
+        log.debug("Concentrations retirved from GET request")
 
     def config(self, **kwargs):
         for key in kwargs:
