@@ -176,12 +176,24 @@ class CrustModel:
         
         log.debug("Heat: Starting Heat Loop")
         for i, point in enumerate(self.crust_model):
-            #Uranium!
+            # Uranium!
             self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_U238] * u_heat)
-            self.crust_model[i, self.C.HDSD_H] += (point[self.C.HDSD_U238] * u_heat)
+            self.crust_model[i, self.C.HDSD_H] +=  (point[self.C.HDSD_U238] *  u_heat)
             self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_U238] * u_heat)
             self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_U238] * u_heat)
             self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_U238] * u_heat)
+            # Thorium!
+            self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_TH232] * th_heat)
+            self.crust_model[i, self.C.HDSD_H] +=  (point[self.C.HDSD_TH232] *  th_heat)
+            self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_TH232] * th_heat)
+            self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_TH232] * th_heat)
+            self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_TH232] * th_heat)
+            # Patassium!
+            self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_K40] * k_heat)
+            self.crust_model[i, self.C.HDSD_H] +=  (point[self.C.HDSD_K40] *  k_heat)
+            self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_K40] * k_heat)
+            self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_K40] * k_heat)
+            self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_K40] * k_heat)
 
         log.debug("Heat: Heat Loop Done")
         layers = []
