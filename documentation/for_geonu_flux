@@ -1,0 +1,5 @@
+I've thought of a way for the geonuflux to happen rather quickly.
+I would need to use a grid like the data existed in before, then
+calculate the nuflux for a point and multiply it by the gird of distances
+then shift the grid around till it is in the proper orientation.
+then sum the grids and then export the griddata.
