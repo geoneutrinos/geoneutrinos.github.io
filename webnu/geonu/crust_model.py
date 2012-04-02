@@ -165,9 +165,9 @@ class CrustModel:
                     self.crust_model[i, self.C.MASS] += point[layer]
 
     def heat(self):
-        u_heat = 98.5 # uW/KG from sdye 1111.6099
-        th_heat = 26.3 # uW/KG from sdye 1111.6099
-        k_heat = .00333 # uW/KG from sdye 1111.6099
+        u_heat = 98.5 * 1e-6 # uW/KG from sdye 1111.6099
+        th_heat = 26.3 * 1e-6 # uW/KG from sdye 1111.6099
+        k_heat = .00333 * 1e-2 # uW/KG from sdye 1111.6099
 
         log.debug("Heat: Calling mass()")
         self.mass()
