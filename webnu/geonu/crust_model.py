@@ -5,6 +5,7 @@ import logging
 import os
 import math
 import string
+log = logging.getLogger(__name__)
 
 class Column:
     def __init__(self):
@@ -89,7 +90,7 @@ class CrustModel:
         return area
 
     def thickness(self):
-        logging.info('Thickness: Start')
+        logging.debug('Thickness: Start')
         layers = []
         for code in self.layers:
             if 's' == code :
@@ -105,11 +106,11 @@ class CrustModel:
             else:
                 raise ValueError('invalid crust code')
 
-        logging.info("Thickness: Layers are %s",layers)
+        log.debug("Thickness: Layers are %s",layers)
         for i, point in enumerate(self.crust_model): 
             for layer in layers:
                 self.crust_model[i, self.C.THICKNESS] += point[layer]
-        logging.info('Thickness: Done')
+        log.debug('Thickness: Done')
 
     def density(self):
         for code in self.layers:
@@ -129,7 +130,7 @@ class CrustModel:
         return density
 
     def mass(self):
-        logging.info('starting mass loop')
+        log.debug('starting mass loop')
         # We need to convert the model units into SI so that the results will
         # be in kg, for this a factor of 1000 is added from 1g/cc in kg/m^3 and
         # a factor of 10^9 is added from km^3 to m^3
@@ -142,7 +143,7 @@ class CrustModel:
             self.crust_model[i,21] = point[8] * point[15] * self.crust_model[i,self.C.AREA] * coef 
             self.crust_model[i,22] = point[9] * point[16] * self.crust_model[i,self.C.AREA] * coef 
 
-        logging.info('mass loop done')
+        log.debug('mass loop done')
         if self.dataout == self.C.MASS:
             layers = []
             for code in self.layers:
@@ -166,6 +167,7 @@ class CrustModel:
     def heat(self):
         self.mass()
         self.compute_layer_conc()
+        
         for i, point in enumerate(self.crust_model):
             if point[self.C.OCEAN_F] == 0:
                 self.crust_model[i, self.C.SFTSD_H] = (point[self.C.SFTSD_M] *
@@ -204,7 +206,6 @@ class CrustModel:
     def concentrations(self, args):
         conc = string.split(args, sep=',')
         self.conc['C_SFTSD_U238'] = float(conc[0])
-        logging.info(self.conc['C_SFTSD_U238'])
         self.conc['C_HDSD_U238'] = float(conc[1])
         self.conc['C_UPCST_U238'] = float(conc[2])
         self.conc['C_MDCST_U238'] = conc[3]
@@ -239,13 +240,13 @@ class CrustModel:
         for key in kwargs:
             key = key.lower()
             if key == u'layers':
-                logging.info('layers found in GET')
+                log.debug('layers found in GET')
                 self.select_layers(kwargs[key])
             elif key == u'uthk':
-                logging.info('concentrations found in GET')
+                log.debug('concentrations found in GET')
                 self.concentrations(kwargs[key])
             elif key == u'output':
-                logging.info('output foudn in GET')
+                log.debug('output foudn in GET')
                 self.select_output(kwargs[key])
             else:
                 raise ValueError('Unknown key found in GET request')

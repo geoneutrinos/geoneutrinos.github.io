@@ -3,6 +3,7 @@ from pyramid.response import Response
 import logging
 import os
 import geonu.plotting as gplt
+log = logging.getLogger(__name__)
 
 def my_view(request):
     return {'project':'webnu'}
@@ -12,14 +13,14 @@ def render_plot(request):
 
     filename = gplt.filename(request)
 
-    logging.info('Filename:' + filename)
+    log.debug('Filename:' + filename)
     here = os.path.dirname(__file__)
     image_path = os.path.join(here,'static','images', 'maps', filename)
     try:
         image = open(image_path, 'rb')
         response.app_iter = image
 
-        logging.info('Map: Using cached image')
+        log.debug('Map: Using cached image')
         return response
     except IOError: #assuming the map hasn't been generated yet
 
