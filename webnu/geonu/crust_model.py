@@ -55,6 +55,12 @@ class Column:
             'LOCST_U238':43,
             'LOCST_TH232':44,
             'LOCST_K40':45,
+            'SFTSD_NU':46,
+            'HDSD_NU':47,
+            'UPCST_NU':48,
+            'MDCST_NU':49,
+            'LOCST_NU':50,
+            'NU':51,
             }
     def size(self,):
         return len(self.columns)
@@ -83,7 +89,7 @@ class memoize(object):
 class CrustModel:
 
     @memoize
-    def area(north_lat, south_lat, earth_radius=600):
+    def area(north_lat, south_lat, earth_radius=6371):
         lon_width = math.radians(2) # degrees
         dLat = math.sin(math.radians(north_lat)) - math.sin(math.radians(south_lat))
         area = (earth_radius ** 2 * lon_width * dLat)
@@ -219,6 +225,105 @@ class CrustModel:
         log.debug("Heat: Done")
 
 
+    def nu(self):
+        u_nu = 76.4 * 1e-6 # uW/KG from sdye 1111.6099
+        th_nu = 16.2 * 1e-6 # uW/KG from sdye 1111.6099
+        k_nu = .0271 * 1e-2 # uW/KG from sdye 1111.6099
+
+        log.debug("Nu: Calling mass()")
+        self.mass()
+        log.debug("Nu: Calling compute_layer_conc()")
+        self.compute_layer_conc()
+        
+        log.debug("Nu: Starting Nu Loop")
+        for i, point in enumerate(self.crust_model):
+            # Uranium!
+            self.crust_model[i, self.C.SFTSD_NU] += (point[self.C.SFTSD_U238] * u_nu)
+            self.crust_model[i, self.C.HDSD_NU] +=  (point[self.C.HDSD_U238] *  u_nu)
+            self.crust_model[i, self.C.UPCST_NU] += (point[self.C.UPCST_U238] * u_nu)
+            self.crust_model[i, self.C.MDCST_NU] += (point[self.C.MDCST_U238] * u_nu)
+            self.crust_model[i, self.C.LOCST_NU] += (point[self.C.LOCST_U238] * u_nu)
+            # Thorium!
+            self.crust_model[i, self.C.SFTSD_NU] += (point[self.C.SFTSD_TH232] * th_nu)
+            self.crust_model[i, self.C.HDSD_NU] +=  (point[self.C.HDSD_TH232] *  th_nu)
+            self.crust_model[i, self.C.UPCST_NU] += (point[self.C.UPCST_TH232] * th_nu)
+            self.crust_model[i, self.C.MDCST_NU] += (point[self.C.MDCST_TH232] * th_nu)
+            self.crust_model[i, self.C.LOCST_NU] += (point[self.C.LOCST_TH232] * th_nu)
+            # Patassium!
+            self.crust_model[i, self.C.SFTSD_NU] += (point[self.C.SFTSD_K40] * k_nu)
+            self.crust_model[i, self.C.HDSD_NU] +=  (point[self.C.HDSD_K40] *  k_nu)
+            self.crust_model[i, self.C.UPCST_NU] += (point[self.C.UPCST_K40] * k_nu)
+            self.crust_model[i, self.C.MDCST_NU] += (point[self.C.MDCST_K40] * k_nu)
+            self.crust_model[i, self.C.LOCST_NU] += (point[self.C.LOCST_K40] * k_nu)
+
+        log.debug("Nu: Nu Loop Done")
+        layers = []
+        for code in self.layers:
+            if 's' == code :
+                layers.append(self.C.SFTSD_NU)
+            elif 'h' == code:
+                layers.append(self.C.HDSD_NU)
+            elif 'u' == code:
+                layers.append(self.C.UPCST_NU)
+            elif 'm' == code:
+                layers.append(self.C.MDCST_NU)
+            elif 'l' == code:
+                layers.append(self.C.LOCST_NU)
+            else:
+                raise ValueError('invalid crust code')
+        log.debug("Nu: Summing Requested Layers")
+        for i, point in enumerate(self.crust_model):
+            for layer in layers:
+                self.crust_model[i, self.C.NU] += point[layer]
+
+        log.debug("Nu: calculating integral grid")
+        lons = np.unique(self.crust_model[:,0])
+        lats = np.unique(self.crust_model[:,1])
+
+        data = np.empty(shape=(len(lats),len(lons)))
+        output = np.zeros(shape=(len(lats),len(lons)))
+        lon = {}
+        lat = {}
+        for index, point in np.ndenumerate(lons):
+            lon[point] = index[0]
+
+        for index, point in np.ndenumerate(lats):
+            lat[point] = index[0]
+
+        for point in self.crust_model:
+            lon_p = point[0]
+            lat_p = point[1]
+            lon_r = math.radians(lon_p + 1)
+            lat_r = math.radians(lat_p - 1)
+
+            data[lat[lat_p],lon[lon_p]] = self.one_r_sq(lon_r, lat_r, 0, 0)
+        log.debug("Nu: Integrating...")
+        for i, point in enumerate(self.crust_model):
+            nu_f = data * point[self.C.NU]
+            roll_0 = int(point[self.C.LAT]/2)
+            roll_1 = int(point[self.C.LON]/2)
+            nu_f = np.roll(nu_f, roll_0, 0)
+            nu_f = np.roll(nu_f, roll_1, 1)
+            output += nu_f
+
+        return (lons, lats, output)
+        log.debug("Nu: Done")
+
+    @memoize
+    def one_r_sq(lon, lat, lon_0=0, lat_0=0):
+        earth_r = 6371.0
+        lon_d = lon - lon_0
+        lat_d = lat - lat_0
+        lon_2 = lon_d ** 2
+        lat_2 = lat_d ** 2
+        su = lon_2 + lat_2
+        d = math.sqrt(su)
+        c = 2 * math.sin(d/2)
+        d_km = earth_r * c
+        inv_d = 1/(d_km ** 2)
+        return inv_d
+
+
     def compute_layer_conc(self):
         log.debug("Conc: starting concentraiton loop")
         for i, point in enumerate(self.crust_model):
@@ -317,6 +422,8 @@ class CrustModel:
             self.heat()
         elif self.dataout == self.C.MASS:
             self.mass()
+        elif self.dataout == self.C.NU:
+            self.nu_lons, self.nu_lats, self.nu_grd = self.nu()
 
     def select_output(self, output = "t"):
         """Selects the output for the griddata function
@@ -337,12 +444,12 @@ class CrustModel:
                 raise ValueError('density only accepts one layer')
         elif output == u'q':
             self.dataout = self.C.HEAT
-        elif output == u'v':
-            self.output = 'geonuflux'
         elif output == u'o':
             self.dataout = self.C.OCEAN_F
         elif output == u'm':
             self.dataout = self.C.MASS
+        elif output == u'n':
+            self.dataout = self.C.NU
         else:
             raise ValueError('no valid output parameter was found')
 
@@ -355,12 +462,11 @@ class CrustModel:
         format sutable for giving to the imgshow and transform scalar methods
         of matplotlib with basemap.
         """
+        if self.dataout == self.C.NU: #special case for nu flux
+            return (self.nu_lons + 1, self.nu_lats - 1, self.nu_grd)
+
         lons = np.unique(self.crust_model[:,0])
         lats = np.unique(self.crust_model[:,1])
-
-        #for now it is probably best to just dump one layer untill a some sort
-        # of output state is defined, this will be the thickness of the
-        # upper crust for now
 
         data = np.empty(shape=(len(lats),len(lons)))
         lon = {}
