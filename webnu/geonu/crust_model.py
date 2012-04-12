@@ -226,9 +226,9 @@ class CrustModel:
 
 
     def nu(self):
-        u_nu = 76.4 * 1e-6 # uW/KG from sdye 1111.6099
-        th_nu = 16.2 * 1e-6 # uW/KG from sdye 1111.6099
-        k_nu = .0271 * 1e-2 # uW/KG from sdye 1111.6099
+        u_nu = 76.4
+        th_nu = 16.2
+        k_nu = .0271
 
         log.debug("Nu: Calling mass()")
         self.mass()
@@ -275,52 +275,60 @@ class CrustModel:
         for i, point in enumerate(self.crust_model):
             for layer in layers:
                 self.crust_model[i, self.C.NU] += point[layer]
+            #self.crust_model[i, self.C.NU] = self.crust_model[i, self.C.NU] / (self.crust_model[i, self.C.AREA] * 1000 )
 
-        log.debug("Nu: calculating integral grid")
+        log.debug("Nu: Loading integral grid")
+
+        here = os.path.dirname(__file__)
         lons = np.unique(self.crust_model[:,0])
         lats = np.unique(self.crust_model[:,1])
-
-        data = np.empty(shape=(len(lats),len(lons)))
         output = np.zeros(shape=(len(lats),len(lons)))
-        lon = {}
-        lat = {}
-        for index, point in np.ndenumerate(lons):
-            lon[point] = index[0]
+        try:
+            pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'rb')
+            integral_grd = pickle.load(pkl_file)
+        except IOError: 
+            log.debug("Nu: No integal grid found, assuming first run, calculating...")
+            data = np.zeros(shape=(len(lats),len(lons)))
 
-        for index, point in np.ndenumerate(lats):
-            lat[point] = index[0]
+            log.debug("Nu: This will take a while...")
+            for lon_0i, lon_0 in enumerate(lons):
+                for lat_0i, lat_0 in enumerate(lats):
+                    integral = np.zeros(shape=(len(lats),len(lons)))
 
-        for point in self.crust_model:
-            lon_p = point[0]
-            lat_p = point[1]
-            lon_r = math.radians(lon_p + 1)
-            lat_r = math.radians(lat_p - 1)
+                    for lon_i, lon in enumerate(lons):
+                        for lat_i, lat in enumerate(lats):
+                            integral[lat_i, lon_i] = self.one_r_sq(lon, lat, lon_0, lat_0)
 
-            data[lat[lat_p],lon[lon_p]] = self.one_r_sq(lon_r, lat_r, 0, 0)
+                    data[lat_0i, lon_0i] = integral
+
+            log.debug("Nu: Writing Pickle file")
+            pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
+            pickle.dump(crust_model, pkl_file)
+            integral_grd = data
+
         log.debug("Nu: Integrating...")
         for i, point in enumerate(self.crust_model):
-            nu_f = data * point[self.C.NU]
-            roll_0 = int(point[self.C.LAT]/2)
-            roll_1 = int(point[self.C.LON]/2)
-            nu_f = np.roll(nu_f, roll_0, 0)
-            nu_f = np.roll(nu_f, roll_1, 1)
-            output += nu_f
-
+            output += integral_grd[point[1], point[0]] * point[self.C.NU] 
+    
         return (lons, lats, output)
         log.debug("Nu: Done")
 
     @memoize
     def one_r_sq(lon, lat, lon_0=0, lat_0=0):
-        earth_r = 6371.0
-        lon_d = lon - lon_0
-        lat_d = lat - lat_0
-        lon_2 = lon_d ** 2
-        lat_2 = lat_d ** 2
-        su = lon_2 + lat_2
-        d = math.sqrt(su)
-        c = 2 * math.sin(d/2)
-        d_km = earth_r * c
-        inv_d = 1/(d_km ** 2)
+        earth_r = 6371.0 * 1000
+        lon = math.radians(lon + 1)
+        lat = math.radians(lat - 1)
+        lon_0 = math.radians(lon_0 + 1)
+        lat_0 = math.radians(lat_0 - 1)
+        a = math.sin(lat_0) * math.sin(lat)
+        b = math.cos(lat_0) * math.cos(lat)
+        c = lon - lon_0
+        d = b * math.fabs(c)
+        e = a + d
+        log.debug('a:%f, b:%f, c:%f, d:%f, e:%f, lond:%f, latd:%f', a,b,c,d,e,lond, latd)
+        f = math.acos(e)
+        d_km = earth_r * 2 * math.sin(f/2)
+        inv_d = 1/(4 * math.pi * (d_km ** 2))
         return inv_d
 
 
