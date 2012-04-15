@@ -288,18 +288,17 @@ class CrustModel:
             integral_grd = pickle.load(pkl_file)
         except IOError: 
             log.debug("Nu: No integal grid found, assuming first run, calculating...")
-            data = np.zeros(shape=(len(lats),len(lons)))
+            data = np.zeros(shape=(len(lats),len(lons),len(lats),len(lons)), dtype='float16')
 
             log.debug("Nu: This will take a while...")
             for lon_0i, lon_0 in enumerate(lons):
                 for lat_0i, lat_0 in enumerate(lats):
-                    integral = np.zeros(shape=(len(lats),len(lons)))
+                    #integral = np.zeros(shape=(len(lats),len(lons)))
 
                     for lon_i, lon in enumerate(lons):
                         for lat_i, lat in enumerate(lats):
-                            integral[lat_i, lon_i] = self.one_r_sq(lon, lat, lon_0, lat_0)
+                            data[lat_0i, lon_0i, lat_i, lon_i] = self.one_r_sq(lon, lat, lon_0, lat_0)
 
-                    data[lat_0i, lon_0i] = integral
 
             log.debug("Nu: Writing Pickle file")
             pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
@@ -313,21 +312,34 @@ class CrustModel:
         return (lons, lats, output)
         log.debug("Nu: Done")
 
-    @memoize
-    def one_r_sq(lon, lat, lon_0=0, lat_0=0):
+    def one_r_sq(self, lon, lat, lon_0, lat_0):
         earth_r = 6371.0 * 1000
         lon = math.radians(lon + 1)
         lat = math.radians(lat - 1)
         lon_0 = math.radians(lon_0 + 1)
         lat_0 = math.radians(lat_0 - 1)
-        a = math.sin(lat_0) * math.sin(lat)
-        b = math.cos(lat_0) * math.cos(lat)
-        c = lon - lon_0
-        d = b * math.fabs(c)
-        e = a + d
-        log.debug('a:%f, b:%f, c:%f, d:%f, e:%f, lond:%f, latd:%f', a,b,c,d,e,lond, latd)
-        f = math.acos(e)
-        d_km = earth_r * 2 * math.sin(f/2)
+        #a = math.sin(lat_0) * math.sin(lat)
+        #b = math.cos(lat_0) * math.cos(lat)
+        #c = lon - lon_0
+        #d = b * math.fabs(c)
+        #e = a + d
+        #log.debug('a:%f, b:%f, c:%f, d:%f, e:%f, lond:%f, latd:%f', a,b,c,d,e,lond, latd)
+        #f = math.acos(e)
+        #d_km = earth_r * 2 * math.sin(f/2)
+        #inv_d = 1/(4 * math.pi * (d_km ** 2))
+        a = lat - lat_0
+        b = lon - lon_0
+        c = a/2
+        d = b/2
+        e = math.sin(c) ** 2
+        f = math.sin(d) ** 2
+        g = math.cos(lat) * math.cos(lat_0)
+        h = g * f
+        i = math.sqrt(h + e)
+        j = math.asin(i)
+        d_km = earth_r * 2 * math.sin(j/2)
+        if d_km == 0:
+            d_km = 14
         inv_d = 1/(4 * math.pi * (d_km ** 2))
         return inv_d
 
