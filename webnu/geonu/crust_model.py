@@ -288,9 +288,10 @@ class CrustModel:
             integral_grd = pickle.load(pkl_file)
         except IOError: 
             log.debug("Nu: No integal grid found, assuming first run, calculating...")
-            data = np.zeros(shape=(len(lats),len(lons),len(lats),len(lons)), dtype='float16')
+            data = np.zeros(shape=(len(lats),len(lons),len(lats),len(lons)), dtype='float32')
 
             log.debug("Nu: This will take a while...")
+            progress = 0
             for lon_0i, lon_0 in enumerate(lons):
                 for lat_0i, lat_0 in enumerate(lats):
                     #integral = np.zeros(shape=(len(lats),len(lons)))
@@ -302,12 +303,12 @@ class CrustModel:
 
             log.debug("Nu: Writing Pickle file")
             pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
-            pickle.dump(crust_model, pkl_file)
+            pickle.dump(data, pkl_file)
             integral_grd = data
 
         log.debug("Nu: Integrating...")
         for i, point in enumerate(self.crust_model):
-            output += integral_grd[point[1], point[0]] * point[self.C.NU] 
+            output += integral_grd[point[0], point[1]] * point[self.C.NU] 
     
         return (lons, lats, output)
         log.debug("Nu: Done")
