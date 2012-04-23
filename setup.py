@@ -6,7 +6,10 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.md')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-requires = ['pyramid==1.2', 'pyramid_debugtoolbar']
+requires = ['pyramid',
+            'pyramid_debugtoolbar',
+            'jinja2',
+            'pyramid_jinja2']
 
 setup(name='webnu',
       version='0.0',
