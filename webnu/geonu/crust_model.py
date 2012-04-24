@@ -61,6 +61,9 @@ class Column:
             'MDCST_NU':49,
             'LOCST_NU':50,
             'NU':51,
+            'X':52,
+            'Y':53,
+            'Z':54,
             }
     def size(self,):
         return len(self.columns)
@@ -282,37 +285,69 @@ class CrustModel:
         here = os.path.dirname(__file__)
         lons = np.unique(self.crust_model[:,0])
         lats = np.unique(self.crust_model[:,1])
-        output = np.zeros(shape=(len(lats),len(lons)))
+        size = len(self.crust_model[:,0])
+        output = np.zeros(shape=(size))
+
         try:
             pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'rb')
             integral_grd = pickle.load(pkl_file)
         except IOError: 
+            log.debug("Nu: Spherical to Cartesian")
+            self.spherical_to_cartesian()
+
             log.debug("Nu: No integal grid found, assuming first run, calculating...")
-            data = np.zeros(shape=(len(lats),len(lons),len(lats),len(lons)), dtype='float16')
+            data = np.zeros(shape=(size,size), dtype='float16')
 
             log.debug("Nu: This will take a while...")
-            for lon_0i, lon_0 in enumerate(lons):
-                for lat_0i, lat_0 in enumerate(lats):
-                    #integral = np.zeros(shape=(len(lats),len(lons)))
-
-                    for lon_i, lon in enumerate(lons):
-                        for lat_i, lat in enumerate(lats):
-                            data[lat_0i, lon_0i, lat_i, lon_i] = self.one_r_sq(lon, lat, lon_0, lat_0)
+            for i1, row1 in enumerate(self.crust_model):
+                for i2, row2 in enumerate(self.crust_model):
+                    p1 = (row1[self.C.X], row1[self.C.Y], row1[self.C.Z])
+                    p2 = (row2[self.C.X], row2[self.C.Y], row2[self.C.Z])
+                    data[i1, i2] = self.one_r_sq_cart(p1, p2) #self.one_r_sq(lon, lat, lon_0, lat_0)
+                if i1 == 2:
+                    break
 
 
             log.debug("Nu: Writing Pickle file")
-            pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
-            pickle.dump(crust_model, pkl_file)
+            #pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
+            #pickle.dump(data, pkl_file)
+            log.debug("Nu: psyche, nothing was wirtten cause low memory")
             integral_grd = data
 
         log.debug("Nu: Integrating...")
+        print integral_grd[0]
         for i, point in enumerate(self.crust_model):
-            output += integral_grd[point[1], point[0]] * point[self.C.NU] 
+            output += integral_grd[i] * point[self.C.NU] 
     
         return (lons, lats, output)
         log.debug("Nu: Done")
+    
+    def spherical_to_cartesian(self, ):
+        earth_r = 6371.0 * 1000
 
-    def one_r_sq(self, lon, lat, lon_0, lat_0):
+        for i, point in enumerate(self.crust_model):
+            sin_lat = math.sin(math.radians(point[self.C.LAT]))
+            cos_lat = math.cos(math.radians(point[self.C.LAT]))
+            sin_lon = math.sin(math.radians(point[self.C.LON]))
+            cos_lon = math.sin(math.radians(point[self.C.LON]))
+            self.crust_model[i, self.C.X] = earth_r * cos_lon * sin_lat
+            self.crust_model[i, self.C.Y] = earth_r * sin_lon * sin_lat
+            self.crust_model[i, self.C.Z] = earth_r * cos_lat
+    
+    def one_r_sq_cart(self, p1, p2):
+        x1, y1, z1 = p1
+        x2, y2, z2 = p2
+        x = x1 - x2
+        y = y1 - y2
+        z = z1 - z2
+        d = (x ** 2) + (y ** 2) + (z ** 2)
+        if p1 == p2:
+            d = 14
+        return 1/(4 * math.pi * d)
+
+
+
+    def one_r_sq_sph(self, lon, lat, lon_0, lat_0):
         earth_r = 6371.0 * 1000
         lon = math.radians(lon + 1)
         lat = math.radians(lat - 1)
@@ -483,7 +518,10 @@ class CrustModel:
         of matplotlib with basemap.
         """
         if self.dataout == self.C.NU: #special case for nu flux
-            return (self.nu_lons + 1, self.nu_lats - 1, self.nu_grd)
+            cm = self.nu_grd
+        else:
+            cm = self.crust_model
+
 
         lons = np.unique(self.crust_model[:,0])
         lats = np.unique(self.crust_model[:,1])
@@ -497,11 +535,14 @@ class CrustModel:
         for index, point in np.ndenumerate(lats):
             lat[point] = index[0]
 
-        for point in self.crust_model:
-            lon_p = point[0]
-            lat_p = point[1]
-
-            data[lat[lat_p],lon[lon_p]] = point[self.dataout]
+        for i, point in enumerate(cm):
+            lon_p = self.crust_model[i, 0]
+            lat_p = self.crust_model[i, 1]
+            
+            if self.dataout == self.C.NU:
+                data[lat[lat_p],lon[lon_p]] = cm[0]
+            else:
+                data[lat[lat_p],lon[lon_p]] = point[self.dataout]
         
         return (lons + 1,lats - 1,data) # coords need to be centerpoint
 
