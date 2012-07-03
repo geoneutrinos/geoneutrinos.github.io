@@ -1,2 +1,45 @@
 /* The basic css for the webnu project */
 
+/* Header Suff */
+
+#header {
+  background-color: #777;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  height: 96px;
+}
+/* navigation bar */
+#nav{
+  background-color: #888;
+  position: absolute;
+  bottom:0px;
+  left: 0px;
+  right: 0px;
+  height: 48px;
+  line-height: 48px;
+}
+
+#nav ul{
+  margin: 0px;
+  height: 48px;
+}
+
+#nav ul li{
+  background-color: #999;
+  float: left;
+  line-height: 48px;
+}
+
+#nav ul li a{
+  display: block;
+}
+
+
+/* Main Content */
+
+#content{
+  position: absolute;
+  top: 6em;
+}
