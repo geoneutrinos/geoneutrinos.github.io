@@ -50,7 +50,7 @@ def plot(request, image_path):
     im_data = m.imshow(map_data, interpolation = 'nearest',)
     m.drawcoastlines(linewidth = 0.2)
     plt.axis('off')
-    cbar = m.colorbar(im_data, location='bottom')
+    cbar = m.colorbar(im_data, location='bottom',)
 
     plt.subplots_adjust(left = 0 , right = 1, top = 1, bottom = 0, wspace = 0,
             hspace = 0)
