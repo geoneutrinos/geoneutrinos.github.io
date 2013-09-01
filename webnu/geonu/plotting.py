@@ -27,13 +27,17 @@ def filename(request):
     filename = filename + u'.png'
     return filename
 
+def get_data(request):
+    crust = CrustModel()
+    crust.config(**request.GET)
+    return crust.griddata()
+
+
 def plot(request, image_path):
     log.debug('Map: Generating New Image')
 
     # Do the fast thing before (crust model) before doing the slow thing
     # that is the basemap init
-    crust = CrustModel()
-    crust.config(**request.GET)
     
     log.debug("Map: Basemap Init")
     m = Basemap(projection = 'cyl',
@@ -41,7 +45,7 @@ def plot(request, image_path):
                 urcrnrlat = 89, urcrnrlon = 180,
                 resolution = 'l')
     log.debug("Map: calling crust griddata")
-    lons, lats, data = crust.griddata()
+    lons, lats, data = get_data(request)
     nx = len(lons)
     ny = len(lats)
 

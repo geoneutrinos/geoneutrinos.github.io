@@ -1,0 +1,10 @@
+.plates{
+  fill:none;
+  stroke:#fff;
+}
+
+
+svg,
+canvas {
+  position: absolute;
+}
