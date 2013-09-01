@@ -1,0 +1,35 @@
+{% extends 'base.jinja2' %}
+{% set active_page ="model" %}
+{% block content %}
+<div class="row">
+  <div class="col-sm-8 plot_container">
+  </div>
+  <div class="col-sm-4">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#basic" data-toggle="tab">Basic</a></li>
+      <li><a href="#mantle" data-toggle="tab">Mantle</a></li>
+      <li><a href="#crust" data-toggle="tab">Crust</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="basic">
+        <h3>The basic tab</h3>
+      </div>
+      <div class="tab-pane" id="mantle">
+        <h3>Mantle Configs</h3>
+      </div>
+      <div class="tab-pane" id="crust">
+        <h3>Crust Configs</h3>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/css/nu_model.css">
+{% endblock %}
+{% block js %}
+  <script src="/js/d3.v3.min.js"></script>
+  <script src="/js/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+  <script src="/js/topojson.v1.min.js"></script>
+  <script src="/js/nu_model.js"></script>
+{% endblock %}

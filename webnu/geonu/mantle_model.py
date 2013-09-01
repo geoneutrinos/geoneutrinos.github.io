@@ -34,6 +34,9 @@ class MantleModel:
             if last == l:
                 discontinuities.append(l)
                 index.append(i)
+            if i == len(prem)-1:
+                discontinuities.append(l)
+                index.append(i)
             last = l
 
         output = []
