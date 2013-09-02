@@ -2,7 +2,15 @@
 {% set active_page ="model" %}
 {% block content %}
 <div class="row">
-  <div class="col-sm-8 plot_container">
+  <div class="col-sm-8 ">
+    <div class="row">
+      <div class="col-12 plot_container">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 colorbar">
+      </div>
+    </div>
   </div>
   <div class="col-sm-4">
     <ul class="nav nav-tabs">
@@ -12,7 +20,17 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="basic">
-        <h3>The basic tab</h3>
+        <div class="panel panel-default">
+          <div class="panel-heading">Layers</div>
+          <div class="panel-body">
+            Plate Boundries
+            <button id="plate_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
+            <button id="plate_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
+            <div class="make-switch" data-text-label="TV">
+                <input type="checkbox" checked>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="tab-pane" id="mantle">
         <h3>Mantle Configs</h3>
