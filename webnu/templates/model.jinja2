@@ -11,6 +11,20 @@
       <div class="col-12 colorbar">
       </div>
     </div>
+    <div class="row">
+      <div class="col-12 scale_labels">
+        <span id="sl_0_pc"></span>
+        <span id="sl_25_pc"></span>
+        <span id="sl_50_pc"></span>
+        <span id="sl_75_pc"></span>
+        <span id="sl_100_pc"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 scale_title">
+        <span id="scale_title_placeholder">Loading...</span>
+      </div>
+    </div>
   </div>
   <div class="col-sm-4">
     <ul class="nav nav-tabs">
@@ -23,12 +37,16 @@
         <div class="panel panel-default">
           <div class="panel-heading">Layers</div>
           <div class="panel-body">
+            <p>
             Plate Boundries
             <button id="plate_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
             <button id="plate_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
-            <div class="make-switch" data-text-label="TV">
-                <input type="checkbox" checked>
-            </div>
+            </p>
+            <p>
+            Continental Boundries
+            <button id="continental_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
+            <button id="continental_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
+            </p>
           </div>
         </div>
       </div>
@@ -46,8 +64,8 @@
 <link rel="stylesheet" type="text/css" href="/css/nu_model.css">
 {% endblock %}
 {% block js %}
-  <script src="/js/d3.v3.min.js"></script>
-  <script src="/js/d3.geo.projection.v0.min.js" charset="utf-8"></script>
-  <script src="/js/topojson.v1.min.js"></script>
-  <script src="/js/nu_model.js"></script>
+<script src="/js/d3.v3.min.js"></script>
+<script src="/js/d3.geo.projection.v0.min.js" charset="utf-8"></script>
+<script src="/js/topojson.v1.min.js"></script>
+<script src="/js/nu_model.js"></script>
 {% endblock %}

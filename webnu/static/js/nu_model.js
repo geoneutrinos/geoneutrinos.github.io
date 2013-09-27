@@ -66,6 +66,13 @@ function updateThings(){
       .attr("d", path)
       .attr("class", "plates")
     });
+    d3.json("/js/bounds.json", function(collection) {
+      feature = svg.selectAll()
+      .data(collection.features)
+      .enter().append("svg:path")
+      .attr("d", path)
+      .attr("class", "bounds")
+    });
 
   // Compute the pixel colors; scaled by CSS.
   function drawImage(canvas) {
@@ -88,6 +95,15 @@ function updateThings(){
   function removeZero(axis) {
     axis.selectAll("g").filter(function(d) { return !d; }).remove();
   }
+
+  // Finally, set the colorbar labels
+  var label_start = min + (max - min) * 0.1;
+  $("#sl_0_pc").text((label_start).toFixed(1));
+  $("#sl_25_pc").text((label_start + step).toFixed(1));
+  $("#sl_50_pc").text((label_start + (step * 2)).toFixed(1));
+  $("#sl_75_pc").text((label_start + (step * 3)).toFixed(1));
+  $("#sl_100_pc").text((label_start + (step * 4)).toFixed(1));
+  $("#scale_title_placeholder").text("Crust Thickness (km)");
   });
 
 
@@ -103,9 +119,9 @@ function updateThings(){
     .range(["#00008f", "#00f", "#0ff", "#ff0", "#f00", "#8f0000"]);
 
   var svg = d3.select(".colorbar").append("svg")
-    .attr("height", 40)
+    .attr("height", 25)
     .attr("width", width)
-    .attr("viewBox", "0 0 960 40")
+    .attr("viewBox", "0 0 960 25")
     .attr("preserveAspectRatio", "xMinYMin");
 
   var line = d3.svg.line()
@@ -186,7 +202,7 @@ function updateThings(){
 $(document).ready(function() {
   var width = $(".plot_container").width();
   $(".plot_container").height(width/2);
-  $(".colorbar").height(40);
+  $(".colorbar").height(25);
   updateThings();
 
 
@@ -200,6 +216,13 @@ $(document).ready(function() {
   });
   $("#plate_boundries_off").click(function() {
     $(".plates").css("visibility", "hidden");
+  });
+  // continental Boundries
+  $("#continental_boundries_on").click(function() {
+    $(".bounds").css("visibility", "visible");
+  });
+  $("#continental_boundries_off").click(function() {
+    $(".bounds").css("visibility", "hidden");
   });
 });
 
