@@ -1,10 +1,28 @@
 .plates{
   fill:none;
   stroke:#fff;
+  visibility: hidden;
+}
+.bounds{
+  fill:none;
+  stroke:#fff;
+  visibility: hidden;
 }
 
 
 svg,
 canvas {
   position: absolute;
+}
+.scale_labels{
+}
+.scale_labels span{
+  float: left;
+  text-align:center;
+  width: 20%;
+}
+
+.scale_title{
+  text-align:center;
+  font-size: 1.2em;
 }
