@@ -97,27 +97,10 @@ function updateThings(){
     [960, 0]
       ];
 
-  function colormap(d){
-    var color1 = d3.interpolateLab("#00008f", "#00f");
-    var color2 = d3.interpolateLab("#00f", "#0ff");
-    var color3 = d3.interpolateLab("#0ff", "#ff0");
-    var color4 = d3.interpolateLab("#ff0", "#f00");
-    var color5 = d3.interpolateLab("#f00", "#8f0000");
-
-    if (d < 0.2) {
-      return color1(d * 5);
-    } else if (d >= 0.2 && d < 0.4){ 
-      return color2((d -0.2) * 5);
-    } else if (d >= 0.4 && d < 0.6){ 
-      return color3((d -0.4) * 5);
-    } else if (d >= 0.6 && d < 0.8){ 
-      return color4((d -0.6) * 5);
-    } else {
-      return color5((d -0.8) * 5);
-    }
-
-  }
-
+  var colormap = d3.scale.linear()
+    .domain([0, 0.2, 0.4, 0.6, 0.8, 1])
+    .interpolate(d3.interpolateLab)
+    .range(["#00008f", "#00f", "#0ff", "#ff0", "#f00", "#8f0000"]);
 
   var svg = d3.select(".colorbar").append("svg")
     .attr("height", 40)
