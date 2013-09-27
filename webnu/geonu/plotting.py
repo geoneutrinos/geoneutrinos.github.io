@@ -1,13 +1,13 @@
-import matplotlib
-matplotlib.use('Agg')
-from mpl_toolkits.basemap import Basemap
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use('Agg')
+#from mpl_toolkits.basemap import Basemap
+#import matplotlib.pyplot as plt
 from crust_model import CrustModel
 
-from multiprocessing import Process
+#from multiprocessing import Process
 import logging
 log = logging.getLogger(__name__)
-import string
+#import string
 
 # Localization to make unicode sorting easy
 import locale
