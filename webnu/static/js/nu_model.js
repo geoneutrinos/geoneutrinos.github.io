@@ -235,3 +235,27 @@ $(window).resize(function() {
   $("canvas").height(width/2);
 $("svg").width(width);
 });
+
+
+//Mantle Model
+function geometry_factor(r1, r2){
+  var earth_radius = 6.371; //megameters
+
+  integrate_part = function(r_top, r_bot){
+    var a = ((Math.log(r_top)/2.0 - 0.25) * Math.pow(r_top, 2));
+    var b = ((Math.log(r_bot)/2.0 - 0.25) * Math.pow(r_bot, 2));
+    var c = r_top * Math.log(r_top) - r_top;
+    var d = r_bot * Math.log(r_bot) - r_bot;
+    var phi = a - b - c + d;
+    return phi;
+  }
+  var r_top = 1.0 + r2/earth_radius;
+  var r_bot = 1.0 + r1/earth_radius;
+  var phi = integrate_part(r_top, r_bot);
+  r_top = 1.0 - r2/earth_radius;
+  r_bot = 1.0 - r1/earth_radius;
+  var phi2 = integrate_part(r_top, r_bot);
+  phi = phi - phi2;
+  phi = phi * earth_radius/2.;
+  return phi;
+}
