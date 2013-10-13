@@ -37,7 +37,7 @@
         <div class="panel panel-default">
           <div class="panel-heading">Display</div>
           <div class="panel-body">
-            <select class="form-control">
+            <select id="plot_display_selector" class="causes_update form-control">
               <option value="thickness" selected>Crust Thickness (km)</option>
               <option value="heat">Heat Flux (W/m^2)</option>
               <option value="neutrino">Neutrino Flux (TNU)</option>
@@ -70,19 +70,19 @@
           <div class="panel-body">
             <div class="checkbox">
               <label>
-                <input type="checkbox" checked> Soft Sediments
+                <input class="causes_update" name="crust_layers" value="s" type="checkbox" checked> Soft Sediments
               </label><br/>
               <label>
-                <input type="checkbox" checked> Hard Sediments
+                <input class="causes_update" name="crust_layers" value="h" type="checkbox" checked> Hard Sediments
               </label><br/>
               <label>
-                <input type="checkbox" checked> Upper Crust
+                <input class="causes_update" name="crust_layers" value="u" type="checkbox" checked> Upper Crust
               </label><br/>
               <label>
-                <input type="checkbox" checked> Middle Crust
+                <input class="causes_update" name="crust_layers" value="m" type="checkbox" checked> Middle Crust
               </label><br/>
               <label>
-                <input type="checkbox" checked> Lower Crust
+                <input class="causes_update" name="crust_layers" value="l" type="checkbox" checked> Lower Crust
               </label>
             </div>
           </div>
