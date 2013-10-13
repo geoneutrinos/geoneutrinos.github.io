@@ -14,6 +14,12 @@ svg,
 canvas {
   position: absolute;
 }
+svg{
+  z-index: 2;
+}
+canvas{
+  z-index: 1;
+}
 .scale_labels{
 }
 .scale_labels span{
