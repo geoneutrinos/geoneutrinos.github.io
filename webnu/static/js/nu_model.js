@@ -1,113 +1,30 @@
-function updateThings(){
-  var values = [];
-  var plotsrc = "";
-  $('input[name=layer]:checked').each(function(){
-    values.push($(this).val());
-  });
-  //plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
-  plotsrc = "/plot.json?layers=shuml&output=t";
+container_width = $(".plot_container").width()
+var width = container_width,
+    height = container_width/2;
 
-  container_width = $(".plot_container").width()
-    var width = container_width,
-        height = container_width/2;
-
-  var projection = d3.geo.equirectangular()
+var projection = d3.geo.equirectangular()
     .scale(153)
     .rotate([0,0])
     .translate([960 / 2, 480 /2])
     .precision(.1);
 
-  var path = d3.geo.path()
+var path = d3.geo.path()
     .projection(projection);
 
-  d3.json(plotsrc, function(heatmap) {
-    var dx = heatmap[0].length,
-    dy = heatmap.length;
-
-  var min = d3.min(d3.max(heatmap));
-  var max = d3.max(d3.min(heatmap));
-
-  var step = (max - min)/5;
-
-  // Fix the aspect ratio.
-  // var ka = dy / dx, kb = height / width;
-  // if (ka < kb) height = width * ka;
-  // else width = height / ka;
-
-  var x = d3.scale.linear()
-    .domain([0, dx])
-    .range([0, width]);
-
-  var y = d3.scale.linear()
-    .domain([0, dy])
-    .range([height, 0]);
-
-  var color = d3.scale.linear()
-    .domain([min, min + (step), min + (step * 2), min + (step *3), min + (step * 4), max])
-    .range(["#00008F", "#00f", "#0ff", "#ff0", "#f00", "#8f0000"]);
-
+function setup_display(){
   d3.select(".plot_container").append("canvas")
-    .attr("width", dx)
-    .attr("height", dy)
+    .attr("id", "plot_display")
+    .attr("width", 180)
+    .attr("height", 90)
     .style("width", width + "px")
-    .style("height", height + "px")
-    .call(drawImage);
+    .style("height", height + "px");
 
-  var svg = d3.select(".plot_container").append("svg")
-    .attr("viewBox", "0 0 960 480")
-    .attr("preserveAspectRatio", "xMinYMin")
+  d3.select(".colorbar").append("svg")
+    .attr("id", "plot_colorbar")
+    .attr("height", 25)
     .attr("width", width)
-
-
-    d3.json("/js/plates.json", function(collection) {
-      feature = svg.selectAll()
-      .data(collection.features)
-      .enter().append("svg:path")
-      .attr("d", path)
-      .attr("class", "plates")
-    });
-    d3.json("/js/bounds.json", function(collection) {
-      feature = svg.selectAll()
-      .data(collection.features)
-      .enter().append("svg:path")
-      .attr("d", path)
-      .attr("class", "bounds")
-    });
-
-  // Compute the pixel colors; scaled by CSS.
-  function drawImage(canvas) {
-    var context = canvas.node().getContext("2d"),
-        image = context.createImageData(dx, dy);
-
-    for (var y = 0, p = -1; y < dy; ++y) {
-      for (var x = 0; x < dx; ++x) {
-        var c = d3.rgb(color(heatmap[y][x]));
-        image.data[++p] = c.r;
-        image.data[++p] = c.g;
-        image.data[++p] = c.b;
-        image.data[++p] = 255;
-      }
-    }
-
-    context.putImageData(image, 0, 0);
-  }
-
-  function removeZero(axis) {
-    axis.selectAll("g").filter(function(d) { return !d; }).remove();
-  }
-
-  // Finally, set the colorbar labels
-  var label_start = min + (max - min) * 0.1;
-  $("#sl_0_pc").text((label_start).toFixed(1));
-  $("#sl_25_pc").text((label_start + step).toFixed(1));
-  $("#sl_50_pc").text((label_start + (step * 2)).toFixed(1));
-  $("#sl_75_pc").text((label_start + (step * 3)).toFixed(1));
-  $("#sl_100_pc").text((label_start + (step * 4)).toFixed(1));
-  $("#scale_title_placeholder").text("Crust Thickness (km)");
-  });
-
-
-// colorbar
+    .attr("viewBox", "0 0 960 25")
+    .attr("preserveAspectRatio", "xMinYMin");
   var points = [
     [0, 0],
     [960, 0]
@@ -118,16 +35,11 @@ function updateThings(){
     .interpolate(d3.interpolateLab)
     .range(["#00008f", "#00f", "#0ff", "#ff0", "#f00", "#8f0000"]);
 
-  var svg = d3.select(".colorbar").append("svg")
-    .attr("height", 25)
-    .attr("width", width)
-    .attr("viewBox", "0 0 960 25")
-    .attr("preserveAspectRatio", "xMinYMin");
 
   var line = d3.svg.line()
     .interpolate("basis");
 
-  svg.selectAll("path")
+  d3.select("#plot_colorbar").selectAll("path")
     .data(quad(sample(line(points), 8)))
     .enter().append("path")
     .style("fill", function(d) { return colormap(d.t); })
@@ -197,13 +109,118 @@ function updateThings(){
         u01d = Math.sqrt(u01x * u01x + u01y * u01y);
     return [u01x / u01d, u01y / u01d];
   }
+}
 
+function updateThings(){
+  var values = [];
+  var plotsrc = "";
+  $('input[name=layer]:checked').each(function(){
+    values.push($(this).val());
+  });
+  //plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
+  plotsrc = "/plot.json?layers=shuml&output=t";
+
+
+
+  d3.json(plotsrc, function(heatmap) {
+    var dx = heatmap[0].length,
+    dy = heatmap.length;
+
+  var min = d3.min(d3.max(heatmap));
+  var max = d3.max(d3.min(heatmap));
+
+  var step = (max - min)/5;
+
+  // Fix the aspect ratio.
+  // var ka = dy / dx, kb = height / width;
+  // if (ka < kb) height = width * ka;
+  // else width = height / ka;
+
+  var x = d3.scale.linear()
+    .domain([0, dx])
+    .range([0, width]);
+
+  var y = d3.scale.linear()
+    .domain([0, dy])
+    .range([height, 0]);
+
+  var color = d3.scale.linear()
+    .domain([min, min + (step), min + (step * 2), min + (step *3), min + (step * 4), max])
+    .range(["#00008F", "#00f", "#0ff", "#ff0", "#f00", "#8f0000"]);
+
+  d3.select("#plot_display")
+    //.attr("width", dx)
+    //.attr("height", dy)
+    //.style("width", width + "px")
+    //.style("height", height + "px")
+    .call(drawImage);
+
+
+  // Compute the pixel colors; scaled by CSS.
+  function drawImage(canvas) {
+    var context = canvas.node().getContext("2d"),
+        image = context.createImageData(dx, dy);
+
+    for (var y = 0, p = -1; y < dy; ++y) {
+      for (var x = 0; x < dx; ++x) {
+        var c = d3.rgb(color(heatmap[y][x]));
+        image.data[++p] = c.r;
+        image.data[++p] = c.g;
+        image.data[++p] = c.b;
+        image.data[++p] = 255;
+      }
+    }
+
+    context.putImageData(image, 0, 0);
+  }
+
+  function removeZero(axis) {
+    axis.selectAll("g").filter(function(d) { return !d; }).remove();
+  }
+
+  // Finally, set the colorbar labels
+  var label_start = min + (max - min) * 0.1;
+  $("#sl_0_pc").text((label_start).toFixed(1));
+  $("#sl_25_pc").text((label_start + step).toFixed(1));
+  $("#sl_50_pc").text((label_start + (step * 2)).toFixed(1));
+  $("#sl_75_pc").text((label_start + (step * 3)).toFixed(1));
+  $("#sl_100_pc").text((label_start + (step * 4)).toFixed(1));
+  $("#scale_title_placeholder").text("Crust Thickness (km)");
+  });
+
+
+// colorbar
+
+}
+function draw_geo_lines(){
+  var svg = d3.select(".plot_container").append("svg")
+    .attr("viewBox", "0 0 960 480")
+    .attr("preserveAspectRatio", "xMinYMin")
+    .attr("width", width)
+
+
+    d3.json("/js/plates.json", function(collection) {
+      feature = svg.selectAll()
+      .data(collection.features)
+      .enter().append("svg:path")
+      .attr("d", path)
+      .attr("class", "plates")
+    });
+    d3.json("/js/bounds.json", function(collection) {
+      feature = svg.selectAll()
+      .data(collection.features)
+      .enter().append("svg:path")
+      .attr("d", path)
+      .attr("class", "bounds")
+    });
 }
 $(document).ready(function() {
   var width = $(".plot_container").width();
   $(".plot_container").height(width/2);
   $(".colorbar").height(25);
+  setup_display();
   updateThings();
+  draw_geo_lines();
 
 
   //UI Components
