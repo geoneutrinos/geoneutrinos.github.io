@@ -112,13 +112,14 @@ function setup_display(){
 }
 
 function updateThings(){
+  $("#scale_title_placeholder").text("Loading...");
+  console.log("shit updated");
   var values = [];
-  var plotsrc = "";
-  $('input[name=layer]:checked').each(function(){
+  //var plotsrc = "";
+  $('input[name=crust_layers]:checked').each(function(){
     values.push($(this).val());
   });
-  //plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
-  plotsrc = "/plot.json?layers=shuml&output=t";
+  plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
 
 
 
@@ -126,8 +127,15 @@ function updateThings(){
     var dx = heatmap[0].length,
     dy = heatmap.length;
 
-  var min = d3.min(d3.max(heatmap));
-  var max = d3.max(d3.min(heatmap));
+  var min = d3.min(heatmap, function(subunit){
+    return d3.min(subunit);
+  });
+  var max = d3.max(heatmap, function(subunit){
+    return d3.max(subunit);
+  });
+  
+  console.log(min);
+  console.log(max);
 
   var step = (max - min)/5;
 
@@ -185,7 +193,19 @@ function updateThings(){
   $("#sl_50_pc").text((label_start + (step * 2)).toFixed(1));
   $("#sl_75_pc").text((label_start + (step * 3)).toFixed(1));
   $("#sl_100_pc").text((label_start + (step * 4)).toFixed(1));
-  $("#scale_title_placeholder").text("Crust Thickness (km)");
+
+  var display_value = $("#plot_display_selector").val();
+  if (display_value == "thickness"){
+    $("#scale_title_placeholder").text("Crust Thickness (km)");
+  } else if (display_value == "heat"){
+    $("#scale_title_placeholder").text("Heat Flux (W/m^2)");
+  } else if (display_value == "neutrino"){
+    $("#scale_title_placeholder").text("Geoneutrino Flux (TNU)");
+  } else if (display_value == "ratio"){
+    $("#scale_title_placeholder").text("Mantle/Total Neutrino Flux Ratio");
+  } else {
+    $("#scale_title_placeholder").text("Something has gone wrong...");
+  }
   });
 
 
@@ -215,6 +235,9 @@ function draw_geo_lines(){
     });
 }
 $(document).ready(function() {
+  $(".causes_update").change(function(){
+    updateThings();
+  });
   var width = $(".plot_container").width();
   $(".plot_container").height(width/2);
   $(".colorbar").height(25);
