@@ -217,6 +217,7 @@ function draw_geo_lines(){
     .attr("viewBox", "0 0 960 480")
     .attr("preserveAspectRatio", "xMinYMin")
     .attr("width", width)
+    .attr("height", height)
 
 
     d3.json("/js/plates.json", function(collection) {
