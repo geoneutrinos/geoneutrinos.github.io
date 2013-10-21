@@ -34,59 +34,13 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="basic">
-        <div class="panel panel-default">
-          <div class="panel-heading">Display</div>
-          <div class="panel-body">
-            <select id="plot_display_selector" class="causes_update form-control">
-              <option value="thickness" selected>Crust Thickness (km)</option>
-              <option value="heat">Heat Flux (W/m^2)</option>
-              <option value="neutrino">Neutrino Flux (TNU)</option>
-              <option value="ratio">Mantle Neutrino Ratio (%)</option>
-            </select>
-          </div>
-        </div>
-        <div class="panel panel-default">
-          <div class="panel-heading">Data Layers</div>
-          <div class="panel-body">
-            <p>
-            Plate Boundries
-            <button id="plate_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
-            <button id="plate_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
-            </p>
-            <p>
-            Continental Boundries
-            <button id="continental_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
-            <button id="continental_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
-            </p>
-          </div>
-        </div>
+        {% include 'model/_basic_config.html' %}
       </div>
       <div class="tab-pane" id="mantle">
-        <h3>Mantle Configs</h3>
+        {% include 'model/_mantle_configs.html' %}
       </div>
       <div class="tab-pane" id="crust">
-        <div class="panel panel-default">
-          <div class="panel-heading">Crust Layers</div>
-          <div class="panel-body">
-            <div class="checkbox">
-              <label>
-                <input class="causes_update" name="crust_layers" value="s" type="checkbox" checked> Soft Sediments
-              </label><br/>
-              <label>
-                <input class="causes_update" name="crust_layers" value="h" type="checkbox" checked> Hard Sediments
-              </label><br/>
-              <label>
-                <input class="causes_update" name="crust_layers" value="u" type="checkbox" checked> Upper Crust
-              </label><br/>
-              <label>
-                <input class="causes_update" name="crust_layers" value="m" type="checkbox" checked> Middle Crust
-              </label><br/>
-              <label>
-                <input class="causes_update" name="crust_layers" value="l" type="checkbox" checked> Lower Crust
-              </label>
-            </div>
-          </div>
-        </div>
+          {% include 'model/_crust_configs.html' %}
       </div>
     </div>
   </div>
