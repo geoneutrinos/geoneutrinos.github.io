@@ -1,3 +1,4 @@
+var crust_data = new Array();
 container_width = $(".plot_container").width()
 var width = container_width,
     height = container_width/2;
@@ -110,10 +111,7 @@ function setup_display(){
     return [u01x / u01d, u01y / u01d];
   }
 }
-
-function updateThings(){
-  $("#scale_title_placeholder").text("Loading...");
-  console.log("shit updated");
+function updateThingsWithServer(){
   var values = [];
   //var plotsrc = "";
   $('input[name=crust_layers]:checked').each(function(){
@@ -121,9 +119,16 @@ function updateThings(){
   });
   plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
 
+  d3.json(plotsrc, function(data) {
+    crust_data.push(data);
+    updateThings();
+  });
+}
 
-
-  d3.json(plotsrc, function(heatmap) {
+function updateThings(){
+  $("#scale_title_placeholder").text("Loading...");
+  console.log("shit updated");
+  var heatmap = crust_data[0];
     var dx = heatmap[0].length,
     dy = heatmap.length;
 
@@ -206,7 +211,6 @@ function updateThings(){
   } else {
     $("#scale_title_placeholder").text("Something has gone wrong...");
   }
-  });
 
 
 // colorbar
@@ -239,11 +243,14 @@ $(document).ready(function() {
   $(".causes_update").change(function(){
     updateThings();
   });
+  $(".causes_server_update").change(function(){
+    updateThingsWithServer();
+  });
   var width = $(".plot_container").width();
   $(".plot_container").height(width/2);
   $(".colorbar").height(25);
   setup_display();
-  updateThings();
+  updateThingsWithServer();
   draw_geo_lines();
 
 
