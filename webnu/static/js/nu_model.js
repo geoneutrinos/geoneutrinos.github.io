@@ -1,4 +1,5 @@
 var crust_data = new Array();
+var prem  = new Array();
 container_width = $(".plot_container").width()
 var width = container_width,
     height = container_width/2;
@@ -127,7 +128,6 @@ function updateThingsWithServer(){
 
 function updateThings(){
   $("#scale_title_placeholder").text("Loading...");
-  console.log("shit updated");
   var heatmap = crust_data[0];
     var dx = heatmap[0].length,
     dy = heatmap.length;
@@ -139,9 +139,6 @@ function updateThings(){
     return d3.max(subunit);
   });
   
-  console.log(min);
-  console.log(max);
-
   var step = (max - min)/5;
 
   // Fix the aspect ratio.
@@ -239,6 +236,8 @@ function draw_geo_lines(){
       .attr("class", "bounds")
     });
 }
+
+
 $(document).ready(function() {
   $(".causes_update").change(function(){
     updateThings();
@@ -252,6 +251,7 @@ $(document).ready(function() {
   setup_display();
   updateThingsWithServer();
   draw_geo_lines();
+  load_prem();
 
 
   //UI Components
@@ -286,8 +286,8 @@ $("svg").width(width);
 
 
 //Mantle Model
-function geometry_factor(r1, r2){
-  var earth_radius = 6.371; //megameters
+function geometry_calc(r1, r2){
+  var earth_radius = 6.372; //megameters
 
   integrate_part = function(r_top, r_bot){
     var a = ((Math.log(r_top)/2.0 - 0.25) * Math.pow(r_top, 2));
@@ -306,4 +306,36 @@ function geometry_factor(r1, r2){
   phi = phi - phi2;
   phi = phi * earth_radius/2.;
   return phi;
+}
+
+// LOAD the mantle model and calcualte needed vars
+function load_prem(){
+  var last_g = 0;
+  function prem_volume(start, stop){
+    //returns cm^3
+    var a = Math.pow((stop * 10e4), 3);
+    var b = Math.pow((start * 10e4), 3);
+    return (4/3) * Math.PI * (a - b);
+  }
+
+  function prem_mass(start, stop, g){
+    function total_mass(radius, g_p){
+      return (g_p * Math.pow(radius * 1000, 2))/(6.67e-11) * 1000;
+    }
+    a = total_mass(stop, g);
+    b = total_mass(start, last_g);
+    last_g = g;
+    return a - b;
+  }
+
+  d3.json('/js/prem.json', function(data){
+    for (d in data){
+    volume = prem_volume(data[d][0], data[d][1]);
+    mass = (prem_mass(data[d][0], data[d][1], data[d][2]));
+    density = mass/volume;
+    geometry = geometry_calc(data[d][0]/1000, data[d][1]/1000) * 100000000;
+    geo_factor = geometry * density;
+    prem.push(Array([data[d][0], data[d][1], mass, geo_factor]));
+    }
+  });
 }
