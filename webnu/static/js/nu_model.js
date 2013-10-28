@@ -1,3 +1,7 @@
+var k40_heat = 3.33 * 1e-12; // W/g
+var u238_heat = 98.5 * 1e-9; // W/g
+var th232_heat = 26.3 * 1e-9; // W/g
+
 var crust_data = new Array();
 var prem  = new Array();
 container_width = $(".plot_container").width()
@@ -113,6 +117,7 @@ function setup_display(){
   }
 }
 function updateThingsWithServer(){
+  $("#scale_title_placeholder").text("Loading...");
   var values = [];
   //var plotsrc = "";
   $('input[name=crust_layers]:checked').each(function(){
@@ -121,13 +126,21 @@ function updateThingsWithServer(){
   plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
 
   d3.json(plotsrc, function(data) {
-    crust_data.push(data);
+    crust_data[0] = (data);
     updateThings();
   });
 }
 
 function updateThings(){
-  $("#scale_title_placeholder").text("Loading...");
+  if ($('#plot_display_selector').val() == 'thickness') {
+    console.log("thickness");
+  } else if ($('#plot_display_selector').val() == 'heat') {
+    mantle_heat();
+  } else if ($('#plot_display_selector').val() == 'neutrino') {
+    console.log("neutrino");
+  } else if ($('#plot_display_selector').val() == 'ratio') {
+    console.log("ratio");
+  }
   var heatmap = crust_data[0];
     var dx = heatmap[0].length,
     dy = heatmap.length;
@@ -239,18 +252,7 @@ function draw_geo_lines(){
 
 
 $(document).ready(function() {
-  $(".causes_update").change(function(){
-    updateThings();
-  });
-  $(".causes_server_update").change(function(){
-    updateThingsWithServer();
-  });
-  var width = $(".plot_container").width();
-  $(".plot_container").height(width/2);
-  $(".colorbar").height(25);
-  setup_display();
-  updateThingsWithServer();
-  draw_geo_lines();
+  // just doing this first cause whatever
   load_prem();
 
 
@@ -272,6 +274,38 @@ $(document).ready(function() {
   $("#continental_boundries_off").click(function() {
     $(".bounds").css("visibility", "hidden");
   });
+
+  //Mantle Controlls
+  //Uuniform Mantle
+  $("#mantle_uniform_k40_slider").change(function(){
+    $("#mantle_uniform_k40_value").text(this.value + "µg/g");
+  });
+  $("#mantle_uniform_th232_slider").change(function(){
+    $("#mantle_uniform_th232_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
+  });
+  $("#mantle_uniform_u238_slider").change(function(){
+    $("#mantle_uniform_u238_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
+  });
+
+
+  //Set initial Values
+  $("#mantle_uniform_k40_slider").val(95).change();
+  $("#mantle_uniform_th232_slider").val(11).change();
+  $("#mantle_uniform_u238_slider").val(5.5).change();
+
+  //Draw Everything and Run the App :)
+  $(".causes_update").change(function(){
+    updateThings();
+  });
+  $(".causes_server_update").change(function(){
+    updateThingsWithServer();
+  });
+  var width = $(".plot_container").width();
+  $(".plot_container").height(width/2);
+  $(".colorbar").height(25);
+  setup_display();
+  updateThingsWithServer();
+  draw_geo_lines();
 });
 
 //Keep the canvas the same size as the svc (which automatically scales)
@@ -308,7 +342,7 @@ function geometry_calc(r1, r2){
   return phi;
 }
 
-// LOAD the mantle model and calcualte needed vars
+// LOAD the PREM and calcualte needed vars
 function load_prem(){
   var last_g = 0;
   function prem_volume(start, stop){
@@ -338,4 +372,23 @@ function load_prem(){
     prem.push(Array([data[d][0], data[d][1], mass, geo_factor]));
     }
   });
+}
+
+//calculates the heat from the mantle with given inputs
+function mantle_heat(){
+  heat = 0; // W/cm^2
+  k40 = parseFloat($("#mantle_uniform_k40_slider").val())/1000000;
+  u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
+  th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
+  for (index in prem){
+    if (parseFloat(prem[index][0][0]) > 3479 && (parseFloat(prem[index][0][1]) < 6346.7)){
+      heat = heat + (k40 * prem[index][0][2] * k40_heat);
+      heat = heat + (u238 * prem[index][0][2] * u238_heat);
+      heat = heat + (th232 * prem[index][0][2] * th232_heat);
+    }
+    //if (parseFloat(prem[0][index][0]) > 3479){
+    //  console.log(prem[0][index]);
+    //}
+  }
+  console.log(heat);
 }

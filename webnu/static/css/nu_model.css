@@ -32,3 +32,6 @@ canvas{
   text-align:center;
   font-size: 1.2em;
 }
+.range_responsive{
+  width: 100%;
+}
