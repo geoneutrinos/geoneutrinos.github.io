@@ -224,7 +224,8 @@ class CrustModel:
         for i, point in enumerate(self.crust_model):
             for layer in layers:
                 self.crust_model[i, self.C.HEAT] += point[layer]
-            self.crust_model[i, self.C.HEAT] = self.crust_model[i, self.C.HEAT] / self.crust_model[i, self.C.AREA]
+            self.crust_model[i, self.C.HEAT] = (self.crust_model[i, self.C.HEAT]
+            / self.crust_model[i, self.C.AREA]) / 1000 #convert to mW/m^2
 
         log.debug("Heat: Done")
 
