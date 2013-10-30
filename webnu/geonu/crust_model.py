@@ -142,8 +142,8 @@ class CrustModel:
         log.debug('starting mass loop')
         # We need to convert the model units into SI so that the results will
         # be in kg, for this a factor of 1000 is added from 1g/cc in kg/m^3 and
-        # a factor of 10^9 is added from km^3 to m^3
-        coef = 1000 * 1000000000
+        # a factor of 10^6 is added from km^2 to m^2
+        coef = 1e3 * 1e6 * 1e3
         for i, point in enumerate(self.crust_model):
             self.crust_model[i,self.C.AREA] = self.area(point[1], point[1] - 2, 6371)
             self.crust_model[i,18] = point[5] * point[12] * self.crust_model[i,self.C.AREA] * coef 
@@ -151,6 +151,7 @@ class CrustModel:
             self.crust_model[i,20] = point[7] * point[14] * self.crust_model[i,self.C.AREA] * coef 
             self.crust_model[i,21] = point[8] * point[15] * self.crust_model[i,self.C.AREA] * coef 
             self.crust_model[i,22] = point[9] * point[16] * self.crust_model[i,self.C.AREA] * coef 
+
 
         log.debug('mass loop done')
         if self.dataout == self.C.MASS:
@@ -174,9 +175,9 @@ class CrustModel:
                     self.crust_model[i, self.C.MASS] += point[layer]
 
     def heat(self):
-        u_heat = 98.5 * 1e-6 # uW/KG from sdye 1111.6099
-        th_heat = 26.3 * 1e-6 # uW/KG from sdye 1111.6099
-        k_heat = .00333 * 1e-2 # uW/KG from sdye 1111.6099
+        u_heat = 98.5 * 1e-6 # W/KG from sdye 1111.6099
+        th_heat = 26.3 * 1e-6 # W/KG from sdye 1111.6099
+        k_heat = 3.33 * 1e-9 # W/KG from sdye 1111.6099
 
         log.debug("Heat: Calling mass()")
         self.mass()
@@ -223,6 +224,7 @@ class CrustModel:
         for i, point in enumerate(self.crust_model):
             for layer in layers:
                 self.crust_model[i, self.C.HEAT] += point[layer]
+                su_heat += point[layer]
             self.crust_model[i, self.C.HEAT] = self.crust_model[i, self.C.HEAT] / self.crust_model[i, self.C.AREA]
 
         log.debug("Heat: Done")
@@ -417,38 +419,47 @@ class CrustModel:
         log.debug("Conc: loop done")
 
     def concentrations(self, args):
+        """Input is expeced to be:
+        U: 10^-6 g/g
+        Th: 10^-6 g/g
+        K: 10^-2 g/g
+
+        will be converted to kg/kg here
+        """
 
         conc = string.split(args, sep=',')
-        self.conc['C_SFTSD_U238'] = float(conc[0])
-        self.conc['C_HDSD_U238'] = float(conc[1])
-        self.conc['C_UPCST_U238'] = float(conc[2])
-        self.conc['C_MDCST_U238'] = float(conc[3])
-        self.conc['C_LOCST_U238'] = float(conc[4])
-        self.conc['O_SFTSD_U238'] = float(conc[5])
-        self.conc['O_HDSD_U238'] = float(conc[6])
-        self.conc['O_UPCST_U238'] = float(conc[7])
-        self.conc['O_MDCST_U238'] = float(conc[8])
-        self.conc['O_LOCST_U238'] = float(conc[9])
-        self.conc['C_SFTSD_TH232'] = float(conc[10])
-        self.conc['C_HDSD_TH232'] = float(conc[11])
-        self.conc['C_UPCST_TH232'] = float(conc[12])
-        self.conc['C_MDCST_TH232'] = float(conc[13])
-        self.conc['C_LOCST_TH232'] = float(conc[14])
-        self.conc['O_SFTSD_TH232'] = float(conc[15])
-        self.conc['O_HDSD_TH232'] = float(conc[16])
-        self.conc['O_UPCST_TH232'] = float(conc[17])
-        self.conc['O_MDCST_TH232'] = float(conc[18])
-        self.conc['O_LOCST_TH232'] = float(conc[19])
-        self.conc['C_SFTSD_K40'] = float(conc[20])
-        self.conc['C_HDSD_K40'] = float(conc[21])
-        self.conc['C_UPCST_K40'] = float(conc[22])
-        self.conc['C_MDCST_K40'] = float(conc[23])
-        self.conc['C_LOCST_K40'] = float(conc[24])
-        self.conc['O_SFTSD_K40'] = float(conc[25])
-        self.conc['O_HDSD_K40'] = float(conc[26])
-        self.conc['O_UPCST_K40'] = float(conc[27])
-        self.conc['O_MDCST_K40'] = float(conc[28])
-        self.conc['O_LOCST_K40'] = float(conc[29])
+        self.conc['C_SFTSD_U238'] = float(conc[0]) * 1e-6
+        self.conc['C_HDSD_U238'] = float(conc[1]) * 1e-6
+        self.conc['C_UPCST_U238'] = float(conc[2]) * 1e-6
+        self.conc['C_MDCST_U238'] = float(conc[3]) * 1e-6
+        self.conc['C_LOCST_U238'] = float(conc[4]) * 1e-6
+        self.conc['O_SFTSD_U238'] = float(conc[5]) * 1e-6
+        self.conc['O_HDSD_U238'] = float(conc[6]) * 1e-6
+        self.conc['O_UPCST_U238'] = float(conc[7]) * 1e-6
+        self.conc['O_MDCST_U238'] = float(conc[8]) * 1e-6
+        self.conc['O_LOCST_U238'] = float(conc[9]) * 1e-6
+
+        self.conc['C_SFTSD_TH232'] = float(conc[10]) * 1e-6
+        self.conc['C_HDSD_TH232'] = float(conc[11]) * 1e-6
+        self.conc['C_UPCST_TH232'] = float(conc[12]) * 1e-6
+        self.conc['C_MDCST_TH232'] = float(conc[13]) * 1e-6
+        self.conc['C_LOCST_TH232'] = float(conc[14]) * 1e-6
+        self.conc['O_SFTSD_TH232'] = float(conc[15]) * 1e-6
+        self.conc['O_HDSD_TH232'] = float(conc[16]) * 1e-6
+        self.conc['O_UPCST_TH232'] = float(conc[17]) * 1e-6
+        self.conc['O_MDCST_TH232'] = float(conc[18]) * 1e-6
+        self.conc['O_LOCST_TH232'] = float(conc[19]) * 1e-6
+        
+        self.conc['C_SFTSD_K40'] = float(conc[20]) * 1e-2
+        self.conc['C_HDSD_K40'] = float(conc[21]) * 1e-2
+        self.conc['C_UPCST_K40'] = float(conc[22]) * 1e-2
+        self.conc['C_MDCST_K40'] = float(conc[23]) * 1e-2
+        self.conc['C_LOCST_K40'] = float(conc[24]) * 1e-2
+        self.conc['O_SFTSD_K40'] = float(conc[25]) * 1e-2
+        self.conc['O_HDSD_K40'] = float(conc[26]) * 1e-2
+        self.conc['O_UPCST_K40'] = float(conc[27]) * 1e-2
+        self.conc['O_MDCST_K40'] = float(conc[28]) * 1e-2
+        self.conc['O_LOCST_K40'] = float(conc[29]) * 1e-2
         log.debug("Concentrations retirved from GET request")
 
     def config(self, **kwargs):
