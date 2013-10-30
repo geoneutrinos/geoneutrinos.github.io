@@ -2,6 +2,8 @@ var k40_heat = 3.33 * 1e-12; // W/g
 var u238_heat = 98.5 * 1e-9; // W/g
 var th232_heat = 26.3 * 1e-9; // W/g
 
+var earth_surface_area = 5.1e14 // m^2
+
 var crust_data = new Array();
 var prem  = new Array();
 container_width = $(".plot_container").width()
@@ -117,13 +119,23 @@ function setup_display(){
   }
 }
 function updateThingsWithServer(){
+  var output;
+  if ($('#plot_display_selector').val() == 'thickness') {
+    output = "&output=t";
+  } else if ($('#plot_display_selector').val() == 'heat') {
+    output = "&output=q";
+  } else if ($('#plot_display_selector').val() == 'neutrino') {
+    output = "&output=n";
+  } else if ($('#plot_display_selector').val() == 'ratio') {
+    output = "&output=n";
+  }
   $("#scale_title_placeholder").text("Loading...");
   var values = [];
   //var plotsrc = "";
   $('input[name=crust_layers]:checked').each(function(){
     values.push($(this).val());
   });
-  plotsrc = "/plot.json?layers=" + values.join("") + "&output=t";
+  plotsrc = "/plot.json?layers=" + values.join("") + output + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
 
   d3.json(plotsrc, function(data) {
     crust_data[0] = (data);
@@ -132,10 +144,17 @@ function updateThingsWithServer(){
 }
 
 function updateThings(){
+  var from_mantle = 0;
+  var min = 0;
+  var max = 1;
   if ($('#plot_display_selector').val() == 'thickness') {
     console.log("thickness");
+    min = 0;
+    max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
-    mantle_heat();
+    from_mantle = mantle_heat();
+    min = 0;
+    max = 140;
   } else if ($('#plot_display_selector').val() == 'neutrino') {
     console.log("neutrino");
   } else if ($('#plot_display_selector').val() == 'ratio') {
@@ -145,12 +164,12 @@ function updateThings(){
     var dx = heatmap[0].length,
     dy = heatmap.length;
 
-  var min = d3.min(heatmap, function(subunit){
-    return d3.min(subunit);
-  });
-  var max = d3.max(heatmap, function(subunit){
-    return d3.max(subunit);
-  });
+  //var min = d3.min(heatmap, function(subunit){
+  //  return d3.min(subunit);
+  //}) + from_mantle;
+  //var max = d3.max(heatmap, function(subunit){
+  //  return d3.max(subunit);
+  //}) + from_mantle;
   
   var step = (max - min)/5;
 
@@ -186,7 +205,7 @@ function updateThings(){
 
     for (var y = 0, p = -1; y < dy; ++y) {
       for (var x = 0; x < dx; ++x) {
-        var c = d3.rgb(color(heatmap[y][x]));
+        var c = d3.rgb(color(heatmap[y][x] + from_mantle));
         image.data[++p] = c.r;
         image.data[++p] = c.g;
         image.data[++p] = c.b;
@@ -213,9 +232,9 @@ function updateThings(){
   if (display_value == "thickness"){
     $("#scale_title_placeholder").text("Crust Thickness (km)");
   } else if (display_value == "heat"){
-    $("#scale_title_placeholder").text("Heat Flux (W/m^2)");
+    $("#scale_title_placeholder").text("Heat Flux (mW/m^2)");
   } else if (display_value == "neutrino"){
-    $("#scale_title_placeholder").text("Geoneutrino Flux (TNU)");
+    $("#scale_title_placeholder").text("Geoneutrino Flux (Quanta/cm^2)");
   } else if (display_value == "ratio"){
     $("#scale_title_placeholder").text("Mantle/Total Neutrino Flux Ratio");
   } else {
@@ -390,5 +409,6 @@ function mantle_heat(){
     //  console.log(prem[0][index]);
     //}
   }
-  console.log(heat);
+  heat = heat / earth_surface_area * 1000 // mW/m^2
+  return heat
 }
