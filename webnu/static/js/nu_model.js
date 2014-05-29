@@ -1,6 +1,9 @@
 var k40_heat = 3.33 * 1e-12; // W/g
 var u238_heat = 98.5 * 1e-9; // W/g
 var th232_heat = 26.3 * 1e-9; // W/g
+var k40_lum = 76.4; // l / kg µs
+var u238_lum = 12.6; // l / kg µs
+var th232_lum = .0271; // l / kg µs
 
 var earth_surface_area = 5.1e14 // m^2
 
@@ -147,6 +150,10 @@ function updateThings(){
   var from_mantle = 0;
   var min = 0;
   var max = 1;
+  var heatmap = crust_data[0];
+    var dx = heatmap[0].length,
+    dy = heatmap.length;
+
   if ($('#plot_display_selector').val() == 'thickness') {
     console.log("thickness");
     min = 0;
@@ -156,13 +163,17 @@ function updateThings(){
     min = 0;
     max = 140;
   } else if ($('#plot_display_selector').val() == 'neutrino') {
+    from_mantle = mantle_nu_lum();
     console.log("neutrino");
+  var min = d3.min(heatmap, function(subunit){
+    return d3.min(subunit);
+  });
+  var max = d3.max(heatmap, function(subunit){
+    return d3.max(subunit);
+  });
   } else if ($('#plot_display_selector').val() == 'ratio') {
     console.log("ratio");
   }
-  var heatmap = crust_data[0];
-    var dx = heatmap[0].length,
-    dy = heatmap.length;
 
   //var min = d3.min(heatmap, function(subunit){
   //  return d3.min(subunit);
@@ -296,13 +307,13 @@ $(document).ready(function() {
 
   //Mantle Controlls
   //Uuniform Mantle
-  $("#mantle_uniform_k40_slider").change(function(){
+  $("#mantle_uniform_k40_slider").on("input change", function(){
     $("#mantle_uniform_k40_value").text(this.value + "µg/g");
   });
-  $("#mantle_uniform_th232_slider").change(function(){
+  $("#mantle_uniform_th232_slider").on("input change", function(){
     $("#mantle_uniform_th232_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
   });
-  $("#mantle_uniform_u238_slider").change(function(){
+  $("#mantle_uniform_u238_slider").on("input change", function(){
     $("#mantle_uniform_u238_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
   });
 
@@ -313,10 +324,10 @@ $(document).ready(function() {
   $("#mantle_uniform_u238_slider").val(5.5).change();
 
   //Draw Everything and Run the App :)
-  $(".causes_update").change(function(){
+  $(".causes_update").on("input change", function(){
     updateThings();
   });
-  $(".causes_server_update").change(function(){
+  $(".causes_server_update").on("input change", function(){
     updateThingsWithServer();
   });
   var width = $(".plot_container").width();
@@ -411,4 +422,23 @@ function mantle_heat(){
   }
   heat = heat / earth_surface_area * 1000 // mW/m^2
   return heat
+}
+function mantle_nu_lum(){
+  nu = 0; // W/cm^2
+  k40 = parseFloat($("#mantle_uniform_k40_slider").val())/1000000;
+  u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
+  th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
+  for (index in prem){
+    if (parseFloat(prem[index][0][0]) > 3479 && (parseFloat(prem[index][0][1]) < 6346.7)){
+      nu = nu + (k40 * prem[index][0][2]  * prem[index][0][3] * k40_lum);
+      nu = nu + (u238 * prem[index][0][2] * prem[index][0][3] * u238_lum);
+      nu = nu + (th232 * prem[index][0][2]* prem[index][0][3] * th232_lum);
+    }
+    //if (parseFloat(prem[0][index][0]) > 3479){
+    //  console.log(prem[0][index]);
+    //}
+  }
+  //nu = nu / earth_surface_area * 1000 // mW/m^2
+  console.log(nu * 0.0001)
+  return nu
 }
