@@ -280,6 +280,13 @@ function draw_geo_lines(){
     });
 }
 
+//build controls for each layer in the PREM
+function mantle_concentric_control_factory(layers){
+  console.log(layers);
+  for (layer in layers){
+    console.log(layer);
+  }
+}
 
 $(document).ready(function() {
   // just doing this first cause whatever
@@ -392,7 +399,11 @@ function load_prem(){
     return a - b;
   }
 
-  d3.json('/js/prem.json', function(data){
+  $.ajax({
+    url:'/js/prem.json',
+    dataType: "json",
+    async: false,
+    success: function(data){
     for (d in data){
     volume = prem_volume(data[d][0], data[d][1]);
     mass = (prem_mass(data[d][0], data[d][1], data[d][2]));
@@ -401,6 +412,7 @@ function load_prem(){
     geo_factor = geometry * density;
     prem.push(Array([data[d][0], data[d][1], mass, geo_factor]));
     }
+  }
   });
 }
 
