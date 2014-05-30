@@ -5,6 +5,7 @@ import logging
 import os
 import math
 import string
+from scipy.spatial.distance import cdist
 log = logging.getLogger(__name__)
 
 class Column:
@@ -64,6 +65,11 @@ class Column:
             'X':52,
             'Y':53,
             'Z':54,
+            'SFTSD_D':55,
+            'HDSD_D': 56,
+            'UPCST_D': 57,
+            'MDCST_D': 58,
+            'LOCST_D': 59,
             }
     def size(self,):
         return len(self.columns)
@@ -115,10 +121,8 @@ class CrustModel:
             else:
                 raise ValueError('invalid crust code')
 
-        log.debug("Thickness: Layers are %s",layers)
-        for i, point in enumerate(self.crust_model): 
-            for layer in layers:
-                self.crust_model[i, self.C.THICKNESS] += point[layer]
+        #log.debug("Thickness: Layers are %s",layers)
+        self.crust_model[:, self.C.THICKNESS] = np.sum(self.crust_model[:,layers], axis=1)
         log.debug('Thickness: Done')
 
     def density(self):
@@ -138,23 +142,25 @@ class CrustModel:
         
         return density
 
-    def mass(self):
+    def mass(self, do=None):
         log.debug('starting mass loop')
         # We need to convert the model units into SI so that the results will
         # be in kg, for this a factor of 1000 is added from 1g/cc in kg/m^3 and
         # a factor of 10^6 is added from km^2 to m^2
         coef = 1e3 * 1e6 * 1e3
-        for i, point in enumerate(self.crust_model):
-            self.crust_model[i,self.C.AREA] = self.area(point[1], point[1] - 2, 6371)
-            self.crust_model[i,18] = point[5] * point[12] * self.crust_model[i,self.C.AREA] * coef 
-            self.crust_model[i,19] = point[6] * point[13] * self.crust_model[i,self.C.AREA] * coef 
-            self.crust_model[i,20] = point[7] * point[14] * self.crust_model[i,self.C.AREA] * coef 
-            self.crust_model[i,21] = point[8] * point[15] * self.crust_model[i,self.C.AREA] * coef 
-            self.crust_model[i,22] = point[9] * point[16] * self.crust_model[i,self.C.AREA] * coef 
+        #self.crust_model[:,18] = self.crust_model[:,5] * self.crust_model[:,12] * self.crust_model[:,self.C.AREA] * coef 
+        #self.crust_model[:,19] = self.crust_model[:,6] * self.crust_model[:,13] * self.crust_model[:,self.C.AREA] * coef 
+        #self.crust_model[:,20] = self.crust_model[:,7] * self.crust_model[:,14] * self.crust_model[:,self.C.AREA] * coef 
+        #self.crust_model[:,21] = self.crust_model[:,8] * self.crust_model[:,15] * self.crust_model[:,self.C.AREA] * coef 
+        #self.crust_model[:,22] = self.crust_model[:,9] * self.crust_model[:,16] * self.crust_model[:,self.C.AREA] * coef 
+
+        self.crust_model[:,(18,19,20,21,22)] = (self.crust_model[:,(5,6,7,8,9)] *
+        self.crust_model[:,(12,13,14,15,16)] *
+        np.rot90(np.tile(self.crust_model[:,self.C.AREA],(5,1)), 3) * coef )
 
 
         log.debug('mass loop done')
-        if self.dataout == self.C.MASS:
+        if do == "mass":
             layers = []
             for code in self.layers:
                 if 's' == code :
@@ -179,31 +185,14 @@ class CrustModel:
         th_heat = 26.3 * 1e-6 # W/KG from sdye 1111.6099
         k_heat = 3.33 * 1e-9 # W/KG from sdye 1111.6099
 
-        log.debug("Heat: Calling mass()")
-        self.mass()
         log.debug("Heat: Calling compute_layer_conc()")
         self.compute_layer_conc()
         
         log.debug("Heat: Starting Heat Loop")
-        for i, point in enumerate(self.crust_model):
-            # Uranium!
-            self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_U238] * u_heat)
-            self.crust_model[i, self.C.HDSD_H] +=  (point[self.C.HDSD_U238] *  u_heat)
-            self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_U238] * u_heat)
-            self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_U238] * u_heat)
-            self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_U238] * u_heat)
-            # Thorium!
-            self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_TH232] * th_heat)
-            self.crust_model[i, self.C.HDSD_H] +=  (point[self.C.HDSD_TH232] *  th_heat)
-            self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_TH232] * th_heat)
-            self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_TH232] * th_heat)
-            self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_TH232] * th_heat)
-            # Patassium!
-            self.crust_model[i, self.C.SFTSD_H] += (point[self.C.SFTSD_K40] * k_heat)
-            self.crust_model[i, self.C.HDSD_H] +=  (point[self.C.HDSD_K40] *  k_heat)
-            self.crust_model[i, self.C.UPCST_H] += (point[self.C.UPCST_K40] * k_heat)
-            self.crust_model[i, self.C.MDCST_H] += (point[self.C.MDCST_K40] * k_heat)
-            self.crust_model[i, self.C.LOCST_H] += (point[self.C.LOCST_K40] * k_heat)
+        self.crust_model[:,(26,27,28,29,30)] = (
+        self.crust_model[:,(31,34,37,40,43)] * u_heat + \
+        self.crust_model[:,(32,35,38,41,44)] * th_heat + \
+        self.crust_model[:,(33,36,39,42,45)] * k_heat )
 
         log.debug("Heat: Heat Loop Done")
         layers = []
@@ -221,11 +210,9 @@ class CrustModel:
             else:
                 raise ValueError('invalid crust code')
         log.debug("Heat: Summing Requested Layers")
-        for i, point in enumerate(self.crust_model):
-            for layer in layers:
-                self.crust_model[i, self.C.HEAT] += point[layer]
-            self.crust_model[i, self.C.HEAT] = (self.crust_model[i, self.C.HEAT]
-            / self.crust_model[i, self.C.AREA]) / 1000 #convert to mW/m^2
+        self.crust_model[:, self.C.HEAT] = np.sum(self.crust_model[:, layers], axis=1)
+        self.crust_model[:, self.C.HEAT] = self.crust_model[:, self.C.HEAT] / self.crust_model[:, self.C.AREA]
+        self.crust_model[:, self.C.HEAT] = self.crust_model[:, self.C.HEAT] / 1000
 
         log.debug("Heat: Done")
 
@@ -235,106 +222,118 @@ class CrustModel:
         th_nu = 16.2
         k_nu = .0271
 
-        log.debug("Nu: Calling mass()")
-        self.mass()
+        self.spherical_to_cartesian()
+        SFTSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.SFTSD_D])
+        HDSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.HDSD_D])
+        UPCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.UPCST_D])
+        MDCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.MDCST_D])
+        LOCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.LOCST_D])
+
         log.debug("Nu: Calling compute_layer_conc()")
         self.compute_layer_conc()
         
         log.debug("Nu: Starting Nu Loop")
-        for i, point in enumerate(self.crust_model):
-            # Uranium!
-            self.crust_model[i, self.C.SFTSD_NU] += (point[self.C.SFTSD_U238] * u_nu)
-            self.crust_model[i, self.C.HDSD_NU] +=  (point[self.C.HDSD_U238] *  u_nu)
-            self.crust_model[i, self.C.UPCST_NU] += (point[self.C.UPCST_U238] * u_nu)
-            self.crust_model[i, self.C.MDCST_NU] += (point[self.C.MDCST_U238] * u_nu)
-            self.crust_model[i, self.C.LOCST_NU] += (point[self.C.LOCST_U238] * u_nu)
-            # Thorium!
-            self.crust_model[i, self.C.SFTSD_NU] += (point[self.C.SFTSD_TH232] * th_nu)
-            self.crust_model[i, self.C.HDSD_NU] +=  (point[self.C.HDSD_TH232] *  th_nu)
-            self.crust_model[i, self.C.UPCST_NU] += (point[self.C.UPCST_TH232] * th_nu)
-            self.crust_model[i, self.C.MDCST_NU] += (point[self.C.MDCST_TH232] * th_nu)
-            self.crust_model[i, self.C.LOCST_NU] += (point[self.C.LOCST_TH232] * th_nu)
-            # Patassium!
-            self.crust_model[i, self.C.SFTSD_NU] += (point[self.C.SFTSD_K40] * k_nu)
-            self.crust_model[i, self.C.HDSD_NU] +=  (point[self.C.HDSD_K40] *  k_nu)
-            self.crust_model[i, self.C.UPCST_NU] += (point[self.C.UPCST_K40] * k_nu)
-            self.crust_model[i, self.C.MDCST_NU] += (point[self.C.MDCST_K40] * k_nu)
-            self.crust_model[i, self.C.LOCST_NU] += (point[self.C.LOCST_K40] * k_nu)
+        self.crust_model[:,(46,47,48,49,50)] = (
+        self.crust_model[:,(31,34,37,40,43)] * u_nu + \
+        self.crust_model[:,(32,35,38,41,44)] * th_nu + \
+        self.crust_model[:,(33,36,39,42,45)] * k_nu )
 
         log.debug("Nu: Nu Loop Done")
-        layers = []
-        for code in self.layers:
-            if 's' == code :
-                layers.append(self.C.SFTSD_NU)
-            elif 'h' == code:
-                layers.append(self.C.HDSD_NU)
-            elif 'u' == code:
-                layers.append(self.C.UPCST_NU)
-            elif 'm' == code:
-                layers.append(self.C.MDCST_NU)
-            elif 'l' == code:
-                layers.append(self.C.LOCST_NU)
-            else:
-                raise ValueError('invalid crust code')
-        log.debug("Nu: Summing Requested Layers")
-        for i, point in enumerate(self.crust_model):
-            for layer in layers:
-                self.crust_model[i, self.C.NU] += point[layer]
-            #self.crust_model[i, self.C.NU] = self.crust_model[i, self.C.NU] / (self.crust_model[i, self.C.AREA] * 1000 )
+        #layers = []
+        #for code in self.layers:
+        #    if 's' == code :
+        #        layers.append(self.C.SFTSD_NU)
+        #    elif 'h' == code:
+        #        layers.append(self.C.HDSD_NU)
+        #    elif 'u' == code:
+        #        layers.append(self.C.UPCST_NU)
+        #    elif 'm' == code:
+        #        layers.append(self.C.MDCST_NU)
+        #    elif 'l' == code:
+        #        layers.append(self.C.LOCST_NU)
+        #    else:
+        #        raise ValueError('invalid crust code')
+        #log.debug("Nu: Summing Requested Layers")
+        #self.crust_model[:, self.C.NU] = np.sum(self.crust_model[:, layers], axis=1)
+        #for i, point in enumerate(self.crust_model):
+        #    for layer in layers:
+        #        self.crust_model[i, self.C.NU] += point[layer]
+        #    #self.crust_model[i, self.C.NU] = self.crust_model[i, self.C.NU] / (self.crust_model[i, self.C.AREA] * 1000 )
 
-        log.debug("Nu: Loading integral grid")
+        log.debug("Nu: integral grid")
 
+        print np.sum(self.crust_model[:,self.C.NU])
         here = os.path.dirname(__file__)
-        lons = np.unique(self.crust_model[:,0])
-        lats = np.unique(self.crust_model[:,1])
-        size = len(self.crust_model[:,0])
-        output = np.zeros(shape=(size))
-
-        try:
-            pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'rb')
-            integral_grd = pickle.load(pkl_file)
-        except IOError: 
-            log.debug("Nu: Spherical to Cartesian")
-            self.spherical_to_cartesian()
-
-            log.debug("Nu: No integal grid found, assuming first run, calculating...")
-            data = np.zeros(shape=(size,size), dtype='float16')
-
-            log.debug("Nu: This will take a while...")
-            for i1, row1 in enumerate(self.crust_model):
-                for i2, row2 in enumerate(self.crust_model):
-                    p1 = (row1[self.C.X], row1[self.C.Y], row1[self.C.Z])
-                    p2 = (row2[self.C.X], row2[self.C.Y], row2[self.C.Z])
-                    data[i1, i2] = self.one_r_sq_cart(p1, p2) #self.one_r_sq(lon, lat, lon_0, lat_0)
-                if i1 == 2:
-                    break
-
-
-            log.debug("Nu: Writing Pickle file")
-            #pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
-            #pickle.dump(data, pkl_file)
-            log.debug("Nu: psyche, nothing was wirtten cause low memory")
-            integral_grd = data
-
-        log.debug("Nu: Integrating...")
-        print integral_grd[0]
+        self.spherical_to_cartesian()
+        nu = np.zeros(len(self.crust_model))
+        self.crust_model[:, self.C.NU] = nu
         for i, point in enumerate(self.crust_model):
-            output += integral_grd[i] * point[self.C.NU] 
+            nu = nu + self.crust_model[i, 46] / (cdist([point[52:55]], SFTSD_xyz, 'sqeuclidean'))
+            print np.sum(nu)
+            print np.sum(self.crust_model[:, 46])
+            break
+            #nu = nu + self.crust_model[i, 47] / (cdist([point[52:55]], HDSD_xyz, 'sqeuclidean'))
+            #nu = nu + self.crust_model[i, 48] / (cdist([point[52:55]], UPCST_xyz, 'sqeuclidean'))
+            #nu = nu + self.crust_model[i, 49] / (cdist([point[52:55]], MDCST_xyz, 'sqeuclidean'))
+            #nu = nu + self.crust_model[i, 50] / (cdist([point[52:55]], LOCST_xyz, 'sqeuclidean'))
+            
+        self.crust_model[:, self.C.NU] =  nu# / self.crust_model[:, self.C.AREA]
+
+
+        #size = len(self.crust_model[:,0])
+        #output = np.zeros(shape=(size))
+
+        #try:
+        #    pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'rb')
+        #    integral_grd = pickle.load(pkl_file)
+        #except IOError: 
+        #    log.debug("Nu: Spherical to Cartesian")
+        #    self.spherical_to_cartesian()
+
+        #    log.debug("Nu: No integal grid found, assuming first run, calculating...")
+        #    data = np.zeros(shape=(size,size), dtype='float16')
+
+        #    log.debug("Nu: This will take a while...")
+        #    for i1, row1 in enumerate(self.crust_model):
+        #        for i2, row2 in enumerate(self.crust_model):
+        #            p1 = (row1[self.C.X], row1[self.C.Y], row1[self.C.Z])
+        #            p2 = (row2[self.C.X], row2[self.C.Y], row2[self.C.Z])
+        #            data[i1, i2] = self.one_r_sq_cart(p1, p2) #self.one_r_sq(lon, lat, lon_0, lat_0)
+        #        if i1 == 2:
+        #            break
+
+
+        #    log.debug("Nu: Writing Pickle file")
+        #    #pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
+        #    #pickle.dump(data, pkl_file)
+        #    log.debug("Nu: psyche, nothing was wirtten cause low memory")
+        #    integral_grd = data
+
+        #log.debug("Nu: Integrating...")
+        #print integral_grd[0]
+        #for i, point in enumerate(self.crust_model):
+        #    output += integral_grd[i] * point[self.C.NU] 
     
-        return (lons, lats, output)
+        #output = [1]
+        #return (lons, lats, output)
         log.debug("Nu: Done")
     
-    def spherical_to_cartesian(self, ):
-        earth_r = 6371.0 * 1000
+    def spherical_to_cartesian(self, out=False, depth=0):
+        earth_r = (6371.0 - depth) * 1000
 
-        for i, point in enumerate(self.crust_model):
-            sin_lat = math.sin(math.radians(point[self.C.LAT]))
-            cos_lat = math.cos(math.radians(point[self.C.LAT]))
-            sin_lon = math.sin(math.radians(point[self.C.LON]))
-            cos_lon = math.sin(math.radians(point[self.C.LON]))
-            self.crust_model[i, self.C.X] = earth_r * cos_lon * sin_lat
-            self.crust_model[i, self.C.Y] = earth_r * sin_lon * sin_lat
-            self.crust_model[i, self.C.Z] = earth_r * cos_lat
+        sin_lat = np.sin(np.radians(91-self.crust_model[:, self.C.LAT]))
+        cos_lat = np.cos(np.radians(91-self.crust_model[:, self.C.LAT]))
+        sin_lon = np.sin(np.radians(   self.crust_model[:, self.C.LON]))
+        cos_lon = np.cos(np.radians(   self.crust_model[:, self.C.LON]))
+        x = earth_r * cos_lon * sin_lat
+        y = earth_r * sin_lon * sin_lat
+        z = earth_r * cos_lat
+        if out is True:
+            o = np.array([x, y, z])
+            return o.T + 1
+        self.crust_model[:, self.C.X] = x
+        self.crust_model[:, self.C.Y] = y
+        self.crust_model[:, self.C.Z] = z
     
     def one_r_sq_cart(self, p1, p2):
         x1, y1, z1 = p1
@@ -383,39 +382,37 @@ class CrustModel:
 
     def compute_layer_conc(self):
         log.debug("Conc: starting concentraiton loop")
-        for i, point in enumerate(self.crust_model):
-            if point[self.C.OCEAN_F] == 0:
-                self.crust_model[i, self.C.SFTSD_U238] =  (point[self.C.SFTSD_M] * self.conc['C_SFTSD_U238'])
-                self.crust_model[i, self.C.SFTSD_TH232] = (point[self.C.SFTSD_M] * self.conc['C_SFTSD_TH232'])
-                self.crust_model[i, self.C.SFTSD_K40] =   (point[self.C.SFTSD_M] * self.conc['C_SFTSD_K40'])
-                self.crust_model[i, self.C.HDSD_U238] =   (point[self.C.HDSD_M] *  self.conc['C_HDSD_U238'])
-                self.crust_model[i, self.C.HDSD_TH232] =  (point[self.C.HDSD_M] *  self.conc['C_HDSD_TH232'])
-                self.crust_model[i, self.C.HDSD_K40] =    (point[self.C.HDSD_M] *  self.conc['C_HDSD_K40'])
-                self.crust_model[i, self.C.UPCST_U238] =  (point[self.C.UPCST_M] * self.conc['C_UPCST_U238'])
-                self.crust_model[i, self.C.UPCST_TH232] = (point[self.C.UPCST_M] * self.conc['C_UPCST_TH232'])
-                self.crust_model[i, self.C.UPCST_K40] =   (point[self.C.UPCST_M] * self.conc['C_UPCST_K40'])
-                self.crust_model[i, self.C.MDCST_U238] =  (point[self.C.MDCST_M] * self.conc['C_MDCST_U238'])
-                self.crust_model[i, self.C.MDCST_TH232] = (point[self.C.MDCST_M] * self.conc['C_MDCST_TH232'])
-                self.crust_model[i, self.C.MDCST_K40] =   (point[self.C.MDCST_M] * self.conc['C_MDCST_K40'])
-                self.crust_model[i, self.C.LOCST_U238] =  (point[self.C.LOCST_M] * self.conc['C_LOCST_U238'])
-                self.crust_model[i, self.C.LOCST_TH232] = (point[self.C.LOCST_M] * self.conc['C_LOCST_TH232'])
-                self.crust_model[i, self.C.LOCST_K40] =   (point[self.C.LOCST_M] * self.conc['C_LOCST_K40'])
-            elif point[self.C.OCEAN_F] == 1:
-                self.crust_model[i, self.C.SFTSD_U238] =  (point[self.C.SFTSD_M] * self.conc['O_SFTSD_U238'])
-                self.crust_model[i, self.C.SFTSD_TH232] = (point[self.C.SFTSD_M] * self.conc['O_SFTSD_TH232'])
-                self.crust_model[i, self.C.SFTSD_K40] =   (point[self.C.SFTSD_M] * self.conc['O_SFTSD_K40'])
-                self.crust_model[i, self.C.HDSD_U238] =   (point[self.C.HDSD_M] *  self.conc['O_HDSD_U238'])
-                self.crust_model[i, self.C.HDSD_TH232] =  (point[self.C.HDSD_M] *  self.conc['O_HDSD_TH232'])
-                self.crust_model[i, self.C.HDSD_K40] =    (point[self.C.HDSD_M] *  self.conc['O_HDSD_K40'])
-                self.crust_model[i, self.C.UPCST_U238] =  (point[self.C.UPCST_M] * self.conc['O_UPCST_U238'])
-                self.crust_model[i, self.C.UPCST_TH232] = (point[self.C.UPCST_M] * self.conc['O_UPCST_TH232'])
-                self.crust_model[i, self.C.UPCST_K40] =   (point[self.C.UPCST_M] * self.conc['O_UPCST_K40'])
-                self.crust_model[i, self.C.MDCST_U238] =  (point[self.C.MDCST_M] * self.conc['O_MDCST_U238'])
-                self.crust_model[i, self.C.MDCST_TH232] = (point[self.C.MDCST_M] * self.conc['O_MDCST_TH232'])
-                self.crust_model[i, self.C.MDCST_K40] =   (point[self.C.MDCST_M] * self.conc['O_MDCST_K40'])
-                self.crust_model[i, self.C.LOCST_U238] =  (point[self.C.LOCST_M] * self.conc['O_LOCST_U238'])
-                self.crust_model[i, self.C.LOCST_TH232] = (point[self.C.LOCST_M] * self.conc['O_LOCST_TH232'])
-                self.crust_model[i, self.C.LOCST_K40] =   (point[self.C.LOCST_M] * self.conc['O_LOCST_K40'])
+        self.crust_model[:, self.C.SFTSD_U238]  =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.SFTSD_M] * self.conc['C_SFTSD_U238'])
+        self.crust_model[:, self.C.SFTSD_TH232] =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.SFTSD_M] * self.conc['C_SFTSD_TH232'])
+        self.crust_model[:, self.C.SFTSD_K40]   =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.SFTSD_M] * self.conc['C_SFTSD_K40'])
+        self.crust_model[:, self.C.HDSD_U238]   =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.HDSD_M] *  self.conc['C_HDSD_U238'])
+        self.crust_model[:, self.C.HDSD_TH232]  =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.HDSD_M] *  self.conc['C_HDSD_TH232'])
+        self.crust_model[:, self.C.HDSD_K40]    =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.HDSD_M] *  self.conc['C_HDSD_K40'])
+        self.crust_model[:, self.C.UPCST_U238]  =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.UPCST_M] * self.conc['C_UPCST_U238'])
+        self.crust_model[:, self.C.UPCST_TH232] =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.UPCST_M] * self.conc['C_UPCST_TH232'])
+        self.crust_model[:, self.C.UPCST_K40]   =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.UPCST_M] * self.conc['C_UPCST_K40'])
+        self.crust_model[:, self.C.MDCST_U238]  =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.MDCST_M] * self.conc['C_MDCST_U238'])
+        self.crust_model[:, self.C.MDCST_TH232] =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.MDCST_M] * self.conc['C_MDCST_TH232'])
+        self.crust_model[:, self.C.MDCST_K40]   =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.MDCST_M] * self.conc['C_MDCST_K40'])
+        self.crust_model[:, self.C.LOCST_U238]  =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.LOCST_M] * self.conc['C_LOCST_U238'])
+        self.crust_model[:, self.C.LOCST_TH232] =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.LOCST_M] * self.conc['C_LOCST_TH232'])
+        self.crust_model[:, self.C.LOCST_K40]   =+ ((1-self.crust_model[:, self.C.OCEAN_F]) * self.crust_model[:, self.C.LOCST_M] * self.conc['C_LOCST_K40'])
+
+        self.crust_model[:, self.C.SFTSD_U238]  =self.crust_model[:, self.C.SFTSD_U238] + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.SFTSD_M] * self.conc['O_SFTSD_U238'])
+        self.crust_model[:, self.C.SFTSD_TH232] =self.crust_model[:, self.C.SFTSD_TH232]+ (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.SFTSD_M] * self.conc['O_SFTSD_TH232'])
+        self.crust_model[:, self.C.SFTSD_K40]   =self.crust_model[:, self.C.SFTSD_K40]  + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.SFTSD_M] * self.conc['O_SFTSD_K40'])
+        self.crust_model[:, self.C.HDSD_U238]   =self.crust_model[:, self.C.HDSD_U238]  + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.HDSD_M] *  self.conc['O_HDSD_U238'])
+        self.crust_model[:, self.C.HDSD_TH232]  =self.crust_model[:, self.C.HDSD_TH232] + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.HDSD_M] *  self.conc['O_HDSD_TH232'])
+        self.crust_model[:, self.C.HDSD_K40]    =self.crust_model[:, self.C.HDSD_K40]   + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.HDSD_M] *  self.conc['O_HDSD_K40'])
+        self.crust_model[:, self.C.UPCST_U238]  =self.crust_model[:, self.C.UPCST_U238] + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.UPCST_M] * self.conc['O_UPCST_U238'])
+        self.crust_model[:, self.C.UPCST_TH232] =self.crust_model[:, self.C.UPCST_TH232]+ (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.UPCST_M] * self.conc['O_UPCST_TH232'])
+        self.crust_model[:, self.C.UPCST_K40]   =self.crust_model[:, self.C.UPCST_K40]  + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.UPCST_M] * self.conc['O_UPCST_K40'])
+        self.crust_model[:, self.C.MDCST_U238]  =self.crust_model[:, self.C.MDCST_U238] + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.MDCST_M] * self.conc['O_MDCST_U238'])
+        self.crust_model[:, self.C.MDCST_TH232] =self.crust_model[:, self.C.MDCST_TH232]+ (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.MDCST_M] * self.conc['O_MDCST_TH232'])
+        self.crust_model[:, self.C.MDCST_K40]   =self.crust_model[:, self.C.MDCST_K40]  + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.MDCST_M] * self.conc['O_MDCST_K40'])
+        self.crust_model[:, self.C.LOCST_U238]  =self.crust_model[:, self.C.LOCST_U238] + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.LOCST_M] * self.conc['O_LOCST_U238'])
+        self.crust_model[:, self.C.LOCST_TH232] =self.crust_model[:, self.C.LOCST_TH232]+ (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.LOCST_M] * self.conc['O_LOCST_TH232'])
+        self.crust_model[:, self.C.LOCST_K40]   =self.crust_model[:, self.C.LOCST_K40]  + (self.crust_model[:, self.C.OCEAN_F] * self.crust_model[:, self.C.LOCST_M] * self.conc['O_LOCST_K40'])
         log.debug("Conc: loop done")
 
     def concentrations(self, args):
@@ -487,9 +484,10 @@ class CrustModel:
         elif self.dataout == self.C.HEAT:
             self.heat()
         elif self.dataout == self.C.MASS:
-            self.mass()
+            self.mass(do=mass)
         elif self.dataout == self.C.NU:
-            self.nu_lons, self.nu_lats, self.nu_grd = self.nu()
+            self.nu()
+            #self.nu_lons, self.nu_lats, self.nu_grd = self.nu()
 
     def select_output(self, output = "t"):
         """Selects the output for the griddata function
@@ -528,10 +526,11 @@ class CrustModel:
         format sutable for giving to the imgshow and transform scalar methods
         of matplotlib with basemap.
         """
-        if self.dataout == self.C.NU: #special case for nu flux
-            cm = self.nu_grd
-        else:
-            cm = self.crust_model
+        #if self.dataout == self.C.NU: #special case for nu flux
+        #    cm = self.nu_grd
+        #else:
+        #    cm = self.crust_model
+        cm = self.crust_model
 
 
         lons = np.unique(self.crust_model[:,0])
@@ -550,12 +549,20 @@ class CrustModel:
             lon_p = self.crust_model[i, 0]
             lat_p = self.crust_model[i, 1]
             
-            if self.dataout == self.C.NU:
-                data[lat[lat_p],lon[lon_p]] = cm[0]
-            else:
-                data[lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #if self.dataout == self.C.NU:
+            #    data[lat[lat_p],lon[lon_p]] = cm[0]
+            #else:
+            #    data[lat[lat_p],lon[lon_p]] = point[self.dataout]
+            data[lat[lat_p],lon[lon_p]] = point[self.dataout]
         
         return (lons + 1,lats - 1,data) # coords need to be centerpoint
+    
+    def calc_depth(self):
+        self.crust_model[:, self.C.SFTSD_D] = self.crust_model[:, self.C.SFTSD_T]
+        self.crust_model[:, self.C.HDSD_D] = self.crust_model[:, self.C.SFTSD_D] + self.crust_model[:, self.C.HDSD_T]
+        self.crust_model[:, self.C.UPCST_D] = self.crust_model[:, self.C.HDSD_D] + self.crust_model[:, self.C.UPCST_T]
+        self.crust_model[:, self.C.MDCST_D] = self.crust_model[:, self.C.UPCST_D] + self.crust_model[:, self.C.MDCST_T]
+        self.crust_model[:, self.C.LOCST_D] = self.crust_model[:, self.C.MDCST_D] + self.crust_model[:, self.C.LOCST_T]
 
     def __init__(self):
         here = os.path.dirname(__file__)
@@ -566,6 +573,10 @@ class CrustModel:
         padding = np.zeros((crust_model_load.shape[0],num_col-17))
         self.crust_model = np.append(crust_model_load, padding, axis=1)
         self.conc = {}
+        for i, point in enumerate(self.crust_model):
+            self.crust_model[i,self.C.AREA] = self.area(point[1], point[1] - 2, 6371)
+        self.mass()
+        self.calc_depth()
     
 if __name__ == "__main__":
     print "This is the CrustModel class for the geonu project, running as a"
