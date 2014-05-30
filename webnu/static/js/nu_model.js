@@ -411,7 +411,7 @@ function load_prem(){
     density = mass/volume;
     geometry = geometry_calc(data[d][0]/1000, data[d][1]/1000) * 100000000;
     geo_factor = geometry * density;
-    prem.push(Array([data[d][0], data[d][1], mass, geo_factor]));
+    prem.push(Array(data[d][0], data[d][1], mass, geo_factor));
     }
   }
   });
@@ -424,10 +424,10 @@ function mantle_heat(){
   u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
   th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
   for (index in prem){
-    if (parseFloat(prem[index][0][0]) > 3479 && (parseFloat(prem[index][0][1]) < 6346.7)){
-      heat = heat + (k40 * prem[index][0][2] * k40_heat);
-      heat = heat + (u238 * prem[index][0][2] * u238_heat);
-      heat = heat + (th232 * prem[index][0][2] * th232_heat);
+    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
+      heat = heat + (k40 * prem[index][2] * k40_heat);
+      heat = heat + (u238 * prem[index][2] * u238_heat);
+      heat = heat + (th232 * prem[index][2] * th232_heat);
     }
     //if (parseFloat(prem[0][index][0]) > 3479){
     //  console.log(prem[0][index]);
@@ -442,10 +442,10 @@ function mantle_nu_lum(){
   u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
   th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
   for (index in prem){
-    if (parseFloat(prem[index][0][0]) > 3479 && (parseFloat(prem[index][0][1]) < 6346.7)){
-      nu = nu + (k40 * prem[index][0][2]  * prem[index][0][3] * k40_lum);
-      nu = nu + (u238 * prem[index][0][2] * prem[index][0][3] * u238_lum);
-      nu = nu + (th232 * prem[index][0][2]* prem[index][0][3] * th232_lum);
+    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
+      nu = nu + (k40 * prem[index][2]  * prem[index][3] * k40_lum);
+      nu = nu + (u238 * prem[index][2] * prem[index][3] * u238_lum);
+      nu = nu + (th232 * prem[index][2]* prem[index][3] * th232_lum);
     }
     //if (parseFloat(prem[0][index][0]) > 3479){
     //  console.log(prem[0][index]);
