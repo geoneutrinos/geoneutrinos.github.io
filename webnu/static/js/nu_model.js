@@ -281,16 +281,17 @@ function draw_geo_lines(){
 }
 
 //build controls for each layer in the PREM
-function mantle_concentric_control_factory(layers){
-  console.log(layers);
-  for (layer in layers){
-    console.log(layer);
+function mantle_concentric_control_factory(){
+  console.log(prem);
+  for (layer in prem){
+    console.log(prem[layer][0]);
   }
 }
 
 $(document).ready(function() {
   // just doing this first cause whatever
   load_prem();
+  mantle_concentric_control_factory();
 
 
   //UI Components
