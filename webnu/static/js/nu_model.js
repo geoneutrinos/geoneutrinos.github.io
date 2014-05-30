@@ -283,8 +283,9 @@ function draw_geo_lines(){
 //build controls for each layer in the PREM
 function mantle_concentric_control_factory(){
   console.log(prem);
+  mlc = $("#mantle_layer_container");
   for (layer in prem){
-    console.log(prem[layer][0]);
+    mlc.append("<p>" + prem[layer][0] + prem[layer][1] + "</p>");
   }
 }
 
