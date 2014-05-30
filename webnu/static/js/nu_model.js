@@ -338,7 +338,7 @@ $(document).ready(function() {
   draw_geo_lines();
 });
 
-//Keep the canvas the same size as the svc (which automatically scales)
+//Keep the canvas the same size as the svg (which automatically scales)
 $(window).resize(function() {
   var width = $(".plot_container").width();
   $(".plot_container").height(width/2);
