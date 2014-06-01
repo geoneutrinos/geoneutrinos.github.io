@@ -285,7 +285,35 @@ function mantle_concentric_control_factory(){
   console.log(prem);
   mlc = $("#mantle_layer_container");
   for (layer in prem){
-    mlc.append("<p>" + prem[layer][0] + prem[layer][1] + "</p>");
+    mlc.append("\
+        <p>TODO: Seperate these into nice groups (e.g. D'' and what not)</p>\
+    <table class='table'>\
+      <thead>\
+        <tr>\
+          <th>Param</th>\
+          <th>Change</th>\
+          <th>Value</th>\
+        </tr>\
+      </thead>\
+      <tbody>\
+        <tr>\
+          <td><sup>40</sup>K</td>\
+          <td><input min=0 max=400 step=1 data-layer='"+layer+"' class='mantle_k40_slider range_responsive causes_update' type='range'></td>\
+          <td><span id=''></span></td>\
+        </tr>\
+        <tr>\
+          <td><sup>232</sup>Th</td>\
+          <td><input min=0 max=100 step=0.5 data-layer='"+layer+"'class='mantle_th232_slider range_responsive causes_update' type='range'></td>\
+          <td><span id=''></span></td>\
+        </tr>\
+        <tr>\
+          <td><sup>238</sup>U</td>\
+          <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' class='mantle_u238_slider range_responsive causes_update' type='range'></td>\
+          <td><span id=''></span></td>\
+        </tr>\
+      </tbody>\
+    </table>\
+        ");
   }
 }
 
@@ -318,12 +346,21 @@ $(document).ready(function() {
   //Uuniform Mantle
   $("#mantle_uniform_k40_slider").on("input change", function(){
     $("#mantle_uniform_k40_value").text(this.value + "µg/g");
+    $(".mantle_k40_slider").each(function(e){
+      $(this).val($("#mantle_uniform_k40_slider").val());
+    });
   });
   $("#mantle_uniform_th232_slider").on("input change", function(){
     $("#mantle_uniform_th232_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
+    $(".mantle_th232_slider").each(function(e){
+      $(this).val($("#mantle_uniform_th232_slider").val());
+    });
   });
   $("#mantle_uniform_u238_slider").on("input change", function(){
     $("#mantle_uniform_u238_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
+    $(".mantle_u238_slider").each(function(e){
+      $(this).val($("#mantle_uniform_u238_slider").val());
+    });
   });
 
 
@@ -336,7 +373,7 @@ $(document).ready(function() {
   $(".causes_update").on("input change", function(){
     updateThings();
   });
-  $(".causes_server_update").on("input change", function(){
+  $(".causes_server_update").on("change", function(){
     updateThingsWithServer();
   });
   var width = $(".plot_container").width();
@@ -421,11 +458,11 @@ function load_prem(){
 //calculates the heat from the mantle with given inputs
 function mantle_heat(){
   heat = 0; // W/cm^2
-  k40 = parseFloat($("#mantle_uniform_k40_slider").val())/1000000;
-  u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
-  th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
   for (index in prem){
     if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
+      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000;
+      u238 = parseFloat($(".mantle_u238_slider[data-layer="+index+"]").val())/1e9;
+      th232 = parseFloat($(".mantle_th232_slider[data-layer="+index+"]").val())/1e9;
       heat = heat + (k40 * prem[index][2] * k40_heat);
       heat = heat + (u238 * prem[index][2] * u238_heat);
       heat = heat + (th232 * prem[index][2] * th232_heat);
