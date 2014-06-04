@@ -285,6 +285,7 @@ function mantle_concentric_control_factory(){
   console.log(prem);
   mlc = $("#mantle_layer_container");
   for (layer in prem){
+    if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
     mlc.append("\
         <p>TODO: Seperate these into nice groups (e.g. D'' and what not)</p>\
     <table class='table'>\
@@ -314,6 +315,7 @@ function mantle_concentric_control_factory(){
       </tbody>\
     </table>\
         ");
+  }
   }
 }
 
