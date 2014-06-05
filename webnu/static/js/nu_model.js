@@ -346,12 +346,29 @@ $(document).ready(function() {
 
   //Mantle Controlls
   //Uuniform Mantle
-  $("#mantle_uniform_k40_slider").on("input change", function(){
-    $("#mantle_uniform_k40_value").text(this.value + "µg/g");
-    $(".mantle_k40_slider").each(function(e){
-      $(this).val($("#mantle_uniform_k40_slider").val());
-    });
-  });
+  //$("#mantle_uniform_k40_slider").on("input change", function(){
+  //  $("#mantle_uniform_k40_value").text(this.value + "µg/g");
+  //  $(".mantle_k40_slider").each(function(e){
+  //    $(this).val($("#mantle_uniform_k40_slider").val());
+  //  });
+  //});
+  // Trying this without jquery to see how fast it might be
+  function deal_with_mantle_uniform_k40_slider_change(with_update){
+    with_update = typeof with_update !== 'undefined' ? with_update : true;
+    //the whole thing cause this is called outside of an event
+    val = document.getElementById("mantle_uniform_k40_slider").value;
+    console.log(val);
+    document.getElementById("mantle_uniform_k40_value").textContent = val + "µg/g";
+    layer_sliders = document.getElementsByClassName("mantle_k40_slider");
+    for (var i = 0; i < layer_sliders.length; ++i) {
+      layer_sliders[i].value = val;
+    }
+    if (with_update){
+    updateThings();
+    }
+  }
+  document.getElementById("mantle_uniform_k40_slider").addEventListener("input", deal_with_mantle_uniform_k40_slider_change);
+
   $("#mantle_uniform_th232_slider").on("input change", function(){
     $("#mantle_uniform_th232_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
     $(".mantle_th232_slider").each(function(e){
@@ -367,14 +384,15 @@ $(document).ready(function() {
 
 
   //Set initial Values
-  $("#mantle_uniform_k40_slider").val(95).change();
+  $("#mantle_uniform_k40_slider").val(95);
+  deal_with_mantle_uniform_k40_slider_change(false);
   $("#mantle_uniform_th232_slider").val(11).change();
   $("#mantle_uniform_u238_slider").val(5.5).change();
 
   //Draw Everything and Run the App :)
-  $(".causes_update").on("input change", function(){
-    updateThings();
-  });
+  //$(".causes_update").on("input change", function(){
+  //  updateThings();
+  //});
   $(".causes_server_update").on("change", function(){
     updateThingsWithServer();
   });
