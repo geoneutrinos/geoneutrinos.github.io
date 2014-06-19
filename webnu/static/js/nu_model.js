@@ -282,7 +282,6 @@ function draw_geo_lines(){
 
 //build controls for each layer in the PREM
 function mantle_concentric_control_factory(){
-  console.log(prem);
   mlc = $("#mantle_layer_container");
   for (layer in prem){
     if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
@@ -346,53 +345,43 @@ $(document).ready(function() {
 
   //Mantle Controlls
   //Uuniform Mantle
-  //$("#mantle_uniform_k40_slider").on("input change", function(){
-  //  $("#mantle_uniform_k40_value").text(this.value + "µg/g");
-  //  $(".mantle_k40_slider").each(function(e){
-  //    $(this).val($("#mantle_uniform_k40_slider").val());
-  //  });
-  //});
   // Trying this without jquery to see how fast it might be
-  function deal_with_mantle_uniform_k40_slider_change(with_update){
-    with_update = typeof with_update !== 'undefined' ? with_update : true;
-    //the whole thing cause this is called outside of an event
-    val = document.getElementById("mantle_uniform_k40_slider").value;
-    console.log(val);
-    document.getElementById("mantle_uniform_k40_value").textContent = val + "µg/g";
-    layer_sliders = document.getElementsByClassName("mantle_k40_slider");
-    for (var i = 0; i < layer_sliders.length; ++i) {
-      layer_sliders[i].value = val;
+  function uniform_mantle_slider_factory(name, units, precision){
+    function mantle_uniform_slider_generic(with_update){
+      with_update = typeof with_update !== 'undefined' ? with_update : true;
+      //the whole thing cause this is called outside of an event
+      val = document.getElementById("mantle_uniform_"+name+"_slider").value;
+      document.getElementById("mantle_uniform_"+name+"_value").textContent = parseFloat(val).toFixed(precision) + units;
+      layer_sliders = document.getElementsByClassName("mantle_"+name+"_slider");
+      for (var i = 0; i < layer_sliders.length; ++i) {
+        layer_sliders[i].value = val;
+      }
+      if (with_update){
+      updateThings();
+      }
     }
-    if (with_update){
-    updateThings();
-    }
+    return mantle_uniform_slider_generic;
   }
+  deal_with_mantle_uniform_k40_slider_change = uniform_mantle_slider_factory('k40', 'µg/g', 0)
+  deal_with_mantle_uniform_th232_slider_change = uniform_mantle_slider_factory('th232', 'ng/g', 1)
+  deal_with_mantle_uniform_u238_slider_change = uniform_mantle_slider_factory('u238', 'µg/g', 1)
   document.getElementById("mantle_uniform_k40_slider").addEventListener("input", deal_with_mantle_uniform_k40_slider_change);
-
-  $("#mantle_uniform_th232_slider").on("input change", function(){
-    $("#mantle_uniform_th232_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
-    $(".mantle_th232_slider").each(function(e){
-      $(this).val($("#mantle_uniform_th232_slider").val());
-    });
-  });
-  $("#mantle_uniform_u238_slider").on("input change", function(){
-    $("#mantle_uniform_u238_value").text(parseFloat(this.value).toFixed(1) + "ng/g");
-    $(".mantle_u238_slider").each(function(e){
-      $(this).val($("#mantle_uniform_u238_slider").val());
-    });
-  });
+  document.getElementById("mantle_uniform_th232_slider").addEventListener("input", deal_with_mantle_uniform_th232_slider_change);
+  document.getElementById("mantle_uniform_u238_slider").addEventListener("input", deal_with_mantle_uniform_u238_slider_change);
 
 
   //Set initial Values
   $("#mantle_uniform_k40_slider").val(95);
+  $("#mantle_uniform_th232_slider").val(11);
+  $("#mantle_uniform_u238_slider").val(5.5);
+  deal_with_mantle_uniform_th232_slider_change(false);
   deal_with_mantle_uniform_k40_slider_change(false);
-  $("#mantle_uniform_th232_slider").val(11).change();
-  $("#mantle_uniform_u238_slider").val(5.5).change();
+  deal_with_mantle_uniform_u238_slider_change(false);
 
   //Draw Everything and Run the App :)
-  //$(".causes_update").on("input change", function(){
-  //  updateThings();
-  //});
+  $(".causes_update").on("input", function(){
+    updateThings();
+  });
   $(".causes_server_update").on("change", function(){
     updateThingsWithServer();
   });
