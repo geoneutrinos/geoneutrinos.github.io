@@ -155,7 +155,6 @@ function updateThings(){
     dy = heatmap.length;
 
   if ($('#plot_display_selector').val() == 'thickness') {
-    console.log("thickness");
     min = 0;
     max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
@@ -282,6 +281,12 @@ function draw_geo_lines(){
 
 //build controls for each layer in the PREM
 function mantle_concentric_control_factory(){
+  function label_factory(layer, iso, precision, units){
+    return function(){
+        val = document.querySelector(".mantle_"+iso+"_slider[data-layer='"+layer+"']").value;
+        document.getElementById("mantle_"+iso+"_label_"+layer+"").textContent = parseFloat(val).toFixed(precision) + units;
+    }
+  }
   mlc = $("#mantle_layer_container");
   for (layer in prem){
     if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
@@ -299,21 +304,30 @@ function mantle_concentric_control_factory(){
         <tr>\
           <td><sup>40</sup>K</td>\
           <td><input min=0 max=400 step=1 data-layer='"+layer+"' class='mantle_k40_slider range_responsive causes_update' type='range'></td>\
-          <td><span id=''></span></td>\
+          <td><span id='mantle_k40_label_"+layer+"'></span></td>\
         </tr>\
         <tr>\
           <td><sup>232</sup>Th</td>\
           <td><input min=0 max=100 step=0.5 data-layer='"+layer+"'class='mantle_th232_slider range_responsive causes_update' type='range'></td>\
-          <td><span id=''></span></td>\
+          <td><span id='mantle_th232_label_"+layer+"'></span></td>\
         </tr>\
         <tr>\
           <td><sup>238</sup>U</td>\
           <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' class='mantle_u238_slider range_responsive causes_update' type='range'></td>\
-          <td><span id=''></span></td>\
+          <td><span id='mantle_u238_label_"+layer+"'></span></td>\
         </tr>\
       </tbody>\
     </table>\
         ");
+    k40_label = label_factory(layer, 'k40', 0, 'µg/g');
+    th232_label = label_factory(layer, 'th232', 1, 'ng/g');
+    u238_label = label_factory(layer, 'u238', 1, 'µg/g');
+  document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").addEventListener("update_label", k40_label);
+  document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").addEventListener("input", k40_label);
+  document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("update_label", th232_label);
+  document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("input", th232_label);
+  document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("update_label", u238_label);
+  document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("input", u238_label);
   }
   }
 }
@@ -355,6 +369,7 @@ $(document).ready(function() {
       layer_sliders = document.getElementsByClassName("mantle_"+name+"_slider");
       for (var i = 0; i < layer_sliders.length; ++i) {
         layer_sliders[i].value = val;
+        layer_sliders[i].dispatchEvent(new Event('update_label'));
       }
       if (with_update){
       updateThings();
