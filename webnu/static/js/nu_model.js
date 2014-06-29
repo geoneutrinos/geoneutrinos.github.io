@@ -406,7 +406,23 @@ $(document).ready(function() {
   setup_display();
   updateThingsWithServer();
   draw_geo_lines();
+
+  document.getElementById("plot_container").addEventListener("mousemove", plot_overlay);
 });
+
+function plot_overlay(e){
+  c_top = this.getBoundingClientRect().top;
+  c_left = this.getBoundingClientRect().left;
+  c_width = this.getBoundingClientRect().width;
+  c_height = this.getBoundingClientRect().height;
+  mpos_x = e.clientX - c_left;
+  mpos_y = e.clientY - c_top;
+  x_persentage = mpos_x / c_width;
+  y_persentage = mpos_y / c_height;
+  lon = (x_persentage * 360) - 180;
+  lat = (y_persentage * -180) + 90;
+  console.log(Math.round(lat) + ", " + Math.round(lon));
+}
 
 //Keep the canvas the same size as the svg (which automatically scales)
 $(window).resize(function() {
