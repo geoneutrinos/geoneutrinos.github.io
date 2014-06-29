@@ -40,3 +40,7 @@ canvas{
   overflow: auto;
   height: 600px;
 }
+.tab-pane#crust{
+  overflow: auto;
+  height: 600px;
+}
