@@ -32,6 +32,15 @@ def get_data(request):
     crust.config(**request.GET)
     return crust.griddata()
 
+def get_rad_power(request):
+    crust = CrustModel()
+    crust.config(**request.GET)
+    return crust.total_rad_power()
+
+def get_rad_mass(request):
+    crust = CrustModel()
+    crust.config(**request.GET)
+    return crust.radiogenic_masses()
 
 def plot(request, image_path):
     log.debug('Map: Generating New Image')

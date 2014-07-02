@@ -10,6 +10,26 @@
   </div>
 </div>
 <div class="panel panel-default">
+  <div class="panel-heading">Fixed Ratios</div>
+  <div class="panel-body">
+    <div class="input-group">
+      <span class="input-group-addon">
+        <label><input id="fixed_thu_ratio_bool" type="checkbox" checked> Th/U</label>
+      </span>
+      <input id="fixed_thu_ratio" step="0.1" type="number" class="form-control" value="4">
+    </div><!-- /input-group -->
+    <br />
+
+    <div class="input-group">
+      <span class="input-group-addon">
+        <label><input id="fixed_ku_ratio_bool" type="checkbox" checked> K/U</label>
+      </span>
+      <input id="fixed_ku_ratio" step="100" type="number" class="form-control" value="12000">
+    </div><!-- /input-group -->
+
+  </div>
+</div>
+<div class="panel panel-default">
   <div class="panel-heading">Uniform Mantle Control</div>
   <div class="panel-body">
     <p>Any changes made here will override the presets and any custom layer settings below.</p>
@@ -22,21 +42,21 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>K</td>
-          <td><input min=0 max=400 step=1 id="mantle_uniform_k40_slider" class="range_responsive causes_update" type="range"></td>
-          <td><span id="mantle_uniform_k40_value"></span></td>
-        </tr>
-        <tr>
-          <td>Th</td>
-          <td><input min=0 max=100 step=0.5 id="mantle_uniform_th232_slider" class="range_responsive causes_update" type="range"></td>
-          <td><span id="mantle_uniform_th232_value"></span></td>
-        </tr>
-        <tr>
-          <td>U</td>
-          <td><input min=0 max=50 step=0.5 id="mantle_uniform_u238_slider" class="range_responsive causes_update" type="range"></td>
-          <td><span id="mantle_uniform_u238_value"></span></td>
-        </tr>
+      <tr>
+        <td>U</td>
+        <td><input min=0 max=50 step=0.5 id="mantle_uniform_u238_slider" class="range_responsive causes_update" type="range"></td>
+        <td><span id="mantle_uniform_u238_value"></span></td>
+      </tr>
+      <tr>
+        <td>Th</td>
+        <td><input min=0 max=200 step=0.5 id="mantle_uniform_th232_slider" class="range_responsive causes_update" type="range"></td>
+        <td><span id="mantle_uniform_th232_value"></span></td>
+      </tr>
+      <tr>
+        <td>K</td>
+        <td><input min=0 max=600 step=1 id="mantle_uniform_k40_slider" class="range_responsive causes_update" type="range"></td>
+        <td><span id="mantle_uniform_k40_value"></span></td>
+      </tr>
       </tbody>
     </table>
   </div>
