@@ -1,9 +1,10 @@
-var k40_heat = 3.33 * 1e-12; // W/g
+//var k40_heat = 3.33 * 1e-12; // W/g
+var k40_heat = 2.85 * 1e-8; // W/g
 var u238_heat = 98.5 * 1e-9; // W/g
 var th232_heat = 26.3 * 1e-9; // W/g
-var k40_lum = 76.4; // l / kg µs
-var u238_lum = 12.6; // l / kg µs
-var th232_lum = .0271; // l / kg µs
+var u238_lum = 76.4; // l / kg µs
+var th232_lum = 16.2; // l / kg µs
+var k40_lum = .0271; // l / kg µs
 
 var earth_surface_area = 5.1e14 // m^2
 
@@ -379,16 +380,16 @@ $(document).ready(function() {
   }
   deal_with_mantle_uniform_k40_slider_change = uniform_mantle_slider_factory('k40', 'µg/g', 0)
   deal_with_mantle_uniform_th232_slider_change = uniform_mantle_slider_factory('th232', 'ng/g', 1)
-  deal_with_mantle_uniform_u238_slider_change = uniform_mantle_slider_factory('u238', 'µg/g', 1)
+  deal_with_mantle_uniform_u238_slider_change = uniform_mantle_slider_factory('u238', 'ng/g', 1)
   document.getElementById("mantle_uniform_k40_slider").addEventListener("input", deal_with_mantle_uniform_k40_slider_change);
   document.getElementById("mantle_uniform_th232_slider").addEventListener("input", deal_with_mantle_uniform_th232_slider_change);
   document.getElementById("mantle_uniform_u238_slider").addEventListener("input", deal_with_mantle_uniform_u238_slider_change);
 
 
   //Set initial Values
-  $("#mantle_uniform_k40_slider").val(95);
-  $("#mantle_uniform_th232_slider").val(11);
-  $("#mantle_uniform_u238_slider").val(5.5);
+  $("#mantle_uniform_k40_slider").val(240);
+  $("#mantle_uniform_th232_slider").val(80);
+  $("#mantle_uniform_u238_slider").val(20);
   deal_with_mantle_uniform_th232_slider_change(false);
   deal_with_mantle_uniform_k40_slider_change(false);
   deal_with_mantle_uniform_u238_slider_change(false);
@@ -498,19 +499,29 @@ function load_prem(){
 //calculates the heat from the mantle with given inputs
 function mantle_heat(){
   heat = 0; // W/cm^2
+  k_heat = 0;
+  u_heat = 0;
+  th_heat = 0;
+
+  mass = 0;
   for (index in prem){
     if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000;
+      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000 * 0.000117;
       u238 = parseFloat($(".mantle_u238_slider[data-layer="+index+"]").val())/1e9;
       th232 = parseFloat($(".mantle_th232_slider[data-layer="+index+"]").val())/1e9;
-      heat = heat + (k40 * prem[index][2] * k40_heat);
-      heat = heat + (u238 * prem[index][2] * u238_heat);
-      heat = heat + (th232 * prem[index][2] * th232_heat);
+      k_heat = k_heat + (k40 * prem[index][2] * k40_heat);
+      u_heat = u_heat + (u238 * prem[index][2] * u238_heat);
+      th_heat = th_heat + (th232 * prem[index][2] * th232_heat);
     }
     //if (parseFloat(prem[0][index][0]) > 3479){
     //  console.log(prem[0][index]);
     //}
   }
+  heat = k_heat + u_heat + th_heat
+    console.log("K:  " + k_heat);
+    console.log("U:  " + u_heat);
+    console.log("Th: " + th_heat);
+    console.log("H:  " + heat * 1e-12);
   heat = heat / earth_surface_area * 1000 // mW/m^2
   return heat
 }
