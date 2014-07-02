@@ -16,6 +16,14 @@ def main(global_config, **settings):
     config.add_view('webnu.views.plt_json',
                     route_name='plt_json')
 
+    config.add_route('total_rad_power_json', '/total_rad_power.json')
+    config.add_view('webnu.views.total_rad_power_json',
+                    route_name='total_rad_power_json')
+
+    config.add_route('crust_rad_mass_json', '/crust_radiogenic_mass.json')
+    config.add_view('webnu.views.crust_rad_mass_json',
+                    route_name='crust_rad_mass_json')
+
     config.add_static_view(name='css', path='webnu:static/css')
     config.add_static_view(name='js', path='webnu:static/js')
     config.add_static_view(name='v', path='webnu:static/vender')

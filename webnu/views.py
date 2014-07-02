@@ -17,6 +17,18 @@ def plt_json(request):
     response.body = str(data)
     return response
 
+def total_rad_power_json(request):
+    response = Response(content_type='application/json')
+    power = gplt.get_rad_power(request)
+    response.body = str(power)
+    return response
+
+def crust_rad_mass_json(request):
+    response = Response(content_type='application/json')
+    power = gplt.get_rad_mass(request)
+    response.body = str(power)
+    return response
+
 def render_plot(request):
     response = Response(content_type='image/png')
 

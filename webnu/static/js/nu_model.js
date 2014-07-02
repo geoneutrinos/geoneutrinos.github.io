@@ -2,9 +2,9 @@
 var k40_heat = 2.85 * 1e-8; // W/g
 var u238_heat = 98.5 * 1e-9; // W/g
 var th232_heat = 26.3 * 1e-9; // W/g
-var u238_lum = 76.4; // l / kg µs
-var th232_lum = 16.2; // l / kg µs
-var k40_lum = .0271; // l / kg µs
+var u238_lum = 7.64 * 1e4; // l / kg µs
+var th232_lum = 1.62 * 1e4; // l / kg µs
+var k40_lum = 2.07 * 1e5; // l / kg µs
 
 var earth_surface_area = 5.1e14 // m^2
 
@@ -140,6 +140,17 @@ function updateThingsWithServer(){
     values.push($(this).val());
   });
   plotsrc = "/plot.json?layers=" + values.join("") + output + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
+  total_crust_rad = "/total_rad_power.json?layers=" + values.join("") + "&output=q" + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
+
+  $.ajax({
+    url: total_crust_rad,
+    success: function(d){
+      console.log(d);
+      document.getElementById("total_crust_power").textContent = d;
+    }
+  })
+
+
 
   d3.json(plotsrc, function(data) {
     crust_data[0] = (data);
@@ -155,6 +166,7 @@ function updateThings(){
     var dx = heatmap[0].length,
     dy = heatmap.length;
 
+    display_power();
   if ($('#plot_display_selector').val() == 'thickness') {
     min = 0;
     max = 70;
@@ -164,13 +176,15 @@ function updateThings(){
     max = 140;
   } else if ($('#plot_display_selector').val() == 'neutrino') {
     from_mantle = mantle_nu_lum();
+    min = 0;
+    max = 20;
     console.log("neutrino");
-  var min = d3.min(heatmap, function(subunit){
-    return d3.min(subunit);
-  });
-  var max = d3.max(heatmap, function(subunit){
-    return d3.max(subunit);
-  });
+  //var min = d3.min(heatmap, function(subunit){
+  //  return d3.min(subunit);
+  //});
+  //var max = d3.max(heatmap, function(subunit){
+  //  return d3.max(subunit);
+  //});
   } else if ($('#plot_display_selector').val() == 'ratio') {
     console.log("ratio");
   }
@@ -245,7 +259,7 @@ function updateThings(){
   } else if (display_value == "heat"){
     $("#scale_title_placeholder").text("Heat Flux (mW/m^2)");
   } else if (display_value == "neutrino"){
-    $("#scale_title_placeholder").text("Geoneutrino Flux (Quanta/cm^2)");
+    $("#scale_title_placeholder").text("Geoneutrino Flux (cm-2 µs-1)");
   } else if (display_value == "ratio"){
     $("#scale_title_placeholder").text("Mantle/Total Neutrino Flux Ratio");
   } else {
@@ -303,19 +317,19 @@ function mantle_concentric_control_factory(){
       </thead>\
       <tbody>\
         <tr>\
-          <td><sup>40</sup>K</td>\
-          <td><input min=0 max=400 step=1 data-layer='"+layer+"' class='mantle_k40_slider range_responsive causes_update' type='range'></td>\
-          <td><span id='mantle_k40_label_"+layer+"'></span></td>\
+          <td>U</td>\
+          <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' class='mantle_u238_slider range_responsive causes_update' type='range'></td>\
+          <td><span id='mantle_u238_label_"+layer+"'></span></td>\
         </tr>\
         <tr>\
-          <td><sup>232</sup>Th</td>\
-          <td><input min=0 max=100 step=0.5 data-layer='"+layer+"'class='mantle_th232_slider range_responsive causes_update' type='range'></td>\
+          <td>Th</td>\
+          <td><input min=0 max=200 step=0.5 data-layer='"+layer+"'class='mantle_th232_slider range_responsive causes_update' type='range'></td>\
           <td><span id='mantle_th232_label_"+layer+"'></span></td>\
         </tr>\
         <tr>\
-          <td><sup>238</sup>U</td>\
-          <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' class='mantle_u238_slider range_responsive causes_update' type='range'></td>\
-          <td><span id='mantle_u238_label_"+layer+"'></span></td>\
+          <td>K</td>\
+          <td><input min=0 max=600 step=1 data-layer='"+layer+"' class='mantle_k40_slider range_responsive causes_update' type='range'></td>\
+          <td><span id='mantle_k40_label_"+layer+"'></span></td>\
         </tr>\
       </tbody>\
     </table>\
@@ -365,11 +379,71 @@ $(document).ready(function() {
     function mantle_uniform_slider_generic(with_update){
       with_update = typeof with_update !== 'undefined' ? with_update : true;
       //the whole thing cause this is called outside of an event
-      val = document.getElementById("mantle_uniform_"+name+"_slider").value;
-      document.getElementById("mantle_uniform_"+name+"_value").textContent = parseFloat(val).toFixed(precision) + units;
-      layer_sliders = document.getElementsByClassName("mantle_"+name+"_slider");
+      var k40;
+      var u238;
+      var th232;
+      if(name == "k40"){
+      k40 = document.getElementById("mantle_uniform_k40_slider").value;
+      if (document.getElementById("fixed_ku_ratio_bool").checked){
+        ratio = document.getElementById("fixed_ku_ratio").value;
+        u = (k40 /ratio * 1000);
+        u238 = document.getElementById("mantle_uniform_u238_slider").value = u;
+      }
+      if (document.getElementById("fixed_thu_ratio_bool").checked){
+        ratio = document.getElementById("fixed_thu_ratio").value;
+        u238 = document.getElementById("mantle_uniform_u238_slider").value;
+        th232 = (u * ratio);
+        document.getElementById("mantle_uniform_th232_slider").value = th232;
+      }
+    }
+      if(name == "u238"){
+      u238 = document.getElementById("mantle_uniform_u238_slider").value;
+      if (document.getElementById("fixed_ku_ratio_bool").checked){
+        ratio = document.getElementById("fixed_ku_ratio").value;
+        k40 = (u238 * ratio / 1000);
+        console.log(k40);
+        document.getElementById("mantle_uniform_k40_slider").value = k40;
+      }
+      if (document.getElementById("fixed_thu_ratio_bool").checked){
+        ratio = document.getElementById("fixed_thu_ratio").value;
+        th232 = document.getElementById("mantle_uniform_u238_slider").value;
+        th232 = (u238 * ratio);
+        document.getElementById("mantle_uniform_th232_slider").value = th232;
+      }
+    }
+      if(name == "th232"){
+      th232 = document.getElementById("mantle_uniform_th232_slider").value;
+      if (document.getElementById("fixed_thu_ratio_bool").checked){
+        ratio = document.getElementById("fixed_thu_ratio").value;
+        u238 = (th232/ ratio);
+        document.getElementById("mantle_uniform_u238_slider").value = u238;
+      }
+      if (document.getElementById("fixed_ku_ratio_bool").checked){
+        ratio = document.getElementById("fixed_ku_ratio").value;
+        u238 = document.getElementById("mantle_uniform_u238_slider").value;
+        k40 = (u238 * ratio / 1000);
+        document.getElementById("mantle_uniform_k40_slider").value = k40;
+      }
+    }
+      k40 = document.getElementById("mantle_uniform_k40_slider").value;
+      u238 = document.getElementById("mantle_uniform_u238_slider").value;
+      th232 = document.getElementById("mantle_uniform_th232_slider").value;
+      document.getElementById("mantle_uniform_k40_value").textContent = parseFloat(k40).toFixed(0) + "µg/g";
+      document.getElementById("mantle_uniform_u238_value").textContent = parseFloat(u238).toFixed(1) + "ng/g";
+      document.getElementById("mantle_uniform_th232_value").textContent = parseFloat(th232).toFixed(1) + "ng/g";
+      layer_sliders = document.getElementsByClassName("mantle_k40_slider");
       for (var i = 0; i < layer_sliders.length; ++i) {
-        layer_sliders[i].value = val;
+        layer_sliders[i].value = k40;
+        layer_sliders[i].dispatchEvent(new Event('update_label'));
+      }
+      layer_sliders = document.getElementsByClassName("mantle_u238_slider");
+      for (var i = 0; i < layer_sliders.length; ++i) {
+        layer_sliders[i].value = u238;
+        layer_sliders[i].dispatchEvent(new Event('update_label'));
+      }
+      layer_sliders = document.getElementsByClassName("mantle_th232_slider");
+      for (var i = 0; i < layer_sliders.length; ++i) {
+        layer_sliders[i].value = th232;
         layer_sliders[i].dispatchEvent(new Event('update_label'));
       }
       if (with_update){
@@ -518,29 +592,46 @@ function mantle_heat(){
     //}
   }
   heat = k_heat + u_heat + th_heat
-    console.log("K:  " + k_heat);
-    console.log("U:  " + u_heat);
-    console.log("Th: " + th_heat);
-    console.log("H:  " + heat * 1e-12);
   heat = heat / earth_surface_area * 1000 // mW/m^2
   return heat
 }
+function display_power(){
+  h = mantle_heat();
+  h = (h * earth_surface_area / 1000) * 1e-12;
+  document.getElementById('total_power').textContent = h.toFixed(1);
+}
 function mantle_nu_lum(){
   nu = 0; // W/cm^2
-  k40 = parseFloat($("#mantle_uniform_k40_slider").val())/1000000;
+  k40 = parseFloat($("#mantle_uniform_k40_slider").val())/1000000 * 0.000117;
   u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
   th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
+  k_lum = 0;
+  u_lum = 0;
+  th_lum = 0;
   for (index in prem){
     if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-      nu = nu + (k40 * prem[index][2]  * prem[index][3] * k40_lum);
-      nu = nu + (u238 * prem[index][2] * prem[index][3] * u238_lum);
-      nu = nu + (th232 * prem[index][2]* prem[index][3] * th232_lum);
+      k_lum = k_lum + (k40 *  prem[index][3] * k40_lum);
+      u_lum = u_lum + (u238 * prem[index][3] * u238_lum);
+      th_lum = th_lum + (th232 * prem[index][3] * th232_lum);
     }
     //if (parseFloat(prem[0][index][0]) > 3479){
     //  console.log(prem[0][index]);
     //}
   }
+  u_tnu = (u_lum * 0.55) / 7.6e4; //the tnu calculation for u
+  th_tnu = (th_lum * 0.55) / 2.5e5; //the tnu calculation for th
+  console.log("U_TNU: " + u_tnu);
+  console.log("T_TNU: " + th_tnu);
+
+  nu = (k_lum + u_lum + th_lum) * 1e-6;
   //nu = nu / earth_surface_area * 1000 // mW/m^2
-  console.log(nu * 0.0001)
+  console.log("K:  " + k_lum * 1e-6);
+  console.log("U:  " + u_lum * 1e-6);
+  console.log("Th: " + th_lum* 1e-6);
+  console.log(nu)
   return nu
+}
+
+function bse_less_crust_masses(){
+  var bse_mass = 4.03e27 //grams
 }

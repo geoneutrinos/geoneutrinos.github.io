@@ -70,6 +70,7 @@ class Column:
             'UPCST_D': 57,
             'MDCST_D': 58,
             'LOCST_D': 59,
+            'HEAT_SANS_AREA': 60,
             }
     def size(self,):
         return len(self.columns)
@@ -211,10 +212,15 @@ class CrustModel:
                 raise ValueError('invalid crust code')
         log.debug("Heat: Summing Requested Layers")
         self.crust_model[:, self.C.HEAT] = np.sum(self.crust_model[:, layers], axis=1)
+        self.crust_model[:, self.C.HEAT_SANS_AREA] = self.crust_model[:, self.C.HEAT]
         self.crust_model[:, self.C.HEAT] = self.crust_model[:, self.C.HEAT] / self.crust_model[:, self.C.AREA]
         self.crust_model[:, self.C.HEAT] = self.crust_model[:, self.C.HEAT] / 1000
 
         log.debug("Heat: Done")
+
+    def radiogenic_masses(self):
+        #total masses of [u, th, k] for the crust (
+        return [30.9e18, 133.6e18, 23.5e22]
 
 
     def nu(self):
@@ -277,7 +283,7 @@ class CrustModel:
             #nu = nu + self.crust_model[i, 49] / (cdist([point[52:55]], MDCST_xyz, 'sqeuclidean'))
             #nu = nu + self.crust_model[i, 50] / (cdist([point[52:55]], LOCST_xyz, 'sqeuclidean'))
             
-        self.crust_model[:, self.C.NU] =  nu# / self.crust_model[:, self.C.AREA]
+        self.crust_model[:, self.C.NU] =  0# / self.crust_model[:, self.C.AREA]
 
 
         #size = len(self.crust_model[:,0])
@@ -563,6 +569,9 @@ class CrustModel:
         self.crust_model[:, self.C.UPCST_D] = self.crust_model[:, self.C.HDSD_D] + self.crust_model[:, self.C.UPCST_T]
         self.crust_model[:, self.C.MDCST_D] = self.crust_model[:, self.C.UPCST_D] + self.crust_model[:, self.C.MDCST_T]
         self.crust_model[:, self.C.LOCST_D] = self.crust_model[:, self.C.MDCST_D] + self.crust_model[:, self.C.LOCST_T]
+
+    def total_rad_power(self):
+        return "{:0.1f}".format(np.sum(self.crust_model[:, self.C.HEAT_SANS_AREA]) * 1e-12)
 
     def __init__(self):
         here = os.path.dirname(__file__)
