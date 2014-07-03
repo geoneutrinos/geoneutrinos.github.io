@@ -49,3 +49,12 @@
 1. the direcotry for the maps need to be created as
    'webnu/static/images/maps/' with approprate permissions for the
    program to be able to read and write images in it.
+
+
+## The Modelers path...
+
+1. Set BSE constraint (in terms of radiogenic power)
+2. Remove Someone et.al. crust model (perhaps fixed)
+3. Specify upper mantle model (someone et. al.)
+4. Force the lower mantle based on above
+
