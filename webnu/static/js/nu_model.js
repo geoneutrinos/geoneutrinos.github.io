@@ -303,10 +303,12 @@ function mantle_concentric_control_factory(){
     }
   }
   mlc = $("#mantle_layer_container");
-  for (layer in prem){
-    if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
+  for (var layer=prem.length; layer--;){
+      outer_r = parseFloat(prem[layer][1]);
+      inner_r = parseFloat(prem[layer][0]);
+    if (inner_r > 3479 && outer_r < 6346.7){
     mlc.append("\
-        <p>TODO: Seperate these into nice groups (e.g. D'' and what not)</p>\
+        <p>Radius: "+outer_r+"KM to "+inner_r+ "KM</p>\
     <table class='table'>\
       <thead>\
         <tr>\
@@ -318,17 +320,17 @@ function mantle_concentric_control_factory(){
       <tbody>\
         <tr>\
           <td>U</td>\
-          <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' class='mantle_u238_slider range_responsive causes_update' type='range'></td>\
+          <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='mantle_u238_slider range_responsive has_ratios' type='range'></td>\
           <td><span id='mantle_u238_label_"+layer+"'></span></td>\
         </tr>\
         <tr>\
           <td>Th</td>\
-          <td><input min=0 max=200 step=0.5 data-layer='"+layer+"'class='mantle_th232_slider range_responsive causes_update' type='range'></td>\
+          <td><input min=0 max=200 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='mantle_th232_slider range_responsive has_ratios' type='range'></td>\
           <td><span id='mantle_th232_label_"+layer+"'></span></td>\
         </tr>\
         <tr>\
           <td>K</td>\
-          <td><input min=0 max=600 step=1 data-layer='"+layer+"' class='mantle_k40_slider range_responsive causes_update' type='range'></td>\
+          <td><input min=0 max=600 step=1 data-layer='"+layer+"' data-isotope='k40' class='mantle_k40_slider range_responsive has_ratios' type='range'></td>\
           <td><span id='mantle_k40_label_"+layer+"'></span></td>\
         </tr>\
       </tbody>\
@@ -338,11 +340,8 @@ function mantle_concentric_control_factory(){
     th232_label = label_factory(layer, 'th232', 1, 'ng/g');
     u238_label = label_factory(layer, 'u238', 1, 'µg/g');
   document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").addEventListener("update_label", k40_label);
-  document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").addEventListener("input", k40_label);
   document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("update_label", th232_label);
-  document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("input", th232_label);
   document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("update_label", u238_label);
-  document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("input", u238_label);
   }
   }
 }
@@ -468,6 +467,65 @@ $(document).ready(function() {
   deal_with_mantle_uniform_k40_slider_change(false);
   deal_with_mantle_uniform_u238_slider_change(false);
 
+  //set the constraints on things with user set ratios
+    function deal_with_slider_change_factory(group, isotope){
+      return function(){
+      u238_elm = document.querySelector("[data-layer='"+group+"'][data-isotope='u238']");
+      th232_elm = document.querySelector("[data-layer='"+group+"'][data-isotope='th232']");
+      k40_elm = document.querySelector("[data-layer='"+group+"'][data-isotope='k40']");
+      if(isotope == "k40"){
+      if (document.getElementById("fixed_ku_ratio_bool").checked){
+        ratio = document.getElementById("fixed_ku_ratio").value;
+        u = (k40_elm.value /ratio * 1000);
+        u238_elm.value = u;
+      }
+      if (document.getElementById("fixed_thu_ratio_bool").checked){
+        ratio = document.getElementById("fixed_thu_ratio").value;
+        u238 = u238_elm.value;
+        th232 = (u * ratio);
+        th232_elm.value = th232;
+      }
+    }
+      if(isotope == "u238"){
+      if (document.getElementById("fixed_ku_ratio_bool").checked){
+        ratio = document.getElementById("fixed_ku_ratio").value;
+        k40 = (u238_elm.value * ratio / 1000);
+        k40_elm.value = k40;
+      }
+      if (document.getElementById("fixed_thu_ratio_bool").checked){
+        ratio = document.getElementById("fixed_thu_ratio").value;
+        th232 = th232_elm.value;
+        th232 = (u238_elm.value * ratio);
+        th232_elm.value = th232;
+      }
+    }
+      if(isotope == "th232"){
+      if (document.getElementById("fixed_thu_ratio_bool").checked){
+        ratio = document.getElementById("fixed_thu_ratio").value;
+        u238 = (th232_elm.value / ratio);
+        u238_elm.value = u238;
+      }
+      if (document.getElementById("fixed_ku_ratio_bool").checked){
+        ratio = document.getElementById("fixed_ku_ratio").value;
+        u238 = u238_elm.value;
+        k40 = (u238 * ratio / 1000);
+        k40_elm.value = k40;
+      }
+    }
+      u238_elm.dispatchEvent(new Event('update_label'));
+      th232_elm.dispatchEvent(new Event('update_label'));
+      k40_elm.dispatchEvent(new Event('update_label'));
+      updateThings();
+      }
+    }
+  var has_ratio_list = document.getElementsByClassName("has_ratios");
+  for (var i=has_ratio_list.length; i--;){
+    isotope = has_ratio_list[i].getAttribute("data-isotope");
+    group = has_ratio_list[i].getAttribute("data-layer");
+    deal_with_slider_change = deal_with_slider_change_factory(group, isotope);
+    has_ratio_list[i].addEventListener('input', deal_with_slider_change);
+  }
+
   //Draw Everything and Run the App :)
   $(".causes_update").on("input", function(){
     updateThings();
@@ -587,9 +645,6 @@ function mantle_heat(){
       u_heat = u_heat + (u238 * prem[index][2] * u238_heat);
       th_heat = th_heat + (th232 * prem[index][2] * th232_heat);
     }
-    //if (parseFloat(prem[0][index][0]) > 3479){
-    //  console.log(prem[0][index]);
-    //}
   }
   heat = k_heat + u_heat + th_heat
   heat = heat / earth_surface_area * 1000 // mW/m^2
@@ -601,22 +656,19 @@ function display_power(){
   document.getElementById('total_power').textContent = h.toFixed(1);
 }
 function mantle_nu_lum(){
-  nu = 0; // W/cm^2
-  k40 = parseFloat($("#mantle_uniform_k40_slider").val())/1000000 * 0.000117;
-  u238 = parseFloat($("#mantle_uniform_u238_slider").val())/1e9;
-  th232 = parseFloat($("#mantle_uniform_th232_slider").val())/1e9;
+  nu = 0; // /cm^2 µs
   k_lum = 0;
   u_lum = 0;
   th_lum = 0;
   for (index in prem){
     if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
+      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000 * 0.000117;
+      u238 = parseFloat($(".mantle_u238_slider[data-layer="+index+"]").val())/1e9;
+      th232 = parseFloat($(".mantle_th232_slider[data-layer="+index+"]").val())/1e9;
       k_lum = k_lum + (k40 *  prem[index][3] * k40_lum);
       u_lum = u_lum + (u238 * prem[index][3] * u238_lum);
       th_lum = th_lum + (th232 * prem[index][3] * th232_lum);
     }
-    //if (parseFloat(prem[0][index][0]) > 3479){
-    //  console.log(prem[0][index]);
-    //}
   }
   u_tnu = (u_lum * 0.55) / 7.6e4; //the tnu calculation for u
   th_tnu = (th_lum * 0.55) / 2.5e5; //the tnu calculation for th
