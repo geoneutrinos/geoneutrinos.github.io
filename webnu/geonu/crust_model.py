@@ -5,7 +5,6 @@ import logging
 import os
 import math
 import string
-from scipy.spatial.distance import cdist
 log = logging.getLogger(__name__)
 
 class Column:
@@ -228,21 +227,21 @@ class CrustModel:
         th_nu = 16.2
         k_nu = .0271
 
-        self.spherical_to_cartesian()
-        SFTSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.SFTSD_D])
-        HDSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.HDSD_D])
-        UPCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.UPCST_D])
-        MDCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.MDCST_D])
-        LOCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.LOCST_D])
+        #self.spherical_to_cartesian()
+        #SFTSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.SFTSD_D])
+        #HDSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.HDSD_D])
+        #UPCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.UPCST_D])
+        #MDCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.MDCST_D])
+        #LOCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.LOCST_D])
 
-        log.debug("Nu: Calling compute_layer_conc()")
-        self.compute_layer_conc()
-        
-        log.debug("Nu: Starting Nu Loop")
-        self.crust_model[:,(46,47,48,49,50)] = (
-        self.crust_model[:,(31,34,37,40,43)] * u_nu + \
-        self.crust_model[:,(32,35,38,41,44)] * th_nu + \
-        self.crust_model[:,(33,36,39,42,45)] * k_nu )
+        #log.debug("Nu: Calling compute_layer_conc()")
+        #self.compute_layer_conc()
+        #
+        #log.debug("Nu: Starting Nu Loop")
+        #self.crust_model[:,(46,47,48,49,50)] = (
+        #self.crust_model[:,(31,34,37,40,43)] * u_nu + \
+        #self.crust_model[:,(32,35,38,41,44)] * th_nu + \
+        #self.crust_model[:,(33,36,39,42,45)] * k_nu )
 
         log.debug("Nu: Nu Loop Done")
         #layers = []
@@ -266,23 +265,23 @@ class CrustModel:
         #        self.crust_model[i, self.C.NU] += point[layer]
         #    #self.crust_model[i, self.C.NU] = self.crust_model[i, self.C.NU] / (self.crust_model[i, self.C.AREA] * 1000 )
 
-        log.debug("Nu: integral grid")
+        #log.debug("Nu: integral grid")
 
-        print np.sum(self.crust_model[:,self.C.NU])
-        here = os.path.dirname(__file__)
-        self.spherical_to_cartesian()
-        nu = np.zeros(len(self.crust_model))
-        self.crust_model[:, self.C.NU] = nu
-        for i, point in enumerate(self.crust_model):
-            nu = nu + self.crust_model[i, 46] / (cdist([point[52:55]], SFTSD_xyz, 'sqeuclidean'))
-            print np.sum(nu)
-            print np.sum(self.crust_model[:, 46])
-            break
-            #nu = nu + self.crust_model[i, 47] / (cdist([point[52:55]], HDSD_xyz, 'sqeuclidean'))
-            #nu = nu + self.crust_model[i, 48] / (cdist([point[52:55]], UPCST_xyz, 'sqeuclidean'))
-            #nu = nu + self.crust_model[i, 49] / (cdist([point[52:55]], MDCST_xyz, 'sqeuclidean'))
-            #nu = nu + self.crust_model[i, 50] / (cdist([point[52:55]], LOCST_xyz, 'sqeuclidean'))
-            
+        #print np.sum(self.crust_model[:,self.C.NU])
+        #here = os.path.dirname(__file__)
+        #self.spherical_to_cartesian()
+        #nu = np.zeros(len(self.crust_model))
+        #self.crust_model[:, self.C.NU] = nu
+        #for i, point in enumerate(self.crust_model):
+        #    nu = nu + self.crust_model[i, 46] / (cdist([point[52:55]], SFTSD_xyz, 'sqeuclidean'))
+        #    print np.sum(nu)
+        #    print np.sum(self.crust_model[:, 46])
+        #    break
+        #    #nu = nu + self.crust_model[i, 47] / (cdist([point[52:55]], HDSD_xyz, 'sqeuclidean'))
+        #    #nu = nu + self.crust_model[i, 48] / (cdist([point[52:55]], UPCST_xyz, 'sqeuclidean'))
+        #    #nu = nu + self.crust_model[i, 49] / (cdist([point[52:55]], MDCST_xyz, 'sqeuclidean'))
+        #    #nu = nu + self.crust_model[i, 50] / (cdist([point[52:55]], LOCST_xyz, 'sqeuclidean'))
+        #    
         self.crust_model[:, self.C.NU] =  0# / self.crust_model[:, self.C.AREA]
 
 
