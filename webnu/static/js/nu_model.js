@@ -257,9 +257,9 @@ function updateThings(){
   if (display_value == "thickness"){
     $("#scale_title_placeholder").text("Crust Thickness (km)");
   } else if (display_value == "heat"){
-    $("#scale_title_placeholder").text("Heat Flux (mW/m^2)");
+    $("#scale_title_placeholder").html("Heat Flux (mW/m<sup>2</sup>)");
   } else if (display_value == "neutrino"){
-    $("#scale_title_placeholder").text("Geoneutrino Flux (cm-2 µs-1)");
+    $("#scale_title_placeholder").html("Geoneutrino Flux (cm<sup>-2</sup> µs<sup>-1</sup>)");
   } else if (display_value == "ratio"){
     $("#scale_title_placeholder").text("Mantle/Total Neutrino Flux Ratio");
   } else {
