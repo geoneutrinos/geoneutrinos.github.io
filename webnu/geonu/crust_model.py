@@ -570,7 +570,7 @@ class CrustModel:
         self.crust_model[:, self.C.LOCST_D] = self.crust_model[:, self.C.MDCST_D] + self.crust_model[:, self.C.LOCST_T]
 
     def total_rad_power(self):
-        return "{:0.1f}".format(np.sum(self.crust_model[:, self.C.HEAT_SANS_AREA]) * 1e-12)
+        return "{0:0.1f}".format(np.sum(self.crust_model[:, self.C.HEAT_SANS_AREA]) * 1e-12)
 
     def __init__(self):
         here = os.path.dirname(__file__)
