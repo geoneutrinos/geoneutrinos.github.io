@@ -350,6 +350,7 @@ $(document).ready(function() {
   // just doing this first cause whatever
   load_prem();
   mantle_concentric_control_factory();
+  bse_less_crust_masses();
 
 
   //UI Components
@@ -541,6 +542,7 @@ $(document).ready(function() {
   draw_geo_lines();
 
   document.getElementById("plot_container").addEventListener("mousemove", plot_overlay);
+  document.getElementById("bse_u238_slider").addEventListener("input", bse_less_crust_masses);
 });
 
 function plot_overlay(e){
@@ -686,4 +688,19 @@ function mantle_nu_lum(){
 
 function bse_less_crust_masses(){
   var bse_mass = 4.03e27 //grams
+  k40 = parseFloat(document.getElementById("bse_k40_slider").value);
+  document.getElementById("bse_k40_value").textContent = k40.toFixed(0) + "µg/g";
+  k40 = k40/1000000 * 0.000117;
+  u238 = parseFloat(document.getElementById("bse_u238_slider").value);
+  document.getElementById("bse_u238_value").textContent = u238.toFixed(1) + "ng/g";
+  u238 = u238/1e9;
+  th232 = parseFloat(document.getElementById("bse_th232_slider").value);
+  document.getElementById("bse_th232_value").textContent = th232.toFixed(1) + "ng/g";
+  th232 = th232/1e9;
+  k_heat = k40 * bse_mass * k40_heat;
+  u_heat = u238 * bse_mass *  u238_heat;
+  th_heat =  th232 * bse_mass * th232_heat;
+  power = (k_heat + u_heat + th_heat) * 1e-12; //TW
+  document.getElementById("bse_rad_power").textContent = power.toFixed(1);
+  return power;
 }
