@@ -1,41 +1,118 @@
-<div class="panel panel-default">
-  <div class="panel-heading">Uniform Mantle Control</div>
-  <div class="panel-body">
-    <p>Any changes made here will override the presets and any custom layer settings below.</p>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Param</th>
-          <th>Change</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <td>U</td>
-        <td><input min=0 max=50 step=0.5 id="mantle_uniform_u238_slider" data-layer='umantle' data-isotope='u238' class="range_responsive has_ratios" type="range"></td>
-        <td><span id="mantle_uniform_u238_value"></span></td>
-      </tr>
-      <tr>
-        <td>Th</td>
-        <td><input min=0 max=200 step=0.5 id="mantle_uniform_th232_slider" data-layer='umantle' data-isotope='th232' class="range_responsive has_ratios" type="range"></td>
-        <td><span id="mantle_uniform_th232_value"></span></td>
-      </tr>
-      <tr>
-        <td>K</td>
-        <td><input min=0 max=600 step=1 id="mantle_uniform_k40_slider" data-layer='umantle' data-isotope='k40' class="range_responsive has_ratios" type="range"></td>
-        <td><span id="mantle_uniform_k40_value"></span></td>
-      </tr>
-      </tbody>
-    </table>
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+          Uniform Mantle Controls
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>Any changes made here will override the presets and any custom layer settings below.</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>U</td>
+            <td><input min=0 max=50 step=0.5 id="mantle_uniform_u238_slider" data-layer='umantle' data-isotope='u238' class="range_responsive has_ratios" type="range"></td>
+            <td><span id="mantle_uniform_u238_value"></span></td>
+          </tr>
+          <tr>
+            <td>Th</td>
+            <td><input min=0 max=200 step=0.5 id="mantle_uniform_th232_slider" data-layer='umantle' data-isotope='th232' class="range_responsive has_ratios" type="range"></td>
+            <td><span id="mantle_uniform_th232_value"></span></td>
+          </tr>
+          <tr>
+            <td>K</td>
+            <td><input min=0 max=600 step=1 id="mantle_uniform_k40_slider" data-layer='umantle' data-isotope='k40' class="range_responsive has_ratios" type="range"></td>
+            <td><span id="mantle_uniform_k40_value"></span></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-</div>
-
-<div class="panel panel-default">
-  <div class="panel-heading">Layered Controls</div>
-  <div class="panel-body">
-    <p>There are a lot of layers, provided for fun.</p>
-    <div id="mantle_layer_container">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+          2 Layer Mantle Controls
+        </a>
+      </h4>
+    </div>
+    <div id="collapseTwo" class="panel-collapse collapse in">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Depth</th>
+            <th>Change</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Top</td>
+          <td><input min=0 max=50 step=0.5 id="2_layer_u238_slider" data-layer='umantle' data-isotope='u238' class="range_responsive has_ratios" type="range"></td>
+          <td><span id="2_layer_u238_value"></span></td>
+        </tr>
+        <tr>
+          <td>Bottom</td>
+          <td><input min=0 max=200 step=0.5 id="2_layer_th232_slider" data-layer='umantle' data-isotope='th232' class="range_responsive has_ratios" type="range"></td>
+          <td><span id="2_layer_th232_value"></span></td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="panel-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>U</td>
+            <td><input min=0 max=50 step=0.5 id="2_layer_u238_slider" data-layer='umantle' data-isotope='u238' class="range_responsive has_ratios" type="range"></td>
+            <td><span id="2_layer_u238_value"></span></td>
+          </tr>
+          <tr>
+            <td>Th</td>
+            <td><input min=0 max=200 step=0.5 id="2_layer_th232_slider" data-layer='umantle' data-isotope='th232' class="range_responsive has_ratios" type="range"></td>
+            <td><span id="2_layer_th232_value"></span></td>
+          </tr>
+          <tr>
+            <td>K</td>
+            <td><input min=0 max=600 step=1 id="2_layer_k40_slider" data-layer='umantle' data-isotope='k40' class="range_responsive has_ratios" type="range"></td>
+            <td><span id="2_layer_k40_value"></span></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+          Layered Mantle Controls
+        </a>
+      </h4>
+    </div>
+    <div id="collapseThree" class="panel-collapse collapse">
+      <div class="panel-body">
+        <p>There are a lot of layers, provided for fun.</p>
+        <div id="mantle_layer_container">
+        </div>
+      </div>
     </div>
   </div>
 </div>

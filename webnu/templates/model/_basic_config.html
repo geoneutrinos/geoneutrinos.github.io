@@ -25,6 +25,17 @@
   </div>
 </div>
 <div class="panel panel-default">
+  <div class="panel-heading">Model Presets</div>
+  <div class="panel-body">
+    <select id=model_preset_selector" class="causes_update form-control">
+      <option value="thickness" selected>Someone and Someone</option>
+      <option value="heat">A Person et. al.</option>
+      <option value="neutrino">Barna and Someone</option>
+      <option value="ratio">Custom</option>
+    </select>
+  </div>
+</div>
+<div class="panel panel-default">
   <div class="panel-heading">Fixed Ratios</div>
   <div class="panel-body">
     <div class="input-group">
@@ -47,7 +58,11 @@
 <div class="panel panel-default">
   <div class="panel-heading">Bulk Silicate Earth</div>
   <div class="panel-body">
-    <p>Places constraints on total radiogenic power</p>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" id="use_bse_constraint" checked> Constrain Total Radiogenic Power
+      </label>
+    </div>
     <p>Total Radiogenic Power: <span id="bse_rad_power">###</span> TW</p>
     <table class="table">
       <thead>
@@ -75,16 +90,5 @@
       </tr>
       </tbody>
     </table>
-  </div>
-</div>
-<div class="panel panel-default">
-  <div class="panel-heading">Presets</div>
-  <div class="panel-body">
-    <select id="mantle_preset_selector" class="causes_update form-control">
-      <option value="thickness" selected>Someone and Someone</option>
-      <option value="heat">A Person et. al.</option>
-      <option value="neutrino">Barna and Someone</option>
-      <option value="ratio">Custom</option>
-    </select>
   </div>
 </div>
