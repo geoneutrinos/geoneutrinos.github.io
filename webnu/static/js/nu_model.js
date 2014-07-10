@@ -338,7 +338,7 @@ function mantle_concentric_control_factory(){
         ");
     k40_label = label_factory(layer, 'k40', 0, 'µg/g');
     th232_label = label_factory(layer, 'th232', 1, 'ng/g');
-    u238_label = label_factory(layer, 'u238', 1, 'µg/g');
+    u238_label = label_factory(layer, 'u238', 1, 'ng/g');
   document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").addEventListener("update_label", k40_label);
   document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("update_label", th232_label);
   document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("update_label", u238_label);
