@@ -6,6 +6,7 @@ var u238_lum = 7.64 * 1e4; // l / kg µs
 var th232_lum = 1.62 * 1e4; // l / kg µs
 var k40_lum = 2.07 * 1e5; // l / kg µs
 
+var earth_radius = 6.372; //megameters
 var earth_surface_area = 5.1e14 // m^2
 
 var crust_data = new Array();
@@ -295,6 +296,7 @@ function draw_geo_lines(){
 }
 
 //build controls for each layer in the PREM
+mantle_layers = new Array();
 function mantle_concentric_control_factory(){
   function label_factory(layer, iso, precision, units){
     return function(){
@@ -307,6 +309,8 @@ function mantle_concentric_control_factory(){
       outer_r = parseFloat(prem[layer][1]);
       inner_r = parseFloat(prem[layer][0]);
     if (inner_r > 3479 && outer_r < 6346.7){
+      mantle_layers.push(layer);
+
     mlc.append("\
         <p>Radius: "+outer_r+"KM to "+inner_r+ "KM</p>\
     <table class='table'>\
@@ -343,8 +347,60 @@ function mantle_concentric_control_factory(){
   document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("update_label", th232_label);
   document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("update_label", u238_label);
   }
+    document.getElementById("2_layer_boundary_slider").setAttribute("min", Math.min.apply(Math, mantle_layers));
+    document.getElementById("2_layer_boundary_slider").setAttribute("max", Math.max.apply(Math, mantle_layers));
   }
 }
+
+function pad_str_num(str, width, fill){
+  gap = width - str.length;
+  if (gap > 0) {
+    return Array(gap + 1).join(fill) + str;
+  } else {
+    return str;
+  }
+}
+
+function deal_with_2_layer_boundary_change(){
+  inner_r = prem[parseInt(this.value)][0];
+  text_content = pad_str_num(((earth_radius * 1000) - inner_r).toFixed(0), 4, "0");
+  document.getElementById("2_layer_boundary_value").textContent = text_content;
+  for (layer in prem){
+    if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
+      if (layer > parseInt(this.value)){
+        console.log(layer);
+        k40 = document.getElementById("2_layer_upper_k40_slider").value;
+        th232 = document.getElementById("2_layer_upper_th232_slider").value;
+        u238 = document.getElementById("2_layer_upper_u238_slider").value;
+        document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").value = k40;
+        document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").value = th232;
+        document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").value = u238;
+      } else {
+        console.log(layer);
+        k40 = document.getElementById("2_layer_lower_k40_slider").value;
+        th232 = document.getElementById("2_layer_lower_th232_slider").value;
+        u238 = document.getElementById("2_layer_lower_u238_slider").value;
+        document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").value = k40;
+        document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").value = th232;
+        document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").value = u238;
+      }
+    }
+  }
+  layer_sliders = document.getElementsByClassName("mantle_k40_slider");
+  for (var i = 0; i < layer_sliders.length; ++i) {
+    layer_sliders[i].dispatchEvent(new Event('update_label'));
+  }
+  layer_sliders = document.getElementsByClassName("mantle_u238_slider");
+  for (var i = 0; i < layer_sliders.length; ++i) {
+    layer_sliders[i].dispatchEvent(new Event('update_label'));
+  }
+  layer_sliders = document.getElementsByClassName("mantle_th232_slider");
+  for (var i = 0; i < layer_sliders.length; ++i) {
+    layer_sliders[i].dispatchEvent(new Event('update_label'));
+  }
+}
+
+document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 
 $(document).ready(function() {
   // just doing this first cause whatever
@@ -572,7 +628,6 @@ $("svg").width(width);
 
 //Mantle Model
 function geometry_calc(r1, r2){
-  var earth_radius = 6.372; //megameters
 
   integrate_part = function(r_top, r_bot){
     var a = ((Math.log(r_top)/2.0 - 0.25) * Math.pow(r_top, 2));
