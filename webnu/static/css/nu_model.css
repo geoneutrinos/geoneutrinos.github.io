@@ -35,7 +35,3 @@ canvas{
 .range_responsive{
   width: 100%;
 }
-.tab-pane#crust{
-  overflow: auto;
-  height: 600px;
-}

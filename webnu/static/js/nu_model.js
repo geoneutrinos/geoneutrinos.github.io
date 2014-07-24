@@ -140,6 +140,12 @@ function updateThingsWithServer(){
   $('input[name=crust_layers]:checked').each(function(){
     values.push($(this).val());
   });
+  //Here comes some crazy...
+  var crust_u238 = document.querySelectorAll("#crust [data-isotope='u238']");
+  for (var i = 0; i < crust_u238.length; ++i){
+    console.log(crust_u238[i].value);
+  }
+  
   plotsrc = "/plot.json?layers=" + values.join("") + output + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
   total_crust_rad = "/total_rad_power.json?layers=" + values.join("") + "&output=q" + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
 
