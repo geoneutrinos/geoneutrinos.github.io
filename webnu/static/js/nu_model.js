@@ -184,7 +184,7 @@ function updateThings(){
   } else if ($('#plot_display_selector').val() == 'neutrino') {
     from_mantle = mantle_nu_lum();
     min = 0;
-    max = 20;
+    max = 60;
     console.log("neutrino");
   //var min = d3.min(heatmap, function(subunit){
   //  return d3.min(subunit);

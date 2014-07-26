@@ -282,7 +282,13 @@ class CrustModel:
         #    #nu = nu + self.crust_model[i, 49] / (cdist([point[52:55]], MDCST_xyz, 'sqeuclidean'))
         #    #nu = nu + self.crust_model[i, 50] / (cdist([point[52:55]], LOCST_xyz, 'sqeuclidean'))
         #    
-        self.crust_model[:, self.C.NU] =  0# / self.crust_model[:, self.C.AREA]
+        here = os.path.dirname(__file__)
+        nu_file = open(os.path.join(here, "2.0tnu.csv"), "r")
+        nu = []
+        for l in nu_file:
+            nu.append(float(l.strip()))
+
+        self.crust_model[:, self.C.NU] =  nu# / self.crust_model[:, self.C.AREA]
 
 
         #size = len(self.crust_model[:,0])
