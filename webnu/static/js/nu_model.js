@@ -441,52 +441,6 @@ $(document).ready(function() {
     function mantle_uniform_slider_generic(with_update){
       with_update = typeof with_update !== 'undefined' ? with_update : true;
       //the whole thing cause this is called outside of an event
-      var k40;
-      var u238;
-      var th232;
-      if(name == "k40"){
-      k40 = document.getElementById("mantle_uniform_k40_slider").value;
-      if (document.getElementById("fixed_ku_ratio_bool").checked){
-        ratio = document.getElementById("fixed_ku_ratio").value;
-        u = (k40 /ratio * 1000);
-        u238 = document.getElementById("mantle_uniform_u238_slider").value = u;
-      }
-      if (document.getElementById("fixed_thu_ratio_bool").checked){
-        ratio = document.getElementById("fixed_thu_ratio").value;
-        u238 = document.getElementById("mantle_uniform_u238_slider").value;
-        th232 = (u * ratio);
-        document.getElementById("mantle_uniform_th232_slider").value = th232;
-      }
-    }
-      if(name == "u238"){
-      u238 = document.getElementById("mantle_uniform_u238_slider").value;
-      if (document.getElementById("fixed_ku_ratio_bool").checked){
-        ratio = document.getElementById("fixed_ku_ratio").value;
-        k40 = (u238 * ratio / 1000);
-        console.log(k40);
-        document.getElementById("mantle_uniform_k40_slider").value = k40;
-      }
-      if (document.getElementById("fixed_thu_ratio_bool").checked){
-        ratio = document.getElementById("fixed_thu_ratio").value;
-        th232 = document.getElementById("mantle_uniform_u238_slider").value;
-        th232 = (u238 * ratio);
-        document.getElementById("mantle_uniform_th232_slider").value = th232;
-      }
-    }
-      if(name == "th232"){
-      th232 = document.getElementById("mantle_uniform_th232_slider").value;
-      if (document.getElementById("fixed_thu_ratio_bool").checked){
-        ratio = document.getElementById("fixed_thu_ratio").value;
-        u238 = (th232/ ratio);
-        document.getElementById("mantle_uniform_u238_slider").value = u238;
-      }
-      if (document.getElementById("fixed_ku_ratio_bool").checked){
-        ratio = document.getElementById("fixed_ku_ratio").value;
-        u238 = document.getElementById("mantle_uniform_u238_slider").value;
-        k40 = (u238 * ratio / 1000);
-        document.getElementById("mantle_uniform_k40_slider").value = k40;
-      }
-    }
       k40 = document.getElementById("mantle_uniform_k40_slider").value;
       u238 = document.getElementById("mantle_uniform_u238_slider").value;
       th232 = document.getElementById("mantle_uniform_th232_slider").value;
@@ -744,7 +698,7 @@ function mantle_nu_lum(){
   console.log("U:  " + u_lum * 1e-6);
   console.log("Th: " + th_lum* 1e-6);
   console.log(nu)
-  return nu
+  return u_tnu + th_tnu;
 }
 
 function bse_less_crust_masses(){
