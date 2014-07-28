@@ -304,12 +304,6 @@ function draw_geo_lines(){
 //build controls for each layer in the PREM
 mantle_layers = new Array();
 function mantle_concentric_control_factory(){
-  function label_factory(layer, iso, precision, units){
-    return function(){
-        val = document.querySelector(".mantle_"+iso+"_slider[data-layer='"+layer+"']").value;
-        document.getElementById("mantle_"+iso+"_label_"+layer+"").textContent = parseFloat(val).toFixed(precision) + units;
-    }
-  }
   mlc = $("#mantle_layer_container");
   for (var layer=prem.length; layer--;){
       outer_r = parseFloat(prem[layer][1]);
@@ -330,28 +324,22 @@ function mantle_concentric_control_factory(){
       <tbody>\
         <tr>\
           <td>U</td>\
-          <td><input min=0 max=50 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='mantle_u238_slider range_responsive has_ratios' type='range'></td>\
-          <td><span id='mantle_u238_label_"+layer+"'></span></td>\
+          <td><input id='mantle_u238_slider"+layer+"' min=0 max=50 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='mantle_u238_slider range_responsive has_ratios' type='range'></td>\
+          <td><span id='mantle_u238_label_"+layer+"' data-label-for='mantle_u238_slider"+layer+"' data-label-suffix='ng/g' data-label-precision='1'></span></td>\
         </tr>\
         <tr>\
           <td>Th</td>\
-          <td><input min=0 max=200 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='mantle_th232_slider range_responsive has_ratios' type='range'></td>\
-          <td><span id='mantle_th232_label_"+layer+"'></span></td>\
+          <td><input id='mantle_th232_slider"+layer+"' min=0 max=200 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='mantle_th232_slider range_responsive has_ratios' type='range'></td>\
+          <td><span id='mantle_th232_label_"+layer+"' data-label-for='mantle_th232_slider"+layer+"' data-label-suffix='ng/g' data-label-precision='1'></span></td>\
         </tr>\
         <tr>\
           <td>K</td>\
-          <td><input min=0 max=600 step=1 data-layer='"+layer+"' data-isotope='k40' class='mantle_k40_slider range_responsive has_ratios' type='range'></td>\
-          <td><span id='mantle_k40_label_"+layer+"'></span></td>\
+          <td><input id='mantle_k40_slider"+layer+"' min=0 max=600 step=1 data-layer='"+layer+"' data-isotope='k40' class='mantle_k40_slider range_responsive has_ratios' type='range'></td>\
+          <td><span id='mantle_k40_label_"+layer+"' data-label-for='mantle_k40_slider"+layer+"' data-label-suffix='µg/g' data-label-precision='0'></span></td>\
         </tr>\
       </tbody>\
     </table>\
         ");
-    k40_label = label_factory(layer, 'k40', 0, 'µg/g');
-    th232_label = label_factory(layer, 'th232', 1, 'ng/g');
-    u238_label = label_factory(layer, 'u238', 1, 'ng/g');
-  document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").addEventListener("update_label", k40_label);
-  document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").addEventListener("update_label", th232_label);
-  document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").addEventListener("update_label", u238_label);
   }
     document.getElementById("2_layer_boundary_slider").setAttribute("min", Math.min.apply(Math, mantle_layers));
     document.getElementById("2_layer_boundary_slider").setAttribute("max", Math.max.apply(Math, mantle_layers));
@@ -413,6 +401,7 @@ $(document).ready(function() {
   load_prem();
   mantle_concentric_control_factory();
   bse_less_crust_masses();
+  connect_labels();
 
 
   //UI Components
@@ -444,9 +433,6 @@ $(document).ready(function() {
       k40 = document.getElementById("mantle_uniform_k40_slider").value;
       u238 = document.getElementById("mantle_uniform_u238_slider").value;
       th232 = document.getElementById("mantle_uniform_th232_slider").value;
-      document.getElementById("mantle_uniform_k40_value").textContent = parseFloat(k40).toFixed(0) + "µg/g";
-      document.getElementById("mantle_uniform_u238_value").textContent = parseFloat(u238).toFixed(1) + "ng/g";
-      document.getElementById("mantle_uniform_th232_value").textContent = parseFloat(th232).toFixed(1) + "ng/g";
       layer_sliders = document.getElementsByClassName("mantle_k40_slider");
       for (var i = 0; i < layer_sliders.length; ++i) {
         layer_sliders[i].value = k40;
@@ -556,6 +542,10 @@ $(document).ready(function() {
   setup_display();
   updateThingsWithServer();
   draw_geo_lines();
+  sliders = document.querySelectorAll("input[type='range']");
+  for (var i=sliders.length; i--;){
+    sliders[i].dispatchEvent(new Event("update_label"));
+  }
 
   document.getElementById("plot_container").addEventListener("mousemove", plot_overlay);
   document.getElementById("bse_u238_slider").addEventListener("input", bse_less_crust_masses);
@@ -718,4 +708,17 @@ function bse_less_crust_masses(){
   power = (k_heat + u_heat + th_heat) * 1e-12; //TW
   document.getElementById("bse_rad_power").textContent = power.toFixed(1);
   return power;
+}
+
+function connect_labels(){
+  var labels = document.querySelectorAll("[data-label-for]");
+  for (var i=labels.length; i--;){
+    slider = document.getElementById(labels[i].getAttribute("data-label-for"));
+    slider.addEventListener("update_label", function(){
+      label = document.querySelector('[data-label-for="'+this.getAttribute("id")+'"]');
+      precision = parseInt(label.getAttribute("data-label-precision"));
+      suffix = label.getAttribute("data-label-suffix");
+      label.textContent = parseFloat(this.value).toFixed(precision) + suffix;
+    });
+  }
 }
