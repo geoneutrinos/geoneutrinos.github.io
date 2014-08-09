@@ -11,6 +11,8 @@ var earth_surface_area = 5.1e14 // m^2
 
 var crust_data = new Array();
 var prem  = new Array();
+var mantle = {};
+
 container_width = $(".plot_container").width()
 var width = container_width,
     height = container_width/2;
@@ -343,6 +345,10 @@ function mantle_concentric_control_factory(){
   }
     document.getElementById("2_layer_boundary_slider").setAttribute("min", Math.min.apply(Math, mantle_layers));
     document.getElementById("2_layer_boundary_slider").setAttribute("max", Math.max.apply(Math, mantle_layers));
+    document.getElementById("2_layer_boundary_slider").value = 32;
+    inner_r = prem[32][0];
+    text_content = pad_str_num(((earth_radius * 1000) - inner_r).toFixed(0), 4, "0");
+    document.getElementById("2_layer_boundary_value").textContent = text_content;
   }
 }
 
@@ -356,21 +362,21 @@ function pad_str_num(str, width, fill){
 }
 
 function deal_with_2_layer_boundary_change(){
-  inner_r = prem[parseInt(this.value)][0];
+  boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
+  inner_r = prem[boundary_i][0];
   text_content = pad_str_num(((earth_radius * 1000) - inner_r).toFixed(0), 4, "0");
   document.getElementById("2_layer_boundary_value").textContent = text_content;
   for (layer in prem){
     if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
-      if (layer > parseInt(this.value)){
-        console.log(layer);
+      if (layer > boundary_i){
         k40 = document.getElementById("2_layer_upper_k40_slider").value;
         th232 = document.getElementById("2_layer_upper_th232_slider").value;
         u238 = document.getElementById("2_layer_upper_u238_slider").value;
         document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").value = k40;
         document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").value = th232;
         document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").value = u238;
+        console.log(k40);
       } else {
-        console.log(layer);
         k40 = document.getElementById("2_layer_lower_k40_slider").value;
         th232 = document.getElementById("2_layer_lower_th232_slider").value;
         u238 = document.getElementById("2_layer_lower_u238_slider").value;
@@ -392,8 +398,13 @@ function deal_with_2_layer_boundary_change(){
   for (var i = 0; i < layer_sliders.length; ++i) {
     layer_sliders[i].dispatchEvent(new Event('update_label'));
   }
+  updateThings()
 }
 
+var elms = document.getElementsByClassName("2_layer_mantle");
+for (var i = 0; i < elms.length; i++){
+ elms[i].addEventListener("ratios_done", deal_with_2_layer_boundary_change);
+}
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 
 $(document).ready(function() {
@@ -518,7 +529,7 @@ $(document).ready(function() {
       u238_elm.dispatchEvent(new Event('update_label'));
       th232_elm.dispatchEvent(new Event('update_label'));
       k40_elm.dispatchEvent(new Event('update_label'));
-      updateThings();
+      this.dispatchEvent(new Event("ratios_done"));
       }
     }
   var has_ratio_list = document.getElementsByClassName("has_ratios");
