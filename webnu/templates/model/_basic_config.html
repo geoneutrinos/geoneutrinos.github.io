@@ -4,9 +4,27 @@
     <select id="plot_display_selector" class="causes_server_update form-control">
       <option value="thickness" selected>Crust Thickness (km)</option>
       <option value="heat">Heat Flux (mW/m^2)</option>
-      <option value="neutrino">Neutrino Flux (TNU)</option>
-      <option value="ratio">Mantle Neutrino Ratio (%)</option>
+      <option value="neutrino_flux">Neutrino Flux (nu cm-2 s-1)</option>
+      <option value="neutrino">Neutrino Signal (TNU)</option>
+      <option value="geonu_fraction">Geo-neutrino Fraction</option>
+      <option value="mantle_ratio">Mantle Signal-to-Background Ratio</option>
+      <option value="mantle_uncertain">Mantle Signal Fractional Uncertainty</option>
     </select>
+    <h5>Sources</h5>
+    <div class="checkbox">
+      <label>
+        <input class="" name="sources" value="u" type="checkbox" checked> Uranium
+      </label><br/>
+      <label>
+        <input class="" name="sources" value="th" type="checkbox" checked> Thorium
+      </label><br/>
+      <label>
+        <input class="" name="sources" value="k" type="checkbox" checked> Potassium
+      </label><br/>
+      <label>
+        <input class="" name="sources" value="r" type="checkbox" checked> Reactors
+      </label>
+    </div>
   </div>
 </div>
 <div class="panel panel-default">
