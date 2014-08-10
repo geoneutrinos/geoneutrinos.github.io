@@ -9,7 +9,7 @@ var k40_lum = 2.07 * 1e5; // l / kg µs
 var earth_radius = 6.372; //megameters
 var earth_surface_area = 5.1e14 // m^2
 
-var crust_data = new Array();
+var crust_data;
 var prem  = new Array();
 var mantle = {};
 
@@ -126,16 +126,6 @@ function setup_display(){
   }
 }
 function updateThingsWithServer(){
-  var output;
-  if ($('#plot_display_selector').val() == 'thickness') {
-    output = "&output=t";
-  } else if ($('#plot_display_selector').val() == 'heat') {
-    output = "&output=q";
-  } else if ($('#plot_display_selector').val() == 'neutrino') {
-    output = "&output=n";
-  } else if ($('#plot_display_selector').val() == 'ratio') {
-    output = "&output=n";
-  }
   $("#scale_title_placeholder").text("Loading...");
   var values = [];
   //var plotsrc = "";
@@ -148,21 +138,11 @@ function updateThingsWithServer(){
     console.log(crust_u238[i].value);
   }
   
-  plotsrc = "/plot.json?layers=" + values.join("") + output + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
-  total_crust_rad = "/total_rad_power.json?layers=" + values.join("") + "&output=q" + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
-
-  $.ajax({
-    url: total_crust_rad,
-    success: function(d){
-      console.log(d);
-      document.getElementById("total_crust_power").textContent = d;
-    }
-  })
-
+  plotsrc = "/plot.json?layers=" + values.join("") + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
 
 
   d3.json(plotsrc, function(data) {
-    crust_data[0] = (data);
+    crust_data = (data);
     updateThings();
   });
 }
@@ -171,12 +151,12 @@ function updateThings(){
   var from_mantle = 0;
   var min = 0;
   var max = 1;
-  var heatmap = crust_data[0];
-    var dx = heatmap[0].length,
-    dy = heatmap.length;
+  var heatmap;
 
+    document.getElementById("total_crust_power").textContent = (parseFloat(crust_data.heat.total)/1e12).toFixed(1);
     display_power();
   if ($('#plot_display_selector').val() == 'thickness') {
+    heatmap = crust_data.thickness;
     min = 0;
     max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
@@ -188,15 +168,12 @@ function updateThings(){
     min = 0;
     max = 60;
     console.log("neutrino");
-  //var min = d3.min(heatmap, function(subunit){
-  //  return d3.min(subunit);
-  //});
-  //var max = d3.max(heatmap, function(subunit){
-  //  return d3.max(subunit);
-  //});
   } else if ($('#plot_display_selector').val() == 'ratio') {
     console.log("ratio");
   }
+
+  var dx = heatmap[0].length,
+  dy = heatmap.length;
 
   //var min = d3.min(heatmap, function(subunit){
   //  return d3.min(subunit);

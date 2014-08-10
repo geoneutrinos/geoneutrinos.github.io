@@ -70,6 +70,9 @@ class Column:
             'MDCST_D': 58,
             'LOCST_D': 59,
             'HEAT_SANS_AREA': 60,
+            'HEAT_U': 61,
+            'HEAT_TH': 62,
+            'HEAT_K': 63,
             }
     def size(self,):
         return len(self.columns)
@@ -189,31 +192,30 @@ class CrustModel:
         self.compute_layer_conc()
         
         log.debug("Heat: Starting Heat Loop")
-        self.crust_model[:,(26,27,28,29,30)] = (
-        self.crust_model[:,(31,34,37,40,43)] * u_heat + \
-        self.crust_model[:,(32,35,38,41,44)] * th_heat + \
-        self.crust_model[:,(33,36,39,42,45)] * k_heat )
+        u_total_heat = self.crust_model[:,(31,34,37,40,43)] * u_heat
+        th_total_heat = self.crust_model[:,(32,35,38,41,44)] * th_heat
+        k_total_heat = self.crust_model[:,(33,36,39,42,45)] * k_heat 
 
         log.debug("Heat: Heat Loop Done")
         layers = []
         for code in self.layers:
             if 's' == code :
-                layers.append(self.C.SFTSD_H)
+                layers.append(0)
             elif 'h' == code:
-                layers.append(self.C.HDSD_H)
+                layers.append(1)
             elif 'u' == code:
-                layers.append(self.C.UPCST_H)
+                layers.append(2)
             elif 'm' == code:
-                layers.append(self.C.MDCST_H)
+                layers.append(3)
             elif 'l' == code:
-                layers.append(self.C.LOCST_H)
+                layers.append(4)
             else:
                 raise ValueError('invalid crust code')
         log.debug("Heat: Summing Requested Layers")
-        self.crust_model[:, self.C.HEAT] = np.sum(self.crust_model[:, layers], axis=1)
-        self.crust_model[:, self.C.HEAT_SANS_AREA] = self.crust_model[:, self.C.HEAT]
-        self.crust_model[:, self.C.HEAT] = self.crust_model[:, self.C.HEAT] / self.crust_model[:, self.C.AREA]
-        self.crust_model[:, self.C.HEAT] = self.crust_model[:, self.C.HEAT] / 1000
+        self.crust_model[:, self.C.HEAT_U] = np.sum(u_total_heat[:,layers], axis=1) / self.crust_model[:, self.C.AREA] /1000
+        self.crust_model[:, self.C.HEAT_TH] = np.sum(th_total_heat[:, layers], axis=1) / self.crust_model[:, self.C.AREA] /1000
+        self.crust_model[:, self.C.HEAT_K] = np.sum(k_total_heat[:, layers], axis=1) / self.crust_model[:, self.C.AREA]/ 1000
+        self.crust_model[:, self.C.HEAT_SANS_AREA] = np.sum(u_total_heat, axis=1) + np.sum(th_total_heat, axis=1) + np.sum(k_total_heat,axis = 1)
 
         log.debug("Heat: Done")
 
@@ -227,61 +229,6 @@ class CrustModel:
         th_nu = 16.2
         k_nu = .0271
 
-        #self.spherical_to_cartesian()
-        #SFTSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.SFTSD_D])
-        #HDSD_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.HDSD_D])
-        #UPCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.UPCST_D])
-        #MDCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.MDCST_D])
-        #LOCST_xyz = self.spherical_to_cartesian(True, self.crust_model[:, self.C.LOCST_D])
-
-        #log.debug("Nu: Calling compute_layer_conc()")
-        #self.compute_layer_conc()
-        #
-        #log.debug("Nu: Starting Nu Loop")
-        #self.crust_model[:,(46,47,48,49,50)] = (
-        #self.crust_model[:,(31,34,37,40,43)] * u_nu + \
-        #self.crust_model[:,(32,35,38,41,44)] * th_nu + \
-        #self.crust_model[:,(33,36,39,42,45)] * k_nu )
-
-        log.debug("Nu: Nu Loop Done")
-        #layers = []
-        #for code in self.layers:
-        #    if 's' == code :
-        #        layers.append(self.C.SFTSD_NU)
-        #    elif 'h' == code:
-        #        layers.append(self.C.HDSD_NU)
-        #    elif 'u' == code:
-        #        layers.append(self.C.UPCST_NU)
-        #    elif 'm' == code:
-        #        layers.append(self.C.MDCST_NU)
-        #    elif 'l' == code:
-        #        layers.append(self.C.LOCST_NU)
-        #    else:
-        #        raise ValueError('invalid crust code')
-        #log.debug("Nu: Summing Requested Layers")
-        #self.crust_model[:, self.C.NU] = np.sum(self.crust_model[:, layers], axis=1)
-        #for i, point in enumerate(self.crust_model):
-        #    for layer in layers:
-        #        self.crust_model[i, self.C.NU] += point[layer]
-        #    #self.crust_model[i, self.C.NU] = self.crust_model[i, self.C.NU] / (self.crust_model[i, self.C.AREA] * 1000 )
-
-        #log.debug("Nu: integral grid")
-
-        #print np.sum(self.crust_model[:,self.C.NU])
-        #here = os.path.dirname(__file__)
-        #self.spherical_to_cartesian()
-        #nu = np.zeros(len(self.crust_model))
-        #self.crust_model[:, self.C.NU] = nu
-        #for i, point in enumerate(self.crust_model):
-        #    nu = nu + self.crust_model[i, 46] / (cdist([point[52:55]], SFTSD_xyz, 'sqeuclidean'))
-        #    print np.sum(nu)
-        #    print np.sum(self.crust_model[:, 46])
-        #    break
-        #    #nu = nu + self.crust_model[i, 47] / (cdist([point[52:55]], HDSD_xyz, 'sqeuclidean'))
-        #    #nu = nu + self.crust_model[i, 48] / (cdist([point[52:55]], UPCST_xyz, 'sqeuclidean'))
-        #    #nu = nu + self.crust_model[i, 49] / (cdist([point[52:55]], MDCST_xyz, 'sqeuclidean'))
-        #    #nu = nu + self.crust_model[i, 50] / (cdist([point[52:55]], LOCST_xyz, 'sqeuclidean'))
-        #    
         here = os.path.dirname(__file__)
         nu_file = open(os.path.join(here, "2.0tnu.csv"), "r")
         nu = []
@@ -290,43 +237,6 @@ class CrustModel:
 
         self.crust_model[:, self.C.NU] =  nu# / self.crust_model[:, self.C.AREA]
 
-
-        #size = len(self.crust_model[:,0])
-        #output = np.zeros(shape=(size))
-
-        #try:
-        #    pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'rb')
-        #    integral_grd = pickle.load(pkl_file)
-        #except IOError: 
-        #    log.debug("Nu: Spherical to Cartesian")
-        #    self.spherical_to_cartesian()
-
-        #    log.debug("Nu: No integal grid found, assuming first run, calculating...")
-        #    data = np.zeros(shape=(size,size), dtype='float16')
-
-        #    log.debug("Nu: This will take a while...")
-        #    for i1, row1 in enumerate(self.crust_model):
-        #        for i2, row2 in enumerate(self.crust_model):
-        #            p1 = (row1[self.C.X], row1[self.C.Y], row1[self.C.Z])
-        #            p2 = (row2[self.C.X], row2[self.C.Y], row2[self.C.Z])
-        #            data[i1, i2] = self.one_r_sq_cart(p1, p2) #self.one_r_sq(lon, lat, lon_0, lat_0)
-        #        if i1 == 2:
-        #            break
-
-
-        #    log.debug("Nu: Writing Pickle file")
-        #    #pkl_file = open(os.path.join(here, 'int_grd.pkl'), 'wb')
-        #    #pickle.dump(data, pkl_file)
-        #    log.debug("Nu: psyche, nothing was wirtten cause low memory")
-        #    integral_grd = data
-
-        #log.debug("Nu: Integrating...")
-        #print integral_grd[0]
-        #for i, point in enumerate(self.crust_model):
-        #    output += integral_grd[i] * point[self.C.NU] 
-    
-        #output = [1]
-        #return (lons, lats, output)
         log.debug("Nu: Done")
     
     def spherical_to_cartesian(self, out=False, depth=0):
@@ -490,44 +400,10 @@ class CrustModel:
         self.layers = layers.lower()
 
     def compute_output(self):
-        if self.dataout == self.C.THICKNESS:
-            self.thickness()
-        elif self.dataout == self.C.HEAT:
-            self.heat()
-        elif self.dataout == self.C.MASS:
-            self.mass(do=mass)
-        elif self.dataout == self.C.NU:
-            self.nu()
-            #self.nu_lons, self.nu_lats, self.nu_grd = self.nu()
-
-    def select_output(self, output = "t"):
-        """Selects the output for the griddata function
-
-        The following parameters are ok:
-            t, thickness in meters
-            p, density in kg/m^3
-            q, heat in watts (J/s)
-            c, neutrino quanta per second
-        """
-        output = output.lower()
-        if output == u't':
-            self.dataout = self.C.THICKNESS
-        elif output == u'p':
-            if len(self.layers) == 1:
-                self.dataout = self.density()
-            else:
-                raise ValueError('density only accepts one layer')
-        elif output == u'q':
-            self.dataout = self.C.HEAT
-        elif output == u'o':
-            self.dataout = self.C.OCEAN_F
-        elif output == u'm':
-            self.dataout = self.C.MASS
-        elif output == u'n':
-            self.dataout = self.C.NU
-        else:
-            raise ValueError('no valid output parameter was found')
-
+        self.thickness()
+        self.heat()
+        self.mass(do="mass")
+        self.nu()
 
     def griddata(self):
         """Dump the contents of a CrustModel instance to a grid format
@@ -546,8 +422,31 @@ class CrustModel:
 
         lons = np.unique(self.crust_model[:,0])
         lats = np.unique(self.crust_model[:,1])
+        datas = {}
+        datas["thickness"] = np.empty(shape=(len(lats),len(lons)))
+        datas["reactor"] = {
+                "flux": np.empty(shape=(len(lats),len(lons))),
+                "signal": np.empty(shape=(len(lats),len(lons))),
+                "flux33": np.empty(shape=(len(lats),len(lons))),
+                "signal33": np.empty(shape=(len(lats),len(lons))),
+                }
+        datas["heat"] = {
+                "u": np.empty(shape=(len(lats),len(lons))),
+                "th": np.empty(shape=(len(lats),len(lons))),
+                "k": np.empty(shape=(len(lats),len(lons))),
+                "total": np.sum(self.crust_model[:, self.C.HEAT_SANS_AREA])
+                }
+        datas["nu_flux"] = {
+                "u": np.empty(shape=(len(lats),len(lons))),
+                "th": np.empty(shape=(len(lats),len(lons))),
+                "k": np.empty(shape=(len(lats),len(lons))),
+                }
+        datas["nu_signal"] = {
+                "u": np.empty(shape=(len(lats),len(lons))),
+                "th": np.empty(shape=(len(lats),len(lons))),
+                "k": np.empty(shape=(len(lats),len(lons))),
+                }
 
-        data = np.empty(shape=(len(lats),len(lons)))
         lon = {}
         lat = {}
         for index, point in np.ndenumerate(lons):
@@ -556,24 +455,27 @@ class CrustModel:
         for index, point in np.ndenumerate(lats):
             lat[point] = index[0]
 
+        log.info("Griddata")
         for i, point in enumerate(cm):
             lon_p = self.crust_model[i, 0]
             lat_p = self.crust_model[i, 1]
-            
-            #if self.dataout == self.C.NU:
-            #    data[lat[lat_p],lon[lon_p]] = cm[0]
-            #else:
-            #    data[lat[lat_p],lon[lon_p]] = point[self.dataout]
-            data[lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["reactor"]["flux"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["reactor"]["signal"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["reactor"]["flux33"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["reactor"]["signal33"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            datas["thickness"][lat[lat_p],lon[lon_p]] = point[self.C.THICKNESS]
+            datas["heat"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_U]
+            datas["heat"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_TH]
+            datas["heat"]["k"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_K]
+            #datas["nu_flux"]["u"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["nu_flux"]["th"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["nu_flux"]["k"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["nu_signal"]["u"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["nu_signal"]["th"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            #datas["nu_signal"]["k"][lat[lat_p],lon[lon_p]] = point[self.dataout]
         
-        return (lons + 1,lats - 1,data) # coords need to be centerpoint
-    
-    def calc_depth(self):
-        self.crust_model[:, self.C.SFTSD_D] = self.crust_model[:, self.C.SFTSD_T]
-        self.crust_model[:, self.C.HDSD_D] = self.crust_model[:, self.C.SFTSD_D] + self.crust_model[:, self.C.HDSD_T]
-        self.crust_model[:, self.C.UPCST_D] = self.crust_model[:, self.C.HDSD_D] + self.crust_model[:, self.C.UPCST_T]
-        self.crust_model[:, self.C.MDCST_D] = self.crust_model[:, self.C.UPCST_D] + self.crust_model[:, self.C.MDCST_T]
-        self.crust_model[:, self.C.LOCST_D] = self.crust_model[:, self.C.MDCST_D] + self.crust_model[:, self.C.LOCST_T]
+        log.info("Griddata done")
+        return (lons + 1,lats - 1,datas) # coords need to be centerpoint
 
     def total_rad_power(self):
         return "{0:0.1f}".format(np.sum(self.crust_model[:, self.C.HEAT_SANS_AREA]) * 1e-12)
@@ -590,7 +492,6 @@ class CrustModel:
         for i, point in enumerate(self.crust_model):
             self.crust_model[i,self.C.AREA] = self.area(point[1], point[1] - 2, 6371)
         self.mass()
-        self.calc_depth()
     
 if __name__ == "__main__":
     print "This is the CrustModel class for the geonu project, running as a"
