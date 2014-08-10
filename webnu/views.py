@@ -1,10 +1,18 @@
 from pyramid.response import Response
+import numpy
 
+import json
 import logging
 import os
 import geonu.plotting as gplt
 import numpy as np
 log = logging.getLogger(__name__)
+
+class NumpyAwareJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            return obj.tolist()[::-1]
+        return json.JSONEncoder.default(self, obj)
 
 def my_view(request):
     return {'project':'webnu'}
@@ -12,9 +20,7 @@ def my_view(request):
 def plt_json(request):
     response = Response(content_type='application/json')
     lon, lat, data = gplt.get_data(request)
-    data = data.tolist()
-    data.reverse()
-    response.body = str(data)
+    response.body = json.dumps(data, cls=NumpyAwareJSONEncoder)
     return response
 
 def total_rad_power_json(request):
