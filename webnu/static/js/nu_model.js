@@ -125,6 +125,22 @@ function setup_display(){
     return [u01x / u01d, u01y / u01d];
   }
 }
+
+function twodAdd(A, B){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+      if (B.length == 0 ){ //first time called
+        row.push(A[i][ii]);
+      } else {
+        row.push(A[i][ii] + B[i][ii]);
+      }
+    }
+    result.push(row);
+  }
+  return result;
+}
 function updateThingsWithServer(){
   $("#scale_title_placeholder").text("Loading...");
   var values = [];
@@ -151,7 +167,23 @@ function updateThings(){
   var from_mantle = 0;
   var min = 0;
   var max = 1;
-  var heatmap;
+  var heatmap = new Array();
+  // heatmap init to zeros for if nothing is selected...
+  for (i = 0; i < crust_data.thickness.length; i++){
+    row = new Array();
+    for (ii = 0; ii < crust_data.thickness[i].length; ii++){
+      row.push(0);
+      }
+    heatmap.push(row);
+    }
+
+  var include = new Array();
+  var sources = document.getElementsByClassName("sources_checkboxes");
+  for (i = 0; i < sources.length; i++){
+    if (sources[i].checked){
+      include.push(sources[i].value);
+    }
+  }
 
     document.getElementById("total_crust_power").textContent = (parseFloat(crust_data.heat.total)/1e12).toFixed(1);
     display_power();
@@ -160,6 +192,15 @@ function updateThings(){
     min = 0;
     max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust_data.heat.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust_data.heat.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust_data.heat.k, heatmap);
+    }
     from_mantle = mantle_heat();
     min = 0;
     max = 140;
@@ -518,7 +559,7 @@ $(document).ready(function() {
   }
 
   //Draw Everything and Run the App :)
-  $(".causes_update").on("input", function(){
+  $(".causes_update").on("change", function(){
     updateThings();
   });
   $(".causes_server_update").on("change", function(){
