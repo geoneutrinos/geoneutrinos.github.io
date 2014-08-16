@@ -1,11 +1,14 @@
 from pyramid.response import Response
+import pyramid.httpexceptions as exc
 import numpy
 
 import json
+from gzip import GzipFile
 import logging
 import os
 import geonu.plotting as gplt
 import numpy as np
+
 log = logging.getLogger(__name__)
 
 class NumpyAwareJSONEncoder(json.JSONEncoder):
@@ -20,8 +23,15 @@ def my_view(request):
 def plt_json(request):
     response = Response(content_type='application/json')
     lon, lat, data = gplt.get_data(request)
-    response.body = json.dumps(data, cls=NumpyAwareJSONEncoder)
-    return response
+    filename = gplt.filename(request)
+    filename = filename + ".json.gz"
+    here = os.path.dirname(__file__)
+    image_path = os.path.join(here,'static','images', 'maps', filename)
+    if not os.path.isfile(image_path):
+        f = GzipFile(image_path, 'wb')
+        f.write(json.dumps(data, cls=NumpyAwareJSONEncoder))
+        f.close()
+    return exc.HTTPFound("/static/images/maps/" + filename)
 
 def total_rad_power_json(request):
     response = Response(content_type='application/json')
