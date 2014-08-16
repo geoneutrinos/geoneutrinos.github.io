@@ -204,10 +204,33 @@ function updateThings(){
     from_mantle = mantle_heat();
     min = 0;
     max = 140;
-  } else if ($('#plot_display_selector').val() == 'neutrino') {
-    from_mantle = mantle_nu_lum();
+  } else if ($('#plot_display_selector').val() == 'neutrino_flux') {
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust_data.nu_flux.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust_data.nu_flux.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust_data.nu_flux.k, heatmap);
+    }
+    from_mantle = mantle_nu_flux();
     min = 0;
-    max = 60;
+    max = 60000000;
+    console.log("neutrino");
+  } else if ($('#plot_display_selector').val() == 'neutrino') {
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust_data.nu_signal.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust_data.nu_signal.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust_data.nu_signal.k, heatmap);
+    }
+    from_mantle = mantle_nu_tnu();
+    min = 0;
+    max = 80;
     console.log("neutrino");
   } else if ($('#plot_display_selector').val() == 'ratio') {
     console.log("ratio");
@@ -273,20 +296,31 @@ function updateThings(){
   }
 
   // Finally, set the colorbar labels
+  if (max > 100){
+    var label_start = min + (max - min) * 0.1;
+    $("#sl_0_pc").text((label_start).toExponential());
+    $("#sl_25_pc").text((label_start + step).toExponential());
+    $("#sl_50_pc").text((label_start + (step * 2)).toExponential());
+    $("#sl_75_pc").text((label_start + (step * 3)).toExponential());
+    $("#sl_100_pc").text((label_start + (step * 4)).toExponential());
+  } else{
   var label_start = min + (max - min) * 0.1;
   $("#sl_0_pc").text((label_start).toFixed(1));
   $("#sl_25_pc").text((label_start + step).toFixed(1));
   $("#sl_50_pc").text((label_start + (step * 2)).toFixed(1));
   $("#sl_75_pc").text((label_start + (step * 3)).toFixed(1));
   $("#sl_100_pc").text((label_start + (step * 4)).toFixed(1));
+  }
 
   var display_value = $("#plot_display_selector").val();
   if (display_value == "thickness"){
     $("#scale_title_placeholder").text("Crust Thickness (km)");
   } else if (display_value == "heat"){
     $("#scale_title_placeholder").html("Heat Flux (mW/m<sup>2</sup>)");
+  } else if (display_value == "neutrino_flux"){
+    $("#scale_title_placeholder").html("Geoneutrino Flux (nu cm<sup>-2</sup>s<sup>-1</sup>)");
   } else if (display_value == "neutrino"){
-    $("#scale_title_placeholder").html("Geoneutrino Flux (TNU)");
+    $("#scale_title_placeholder").html("Geoneutrino Signal (TNU)");
   } else if (display_value == "ratio"){
     $("#scale_title_placeholder").text("Mantle/Total Neutrino Flux Ratio");
   } else {
@@ -691,7 +725,14 @@ function display_power(){
   h = (h * earth_surface_area / 1000) * 1e-12;
   document.getElementById('total_power').textContent = h.toFixed(1);
 }
-function mantle_nu_lum(){
+function mantle_nu_flux(){
+  var include = new Array();
+  var sources = document.getElementsByClassName("sources_checkboxes");
+  for (i = 0; i < sources.length; i++){
+    if (sources[i].checked){
+      include.push(sources[i].value);
+    }
+  }
   nu = 0; // /cm^2 µs
   k_lum = 0;
   u_lum = 0;
@@ -711,13 +752,52 @@ function mantle_nu_lum(){
   console.log("U_TNU: " + u_tnu);
   console.log("T_TNU: " + th_tnu);
 
-  nu = (k_lum + u_lum + th_lum) * 1e-6;
-  //nu = nu / earth_surface_area * 1000 // mW/m^2
-  console.log("K:  " + k_lum * 1e-6);
-  console.log("U:  " + u_lum * 1e-6);
-  console.log("Th: " + th_lum* 1e-6);
-  console.log(nu)
-  return u_tnu + th_tnu;
+    output = 0;
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      output = output + u_lum;
+    }
+    if (include.indexOf("th") > -1){
+      output = output + th_lum;
+    }
+    if (include.indexOf("k") > -1){
+      output = output + k_lum;
+    }
+  return output;
+}
+function mantle_nu_tnu(){
+  var include = new Array();
+  var sources = document.getElementsByClassName("sources_checkboxes");
+  for (i = 0; i < sources.length; i++){
+    if (sources[i].checked){
+      include.push(sources[i].value);
+    }
+  }
+  nu = 0; // /cm^2 µs
+  k_lum = 0;
+  u_lum = 0;
+  th_lum = 0;
+  for (index in prem){
+    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
+      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000 * 0.000117;
+      u238 = parseFloat($(".mantle_u238_slider[data-layer="+index+"]").val())/1e9;
+      th232 = parseFloat($(".mantle_th232_slider[data-layer="+index+"]").val())/1e9;
+      k_lum = k_lum + (k40 *  prem[index][3] * k40_lum);
+      u_lum = u_lum + (u238 * prem[index][3] * u238_lum);
+      th_lum = th_lum + (th232 * prem[index][3] * th232_lum);
+    }
+  }
+  u_tnu = (u_lum * 0.55) / 7.6e4; //the tnu calculation for u
+  th_tnu = (th_lum * 0.55) / 2.5e5; //the tnu calculation for th
+
+  nu = (k_lum + u_lum + th_lum) * 1e-6; // why is this here???
+    output = 0;
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      output = output + u_tnu;
+    }
+    if (include.indexOf("th") > -1){
+      output = output + th_tnu;
+    }
+    return output
 }
 
 function bse_less_crust_masses(){
