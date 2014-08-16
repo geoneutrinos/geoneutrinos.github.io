@@ -73,6 +73,11 @@ class Column:
             'HEAT_U': 61,
             'HEAT_TH': 62,
             'HEAT_K': 63,
+            'NU_FLUX_U': 64,
+            'NU_FLUX_TH': 65,
+            'NU_FLUX_K': 66,
+            'NU_SIG_U': 67,
+            'NU_SIG_TH': 68,
             }
     def size(self,):
         return len(self.columns)
@@ -225,17 +230,58 @@ class CrustModel:
 
 
     def nu(self):
-        u_nu = 76.4
-        th_nu = 16.2
-        k_nu = .0271
+        u_tnu = 12.8 * 0.55
+        th_tnu = 4.04 * 0.55
+
+        scale = 1e6
 
         here = os.path.dirname(__file__)
-        nu_file = open(os.path.join(here, "2.0tnu.csv"), "r")
+        nu_file = open(os.path.join(here, "crust_signal.csv"), "r")
         nu = []
         for l in nu_file:
-            nu.append(float(l.strip()))
+            nu.append([float(e) for e in l.split(',')])
 
-        self.crust_model[:, self.C.NU] =  nu# / self.crust_model[:, self.C.AREA]
+        nu = np.array(nu)
+
+        self.crust_model[:, self.C.NU_FLUX_U] = 0
+        self.crust_model[:, self.C.NU_FLUX_TH] = 0
+        self.crust_model[:, self.C.NU_FLUX_K] = 0
+        self.crust_model[:, self.C.NU_SIG_U] = 0
+        self.crust_model[:, self.C.NU_SIG_TH] = 0
+        layers = []
+        for code in self.layers:
+            if 's' == code :
+                self.crust_model[:, self.C.NU_FLUX_U] += nu[:, 3] * scale
+                self.crust_model[:, self.C.NU_FLUX_TH] +=nu[:, 4] * scale
+                self.crust_model[:, self.C.NU_FLUX_K] +=nu[:, 5] * scale
+                self.crust_model[:, self.C.NU_SIG_U] += nu[:, 3] * u_tnu
+                self.crust_model[:, self.C.NU_SIG_TH] += nu[:, 4] * th_tnu
+            elif 'h' == code:
+                self.crust_model[:, self.C.NU_FLUX_U] += nu[:, 3] * scale
+                self.crust_model[:, self.C.NU_FLUX_TH] +=nu[:, 4] * scale
+                self.crust_model[:, self.C.NU_FLUX_K] +=nu[:, 5] * scale
+                self.crust_model[:, self.C.NU_SIG_U] +=nu[:, 3] * u_tnu
+                self.crust_model[:, self.C.NU_SIG_TH] +=nu[:, 4] * th_tnu
+            elif 'u' == code:
+                self.crust_model[:, self.C.NU_FLUX_U] += nu[:, 6] * scale
+                self.crust_model[:, self.C.NU_FLUX_TH] +=nu[:, 7] * scale
+                self.crust_model[:, self.C.NU_FLUX_K] +=nu[:, 8] * scale
+                self.crust_model[:, self.C.NU_SIG_U] +=nu[:, 6] * u_tnu
+                self.crust_model[:, self.C.NU_SIG_TH] +=nu[:, 7] * th_tnu
+            elif 'm' == code:
+                self.crust_model[:, self.C.NU_FLUX_U] += nu[:, 9] * scale
+                self.crust_model[:, self.C.NU_FLUX_TH] +=nu[:, 10] * scale
+                self.crust_model[:, self.C.NU_FLUX_K] +=nu[:, 11] * scale
+                self.crust_model[:, self.C.NU_SIG_U] +=nu[:, 9] * u_tnu
+                self.crust_model[:, self.C.NU_SIG_TH] +=nu[:, 10] * th_tnu
+            elif 'l' == code:
+                self.crust_model[:, self.C.NU_FLUX_U] += nu[:, 12] * scale
+                self.crust_model[:, self.C.NU_FLUX_TH] +=nu[:, 13] * scale
+                self.crust_model[:, self.C.NU_FLUX_K] +=nu[:, 14] * scale
+                self.crust_model[:, self.C.NU_SIG_U] +=nu[:, 12] * u_tnu
+                self.crust_model[:, self.C.NU_SIG_TH] +=nu[:, 13] * th_tnu
+            else:
+                raise ValueError('invalid crust code')
 
         log.debug("Nu: Done")
     
@@ -444,7 +490,7 @@ class CrustModel:
         datas["nu_signal"] = {
                 "u": np.empty(shape=(len(lats),len(lons))),
                 "th": np.empty(shape=(len(lats),len(lons))),
-                "k": np.empty(shape=(len(lats),len(lons))),
+                "k": np.zeros(shape=(len(lats),len(lons))),
                 }
 
         lon = {}
@@ -467,12 +513,11 @@ class CrustModel:
             datas["heat"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_U]
             datas["heat"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_TH]
             datas["heat"]["k"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_K]
-            #datas["nu_flux"]["u"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["nu_flux"]["th"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["nu_flux"]["k"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["nu_signal"]["u"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["nu_signal"]["th"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["nu_signal"]["k"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            datas["nu_flux"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_U]
+            datas["nu_flux"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_TH]
+            datas["nu_flux"]["k"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_K]
+            datas["nu_signal"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.NU_SIG_U]
+            datas["nu_signal"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.NU_SIG_U]
         
         log.info("Griddata done")
         return (lons + 1,lats - 1,datas) # coords need to be centerpoint

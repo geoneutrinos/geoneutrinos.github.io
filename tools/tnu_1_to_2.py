@@ -23,16 +23,19 @@ for k in c_order:
     c_dict[k] = a
 
 i_dict = {}
-with open("tnu_1deg_crust_map.csv", "r") as f:
+with open("Crust_map.csv", "r") as f:
+    f.readline()
+    f.readline()
     r = csv.reader(f)
     for l in r:
-        lon, lat, data = l
+        lon, lat, data = l[0], l[1], l[2:20]
         a = area(float(lat) + 0.5, float(lat) - 0.5, 1)
-        i_dict[(lon, lat)] = {"area":a, "data":float(data)}
+        i_dict[(lon, lat)] = {"area":a, "data":[float(d) for d in data]}
 
 
 out_dict = {}
 for k in c_dict:
+    d = []
     a = c_dict[k]
     # need to figure out the 4 keys we need...
     lon = Decimal(k[0])
@@ -42,12 +45,14 @@ for k in c_dict:
     k3 = (str(lon + Decimal(1.5)), str(lat - Decimal(0.5)))
     k4 = (str(lon + Decimal(1.5)), str(lat - Decimal(1.5)))
 
-    pt1 = i_dict[k1]["data"] * (i_dict[k1]["area"]/a)
-    pt2 = i_dict[k2]["data"] * (i_dict[k2]["area"]/a)
-    pt3 = i_dict[k3]["data"] * (i_dict[k3]["area"]/a)
-    pt4 = i_dict[k4]["data"] * (i_dict[k4]["area"]/a)
+    for i, _ in enumerate(i_dict[k1]["data"]):
+        pt1 = i_dict[k1]["data"][i] * (i_dict[k1]["area"]/a)
+        pt2 = i_dict[k2]["data"][i] * (i_dict[k2]["area"]/a)
+        pt3 = i_dict[k3]["data"][i] * (i_dict[k3]["area"]/a)
+        pt4 = i_dict[k4]["data"][i] * (i_dict[k4]["area"]/a)
+        d.append(pt1 + pt2 + pt3 + pt4)
 
-    out_dict[k] = pt1 + pt2 + pt3 + pt4
+    out_dict[k] = d
 
 for k in c_order:
-    print out_dict[k]
+    print ",".join(["{:.3f}".format(e) for e in out_dict[k]])
