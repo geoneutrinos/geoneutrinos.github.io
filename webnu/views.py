@@ -26,12 +26,12 @@ def plt_json(request):
     filename = gplt.filename(request)
     filename = filename
     here = os.path.dirname(__file__)
-    image_path = os.path.join(here,'static','images', 'maps', filename + ".json.gz")
+    image_path = os.path.join(here,'static','cache', filename + ".json")
     if not os.path.isfile(image_path):
-        f = GzipFile(image_path, 'wb')
+        f = open(image_path, 'wb')
         f.write(json.dumps(data, cls=NumpyAwareJSONEncoder))
         f.close()
-    return exc.HTTPFound("/static/images/maps/" + filename + ".json")
+    return exc.HTTPFound("cache/" + filename + ".json")
 
 def total_rad_power_json(request):
     response = Response(content_type='application/json')

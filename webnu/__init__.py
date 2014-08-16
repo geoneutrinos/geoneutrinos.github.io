@@ -27,6 +27,7 @@ def main(global_config, **settings):
     config.add_static_view(name='css', path='webnu:static/css')
     config.add_static_view(name='js', path='webnu:static/js')
     config.add_static_view(name='v', path='webnu:static/vender')
+    config.add_static_view(name='cache', path='webnu:static/cache')
 
 
     config.add_route('model', '/model/')
