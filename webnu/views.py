@@ -24,14 +24,14 @@ def plt_json(request):
     response = Response(content_type='application/json')
     lon, lat, data = gplt.get_data(request)
     filename = gplt.filename(request)
-    filename = filename + ".json.gz"
+    filename = filename
     here = os.path.dirname(__file__)
-    image_path = os.path.join(here,'static','images', 'maps', filename)
+    image_path = os.path.join(here,'static','images', 'maps', filename + ".json.gz")
     if not os.path.isfile(image_path):
         f = GzipFile(image_path, 'wb')
         f.write(json.dumps(data, cls=NumpyAwareJSONEncoder))
         f.close()
-    return exc.HTTPFound("/static/images/maps/" + filename)
+    return exc.HTTPFound("/static/images/maps/" + filename + ".json")
 
 def total_rad_power_json(request):
     response = Response(content_type='application/json')
