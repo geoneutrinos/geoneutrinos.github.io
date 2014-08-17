@@ -265,24 +265,41 @@ function updateCrustThings(){
 
   // Compute requested heat
   crust.heat = {}
-  var heat = new Array();
+  var heat1 = new Array();
   for (i = 0; i < crust_data.area.length; i++){
     row = new Array();
     for (ii = 0; ii < crust_data.area[i].length; ii++){
       row.push(0);
       }
-    heat.push(row);
+    heat1.push(row);
     }
-  crust.heat.u = heat;
-  crust.heat.th = heat;
-  crust.heat.k = heat;
+  crust.heat.u = heat1;
+  var heat2 = new Array();
+  for (i = 0; i < crust_data.area.length; i++){
+    row = new Array();
+    for (ii = 0; ii < crust_data.area[i].length; ii++){
+      row.push(0);
+      }
+    heat2.push(row);
+    }
+  crust.heat.th = heat2;
+  var heat3 = new Array();
+  for (i = 0; i < crust_data.area.length; i++){
+    row = new Array();
+    for (ii = 0; ii < crust_data.area[i].length; ii++){
+      row.push(0);
+      }
+    heat3.push(row);
+    }
+  crust.heat.k = heat3;
+  crust.heat.total = 0;
 
   u_range = 10 / 1e-6;
   th_range = 10 / 1e-6;
   k_range = 100 / 1e-2;
-  c_u_heat = 98.5 / 1e-6;
-  c_th_heat = 26.3 / 1e-6;
-  c_k_heat = 3.33 / 1e-9;
+  c_u_heat = 98.5 * 1e-6;
+  c_th_heat = 26.3 * 1e-6;
+  c_k_heat = 3.33 * 1e-9;
 
     if (include.indexOf("s") > -1){
       c_u = parseFloat(document.getElementById("c_ssed_u").value)/u_range;
@@ -293,23 +310,97 @@ function updateCrustThings(){
       o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range;
     for (i = 0; i < crust_data.area.length; i++){
       for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust.heat.u[i][ii] += c_u * crust_data.crust_f[i][ii] * c_u_heat;
-        crust.heat.th[i][ii] += c_th * crust_data.crust_f[i][ii] * c_th_heat;
-        crust.heat.k[i][ii] += c_k * crust_data.crust_f[i][ii] * c_k_heat;
-        crust.heat.u[i][ii] += o_u * crust_data.ocean_f[i][ii] * c_u_heat;
-        crust.heat.th[i][ii] += o_th * crust_data.ocean_f[i][ii] * c_th_heat;
-        crust.heat.k[i][ii] += o_k * crust_data.ocean_f[i][ii] * c_k_heat;
+        crust.heat.u[i][ii] += (c_u   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (c_th * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (c_k   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (o_u   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (o_th * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (o_k   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
         }
       }
     }
     if (include.indexOf("h") > -1){
+      c_u = parseFloat(document.getElementById("c_hsed_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_hsed_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_hsed_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_hsed_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_hsed_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range;
+    for (i = 0; i < crust_data.area.length; i++){
+      for (ii = 0; ii < crust_data.area[i].length; ii++){
+        crust.heat.u[i][ii] += (c_u   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (c_th * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (c_k   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (o_u   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (o_th * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (o_k   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
+        }
+      }
     }
     if (include.indexOf("u") > -1){
+      c_u = parseFloat(document.getElementById("c_up_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_up_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_up_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_up_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_up_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_up_k").value)/k_range;
+    for (i = 0; i < crust_data.area.length; i++){
+      for (ii = 0; ii < crust_data.area[i].length; ii++){
+        crust.heat.u[i][ii] += (c_u   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (c_th * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (c_k   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (o_u   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (o_th * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (o_k   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
+        }
+      }
     }
     if (include.indexOf("m") > -1){
+      c_u = parseFloat(document.getElementById("c_mid_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_mid_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_mid_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_mid_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_mid_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_mid_k").value)/k_range;
+    for (i = 0; i < crust_data.area.length; i++){
+      for (ii = 0; ii < crust_data.area[i].length; ii++){
+        crust.heat.u[i][ii] += (c_u   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (c_th * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (c_k   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (o_u   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (o_th * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (o_k   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
+        }
+      }
     }
     if (include.indexOf("l") > -1){
+      c_u = parseFloat(document.getElementById("c_low_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_low_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_low_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_low_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_low_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_low_k").value)/k_range;
+    for (i = 0; i < crust_data.area.length; i++){
+      for (ii = 0; ii < crust_data.area[i].length; ii++){
+        crust.heat.u[i][ii] += (c_u   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (c_th * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (c_k   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (o_u   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (o_th * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (o_k   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
+        }
+      }
     }
+    for (i = 0; i < crust_data.area.length; i++){
+      for (ii = 0; ii < crust_data.area[i].length; ii++){
+        crust.heat.total += crust.heat.u[i][ii] + crust.heat.th[i][ii] + crust.heat.k[i][ii];
+        crust.heat.u[i][ii] = crust.heat.u[i][ii]/crust_data.area[i][ii]/1000;
+        crust.heat.th[i][ii] = crust.heat.th[i][ii]/crust_data.area[i][ii]/1000;
+        crust.heat.k[i][ii] = crust.heat.k[i][ii]/crust_data.area[i][ii]/1000;
+      }
+    }
+
+
 
   updateThings();
 }
@@ -336,7 +427,7 @@ function updateThings(){
     }
   }
 
-    //document.getElementById("total_crust_power").textContent = (parseFloat(crust_data.heat.total)/1e12).toFixed(1);
+    document.getElementById("total_crust_power").textContent = ((crust.heat.total)/1e12).toFixed(1);
     display_power();
   if ($('#plot_display_selector').val() == 'thickness') {
     heatmap = crust.thickness;
@@ -344,13 +435,13 @@ function updateThings(){
     max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
-      heatmap = twodAdd(twodDivide(crust.heat.u, crust_data.area), heatmap);
+      heatmap = twodAdd(crust.heat.u, heatmap);
     }
     if (include.indexOf("th") > -1){
-      heatmap = twodAdd(twodDivide(crust.heat.th, crust_data.area), heatmap);
+      heatmap = twodAdd(crust.heat.th, heatmap);
     }
     if (include.indexOf("k") > -1){
-      heatmap = twodAdd(twodDivide(crust.heat.k, crust_data.area), heatmap);
+      heatmap = twodAdd(crust.heat.k, heatmap);
     }
     from_mantle = mantle_heat();
     min = 0;
