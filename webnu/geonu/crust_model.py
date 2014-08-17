@@ -459,28 +459,33 @@ class CrustModel:
         format sutable for giving to the imgshow and transform scalar methods
         of matplotlib with basemap.
         """
-        #if self.dataout == self.C.NU: #special case for nu flux
-        #    cm = self.nu_grd
-        #else:
-        #    cm = self.crust_model
         cm = self.crust_model
 
 
         lons = np.unique(self.crust_model[:,0])
         lats = np.unique(self.crust_model[:,1])
         datas = {}
-        datas["thickness"] = np.empty(shape=(len(lats),len(lons)))
+        datas["area"] = np.empty(shape=(len(lats),len(lons)))
+        datas["ocean_f"] = np.zeros(shape=(len(lats),len(lons)))
+        datas["thickness"] = {
+                "s": np.empty(shape=(len(lats),len(lons))),
+                "h": np.empty(shape=(len(lats),len(lons))),
+                "u": np.empty(shape=(len(lats),len(lons))),
+                "m": np.empty(shape=(len(lats),len(lons))),
+                "l": np.empty(shape=(len(lats),len(lons))),
+                }
         datas["reactor"] = {
                 "flux": np.empty(shape=(len(lats),len(lons))),
                 "signal": np.empty(shape=(len(lats),len(lons))),
                 "flux33": np.empty(shape=(len(lats),len(lons))),
                 "signal33": np.empty(shape=(len(lats),len(lons))),
                 }
-        datas["heat"] = {
+        datas["mass"] = {
+                "s": np.empty(shape=(len(lats),len(lons))),
+                "h": np.empty(shape=(len(lats),len(lons))),
                 "u": np.empty(shape=(len(lats),len(lons))),
-                "th": np.empty(shape=(len(lats),len(lons))),
-                "k": np.empty(shape=(len(lats),len(lons))),
-                "total": np.sum(self.crust_model[:, self.C.HEAT_SANS_AREA])
+                "m": np.empty(shape=(len(lats),len(lons))),
+                "l": np.empty(shape=(len(lats),len(lons))),
                 }
         datas["nu_flux"] = {
                 "u": np.empty(shape=(len(lats),len(lons))),
@@ -509,10 +514,18 @@ class CrustModel:
             #datas["reactor"]["signal"][lat[lat_p],lon[lon_p]] = point[self.dataout]
             #datas["reactor"]["flux33"][lat[lat_p],lon[lon_p]] = point[self.dataout]
             #datas["reactor"]["signal33"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            datas["thickness"][lat[lat_p],lon[lon_p]] = point[self.C.THICKNESS]
-            datas["heat"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_U]
-            datas["heat"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_TH]
-            datas["heat"]["k"][lat[lat_p],lon[lon_p]] = point[self.C.HEAT_K]
+            datas["ocean_f"][lat[lat_p],lon[lon_p]] = point[self.C.OCEAN_F]
+            datas["area"][lat[lat_p],lon[lon_p]] = point[self.C.AREA]
+            datas["thickness"]["s"][lat[lat_p],lon[lon_p]] = point[self.C.SFTSD_T]
+            datas["thickness"]["h"][lat[lat_p],lon[lon_p]] = point[self.C.HDSD_T]
+            datas["thickness"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.UPCST_T]
+            datas["thickness"]["m"][lat[lat_p],lon[lon_p]] = point[self.C.MDCST_T]
+            datas["thickness"]["l"][lat[lat_p],lon[lon_p]] = point[self.C.LOCST_T]
+            datas["mass"]["s"][lat[lat_p],lon[lon_p]] = point[self.C.SFTSD_M]
+            datas["mass"]["h"][lat[lat_p],lon[lon_p]] = point[self.C.HDSD_M]
+            datas["mass"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.UPCST_M]
+            datas["mass"]["m"][lat[lat_p],lon[lon_p]] = point[self.C.MDCST_M]
+            datas["mass"]["l"][lat[lat_p],lon[lon_p]] = point[self.C.LOCST_M]
             datas["nu_flux"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_U]
             datas["nu_flux"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_TH]
             datas["nu_flux"]["k"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_K]

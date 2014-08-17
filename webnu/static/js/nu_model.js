@@ -11,6 +11,7 @@ var earth_surface_area = 5.1e14 // m^2
 
 var crust_data;
 var prem  = new Array();
+var crust = {}
 var mantle = {};
 
 container_width = $(".plot_container").width()
@@ -125,6 +126,59 @@ function setup_display(){
     return [u01x / u01d, u01y / u01d];
   }
 }
+function singltonMinusTwoD(A, b){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+        row.push(b - A[i][ii]);
+      }
+    result.push(row);
+  }
+  return result;
+}
+function twodSingletonMult(A, b){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+        row.push(A[i][ii] * b);
+      }
+    result.push(row);
+  }
+  return result;
+}
+function twodProduct(A, B){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+      if (B.length == 0 ){ //first time called
+        row.push(A[i][ii]);
+      } else {
+        row.push(A[i][ii] * B[i][ii]);
+      }
+    }
+    result.push(row);
+  }
+  return result;
+}
+
+function twodDivide(A, B){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+      if (B.length == 0 ){ //first time called
+        row.push(A[i][ii]);
+      } else {
+        row.push(A[i][ii] / B[i][ii]);
+      }
+    }
+    result.push(row);
+  }
+  return result;
+}
 
 function twodAdd(A, B){
   var result = new Array();
@@ -143,24 +197,168 @@ function twodAdd(A, B){
 }
 function updateThingsWithServer(){
   $("#scale_title_placeholder").text("Loading...");
-  var values = [];
-  //var plotsrc = "";
-  $('input[name=crust_layers]:checked').each(function(){
-    values.push($(this).val());
-  });
-  //Here comes some crazy...
-  var crust_u238 = document.querySelectorAll("#crust [data-isotope='u238']");
-  for (var i = 0; i < crust_u238.length; ++i){
-    console.log(crust_u238[i].value);
-  }
   
-  plotsrc = "/plot.json?layers=" + values.join("") + "&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
+  //plotsrc = "/plot.json?layers=shuml&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
 
-
-  d3.json(plotsrc, function(data) {
+  d3.json("/cache/crust_data.json", function(data) {
     crust_data = (data);
-    updateThings();
+    crust_data.crust_f = singltonMinusTwoD(crust_data.ocean_f, 1)
+    updateCrustThings();
   });
+}
+
+function updateCrustThings(){
+  var include = new Array();
+  var sources = document.getElementsByClassName("selected_crust_layers");
+  for (i = 0; i < sources.length; i++){
+    if (sources[i].checked){
+      include.push(sources[i].value);
+    }
+  }
+    
+  // Compute requested thickness
+  var thickness = new Array();
+  for (i = 0; i < crust_data.area.length; i++){
+    row = new Array();
+    for (ii = 0; ii < crust_data.area[i].length; ii++){
+      row.push(0);
+      }
+    thickness.push(row);
+    }
+    if (include.indexOf("s") > -1){
+      thickness = twodAdd(crust_data.thickness.s, thickness);
+    }
+    if (include.indexOf("h") > -1){
+      thickness = twodAdd(crust_data.thickness.h, thickness);
+    }
+    if (include.indexOf("u") > -1){
+      thickness = twodAdd(crust_data.thickness.u, thickness);
+    }
+    if (include.indexOf("m") > -1){
+      thickness = twodAdd(crust_data.thickness.m, thickness);
+    }
+    if (include.indexOf("l") > -1){
+      thickness = twodAdd(crust_data.thickness.l, thickness);
+    }
+    crust.thickness = thickness;
+
+
+  // Compute requested heat
+  crust.heat = {}
+  var heat = new Array();
+  for (i = 0; i < crust_data.area.length; i++){
+    row = new Array();
+    for (ii = 0; ii < crust_data.area[i].length; ii++){
+      row.push(0);
+      }
+    heat.push(row);
+    }
+  crust.heat.u = heat;
+  crust.heat.th = heat;
+  crust.heat.k = heat;
+
+    if (include.indexOf("s") > -1){
+      c_u = parseFloat(document.getElementById("c_ssed_u").value)/1e-8;
+      c_th = parseFloat(document.getElementById("c_ssed_th").value)/1e-8;
+      c_k = parseFloat(document.getElementById("c_ssed_k").value)/1e-5;
+      o_u = parseFloat(document.getElementById("o_ssed_u").value)/1e-8;
+      o_th = parseFloat(document.getElementById("o_ssed_th").value)/1e-8;
+      o_k = parseFloat(document.getElementById("o_ssed_k").value)/1e-5;
+      c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.s, c_u));
+      c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.s, c_th));
+      c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.s, c_k));
+      o_u_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.s, o_u));
+      o_th_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.s, o_th));
+      o_k_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.s, o_k));
+      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), (98.5 * 1e-9));
+      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), (26.4 * 1e-9));
+      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), (3.33 * 1e-12));
+      crust.heat.u = twodAdd(u_heat, crust.heat.u);
+      crust.heat.th = twodAdd(th_heat, crust.heat.th);
+      crust.heat.k = twodAdd(k_heat, crust.heat.k);
+    }
+    if (include.indexOf("h") > -1){
+      c_u = parseFloat(document.getElementById("c_hsed_u").value)/10;
+      c_th = parseFloat(document.getElementById("c_hsed_th").value)/10;
+      c_k = parseFloat(document.getElementById("c_hsed_k").value)/100;
+      o_u = parseFloat(document.getElementById("o_hsed_u").value)/10;
+      o_th = parseFloat(document.getElementById("o_hsed_th").value)/10;
+      o_k = parseFloat(document.getElementById("o_hsed_k").value)/100;
+      c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.h, c_u));
+      c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.h, c_th));
+      c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.h, c_k));
+      o_u_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.h, o_u));
+      o_th_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.h, o_th));
+      o_k_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.h, o_k));
+      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), u238_heat);
+      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), th232_heat);
+      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), k40_heat);
+      crust.heat.u = twodAdd(u_heat, crust.heat.u);
+      crust.heat.th = twodAdd(th_heat, crust.heat.th);
+      crust.heat.k = twodAdd(k_heat, crust.heat.k);
+    }
+    if (include.indexOf("u") > -1){
+      c_u = parseFloat(document.getElementById("c_up_u").value)/10;
+      c_th = parseFloat(document.getElementById("c_up_th").value)/10;
+      c_k = parseFloat(document.getElementById("c_up_k").value)/100;
+      o_u = parseFloat(document.getElementById("o_up_u").value)/10;
+      o_th = parseFloat(document.getElementById("o_up_th").value)/10;
+      o_k = parseFloat(document.getElementById("o_up_k").value)/100;
+      c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.u, c_u));
+      c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.u, c_th));
+      c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.u, c_k));
+      o_u_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.u, o_u));
+      o_th_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.u, o_th));
+      o_k_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.u, o_k));
+      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), u238_heat);
+      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), th232_heat);
+      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), k40_heat);
+      crust.heat.u = twodAdd(u_heat, crust.heat.u);
+      crust.heat.th = twodAdd(th_heat, crust.heat.th);
+      crust.heat.k = twodAdd(k_heat, crust.heat.k);
+    }
+    if (include.indexOf("m") > -1){
+      c_u = parseFloat(document.getElementById("c_mid_u").value)/10;
+      c_th = parseFloat(document.getElementById("c_mid_th").value)/10;
+      c_k = parseFloat(document.getElementById("c_mid_k").value)/100;
+      o_u = parseFloat(document.getElementById("o_mid_u").value)/10;
+      o_th = parseFloat(document.getElementById("o_mid_th").value)/10;
+      o_k = parseFloat(document.getElementById("o_mid_k").value)/100;
+      c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.m, c_u));
+      c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.m, c_th));
+      c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.m, c_k));
+      o_u_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.m, o_u));
+      o_th_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.m, o_th));
+      o_k_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.m, o_k));
+      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), u238_heat);
+      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), th232_heat);
+      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), k40_heat);
+      crust.heat.u = twodAdd(u_heat, crust.heat.u);
+      crust.heat.th = twodAdd(th_heat, crust.heat.th);
+      crust.heat.k = twodAdd(k_heat, crust.heat.k);
+    }
+    if (include.indexOf("l") > -1){
+      c_u = parseFloat(document.getElementById("c_low_u").value)/10;
+      c_th = parseFloat(document.getElementById("c_low_th").value)/10;
+      c_k = parseFloat(document.getElementById("c_low_k").value)/100;
+      o_u = parseFloat(document.getElementById("o_low_u").value)/10;
+      o_th = parseFloat(document.getElementById("o_low_th").value)/10;
+      o_k = parseFloat(document.getElementById("o_low_k").value)/100;
+      c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.l, c_u));
+      c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.l, c_th));
+      c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.l, c_k));
+      o_u_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.l, o_u));
+      o_th_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.l, o_th));
+      o_k_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.l, o_k));
+      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), u238_heat);
+      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), th232_heat);
+      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), k40_heat);
+      crust.heat.u = twodAdd(u_heat, crust.heat.u);
+      crust.heat.th = twodAdd(th_heat, crust.heat.th);
+      crust.heat.k = twodAdd(k_heat, crust.heat.k);
+    }
+
+  updateThings();
 }
 
 function updateThings(){
@@ -169,9 +367,9 @@ function updateThings(){
   var max = 1;
   var heatmap = new Array();
   // heatmap init to zeros for if nothing is selected...
-  for (i = 0; i < crust_data.thickness.length; i++){
+  for (i = 0; i < crust_data.area.length; i++){
     row = new Array();
-    for (ii = 0; ii < crust_data.thickness[i].length; ii++){
+    for (ii = 0; ii < crust_data.area[i].length; ii++){
       row.push(0);
       }
     heatmap.push(row);
@@ -185,22 +383,23 @@ function updateThings(){
     }
   }
 
-    document.getElementById("total_crust_power").textContent = (parseFloat(crust_data.heat.total)/1e12).toFixed(1);
+    //document.getElementById("total_crust_power").textContent = (parseFloat(crust_data.heat.total)/1e12).toFixed(1);
     display_power();
   if ($('#plot_display_selector').val() == 'thickness') {
-    heatmap = crust_data.thickness;
+    heatmap = crust.thickness;
     min = 0;
     max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
-      heatmap = twodAdd(crust_data.heat.u, heatmap);
+      heatmap = twodAdd(twodDivide(crust.heat.u, crust_data.area), heatmap);
     }
     if (include.indexOf("th") > -1){
-      heatmap = twodAdd(crust_data.heat.th, heatmap);
+      heatmap = twodAdd(twodDivide(crust.heat.th, crust_data.area), heatmap);
     }
     if (include.indexOf("k") > -1){
-      heatmap = twodAdd(crust_data.heat.k, heatmap);
+      heatmap = twodAdd(twodDivide(crust.heat.k, crust_data.area), heatmap);
     }
+    console.log(heatmap);
     from_mantle = mantle_heat();
     min = 0;
     max = 140;
@@ -596,8 +795,8 @@ $(document).ready(function() {
   $(".causes_update").on("change", function(){
     updateThings();
   });
-  $(".causes_server_update").on("change", function(){
-    updateThingsWithServer();
+  $(".causes_crust_update").on("change", function(){
+    updateCrustThings();
   });
   var width = $(".plot_container").width();
   $(".plot_container").height(width/2);
