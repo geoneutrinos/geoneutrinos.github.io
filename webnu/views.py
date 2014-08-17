@@ -29,7 +29,7 @@ def plt_json(request):
     image_path = os.path.join(here,'static','cache', filename + ".json")
     if not os.path.isfile(image_path):
         f = open(image_path, 'wb')
-        f.write(json.dumps(data, cls=NumpyAwareJSONEncoder))
+        f.write(json.dumps(data, separators=(',', ':'), cls=NumpyAwareJSONEncoder))
         f.close()
     return exc.HTTPFound("cache/" + filename + ".json")
 
