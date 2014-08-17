@@ -148,6 +148,17 @@ function twodSingletonMult(A, b){
   }
   return result;
 }
+function twodSingletonDiv(A, b){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+        row.push(A[i][ii] / b);
+      }
+    result.push(row);
+  }
+  return result;
+}
 function twodProduct(A, B){
   var result = new Array();
   for (i = 0; i < A.length; i++){
@@ -195,6 +206,15 @@ function twodAdd(A, B){
   }
   return result;
 }
+
+function sumTwoD(A){
+  return A.reduce(function(a,b){
+    return a + b.reduce(function(a,b){
+      return a + b;
+    });
+  },0);
+}
+
 function updateThingsWithServer(){
   $("#scale_title_placeholder").text("Loading...");
   
@@ -257,33 +277,37 @@ function updateCrustThings(){
   crust.heat.th = heat;
   crust.heat.k = heat;
 
+  u_range = 1e10;
+  th_range = 1e10;
+  k_range = 1e7;
+
     if (include.indexOf("s") > -1){
-      c_u = parseFloat(document.getElementById("c_ssed_u").value)/1e-8;
-      c_th = parseFloat(document.getElementById("c_ssed_th").value)/1e-8;
-      c_k = parseFloat(document.getElementById("c_ssed_k").value)/1e-5;
-      o_u = parseFloat(document.getElementById("o_ssed_u").value)/1e-8;
-      o_th = parseFloat(document.getElementById("o_ssed_th").value)/1e-8;
-      o_k = parseFloat(document.getElementById("o_ssed_k").value)/1e-5;
+      c_u = parseFloat(document.getElementById("c_ssed_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_ssed_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_ssed_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_ssed_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_ssed_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range;
       c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.s, c_u));
       c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.s, c_th));
       c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.s, c_k));
       o_u_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.s, o_u));
       o_th_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.s, o_th));
       o_k_conc = twodProduct(crust_data.ocean_f, twodSingletonMult(crust_data.mass.s, o_k));
-      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), (98.5 * 1e-9));
-      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), (26.4 * 1e-9));
-      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), (3.33 * 1e-12));
+      u_heat = twodSingletonMult(twodAdd(c_u_conc, o_u_conc), u238_heat);
+      th_heat = twodSingletonMult(twodAdd(c_th_conc, o_th_conc), th232_heat);
+      k_heat = twodSingletonMult(twodAdd(c_k_conc, o_k_conc), k40_heat);
       crust.heat.u = twodAdd(u_heat, crust.heat.u);
       crust.heat.th = twodAdd(th_heat, crust.heat.th);
       crust.heat.k = twodAdd(k_heat, crust.heat.k);
     }
     if (include.indexOf("h") > -1){
-      c_u = parseFloat(document.getElementById("c_hsed_u").value)/10;
-      c_th = parseFloat(document.getElementById("c_hsed_th").value)/10;
-      c_k = parseFloat(document.getElementById("c_hsed_k").value)/100;
-      o_u = parseFloat(document.getElementById("o_hsed_u").value)/10;
-      o_th = parseFloat(document.getElementById("o_hsed_th").value)/10;
-      o_k = parseFloat(document.getElementById("o_hsed_k").value)/100;
+      c_u = parseFloat(document.getElementById("c_hsed_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_hsed_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_hsed_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_hsed_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_hsed_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_hsed_k").value)/k_range;
       c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.h, c_u));
       c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.h, c_th));
       c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.h, c_k));
@@ -298,12 +322,12 @@ function updateCrustThings(){
       crust.heat.k = twodAdd(k_heat, crust.heat.k);
     }
     if (include.indexOf("u") > -1){
-      c_u = parseFloat(document.getElementById("c_up_u").value)/10;
-      c_th = parseFloat(document.getElementById("c_up_th").value)/10;
-      c_k = parseFloat(document.getElementById("c_up_k").value)/100;
-      o_u = parseFloat(document.getElementById("o_up_u").value)/10;
-      o_th = parseFloat(document.getElementById("o_up_th").value)/10;
-      o_k = parseFloat(document.getElementById("o_up_k").value)/100;
+      c_u = parseFloat(document.getElementById("c_up_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_up_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_up_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_up_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_up_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_up_k").value)/k_range;
       c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.u, c_u));
       c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.u, c_th));
       c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.u, c_k));
@@ -318,12 +342,12 @@ function updateCrustThings(){
       crust.heat.k = twodAdd(k_heat, crust.heat.k);
     }
     if (include.indexOf("m") > -1){
-      c_u = parseFloat(document.getElementById("c_mid_u").value)/10;
-      c_th = parseFloat(document.getElementById("c_mid_th").value)/10;
-      c_k = parseFloat(document.getElementById("c_mid_k").value)/100;
-      o_u = parseFloat(document.getElementById("o_mid_u").value)/10;
-      o_th = parseFloat(document.getElementById("o_mid_th").value)/10;
-      o_k = parseFloat(document.getElementById("o_mid_k").value)/100;
+      c_u = parseFloat(document.getElementById("c_mid_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_mid_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_mid_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_mid_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_mid_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_mid_k").value)/k_range;
       c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.m, c_u));
       c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.m, c_th));
       c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.m, c_k));
@@ -338,12 +362,12 @@ function updateCrustThings(){
       crust.heat.k = twodAdd(k_heat, crust.heat.k);
     }
     if (include.indexOf("l") > -1){
-      c_u = parseFloat(document.getElementById("c_low_u").value)/10;
-      c_th = parseFloat(document.getElementById("c_low_th").value)/10;
-      c_k = parseFloat(document.getElementById("c_low_k").value)/100;
-      o_u = parseFloat(document.getElementById("o_low_u").value)/10;
-      o_th = parseFloat(document.getElementById("o_low_th").value)/10;
-      o_k = parseFloat(document.getElementById("o_low_k").value)/100;
+      c_u = parseFloat(document.getElementById("c_low_u").value)/u_range;
+      c_th = parseFloat(document.getElementById("c_low_th").value)/th_range;
+      c_k = parseFloat(document.getElementById("c_low_k").value)/k_range;
+      o_u = parseFloat(document.getElementById("o_low_u").value)/u_range;
+      o_th = parseFloat(document.getElementById("o_low_th").value)/th_range;
+      o_k = parseFloat(document.getElementById("o_low_k").value)/k_range;
       c_u_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.l, c_u));
       c_th_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.l, c_th));
       c_k_conc = twodProduct(crust_data.crust_f, twodSingletonMult(crust_data.mass.l, c_k));
@@ -357,6 +381,9 @@ function updateCrustThings(){
       crust.heat.th = twodAdd(th_heat, crust.heat.th);
       crust.heat.k = twodAdd(k_heat, crust.heat.k);
     }
+  crust.heat.total = twodAdd(crust.heat.u, crust.heat.th);
+  crust.heat.total = twodAdd(crust.heat.k, crust.heat.total);
+  crust.heat.total = sumTwoD(crust.heat.total);
 
   updateThings();
 }
