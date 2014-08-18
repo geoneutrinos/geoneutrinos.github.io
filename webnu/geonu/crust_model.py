@@ -530,7 +530,7 @@ class CrustModel:
             datas["nu_flux"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_TH]
             datas["nu_flux"]["k"][lat[lat_p],lon[lon_p]] = point[self.C.NU_FLUX_K]
             datas["nu_signal"]["u"][lat[lat_p],lon[lon_p]] = point[self.C.NU_SIG_U]
-            datas["nu_signal"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.NU_SIG_U]
+            datas["nu_signal"]["th"][lat[lat_p],lon[lon_p]] = point[self.C.NU_SIG_TH]
         
         log.info("Griddata done")
         return (lons + 1,lats - 1,datas) # coords need to be centerpoint
