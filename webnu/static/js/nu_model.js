@@ -456,6 +456,9 @@ function updateThings(){
     if (include.indexOf("k") > -1){
       heatmap = twodAdd(crust_data.nu_flux.k, heatmap);
     }
+    if (include.indexOf("r") > -1){
+      heatmap = twodAdd(crust_data.reactor.flux, heatmap);
+    }
     from_mantle = mantle_nu_flux();
     min = 0;
     max = 60000000;
@@ -469,6 +472,9 @@ function updateThings(){
     }
     if (include.indexOf("k") > -1){
       heatmap = twodAdd(crust_data.nu_signal.k, heatmap);
+    }
+    if (include.indexOf("r") > -1){
+      heatmap = twodAdd(crust_data.reactor.signal11, heatmap);
     }
     from_mantle = mantle_nu_tnu();
     min = 0;

@@ -78,6 +78,9 @@ class Column:
             'NU_FLUX_K': 66,
             'NU_SIG_U': 67,
             'NU_SIG_TH': 68,
+            'REACT_FLUX': 69,
+            'REACT_SIG11': 70,
+            'REACT_SIG33': 71,
             }
     def size(self,):
         return len(self.columns)
@@ -240,14 +243,22 @@ class CrustModel:
         nu = []
         for l in nu_file:
             nu.append([float(e) for e in l.split(',')])
+        react_file = open(os.path.join(here, "reactor.csv"), "r")
+        react = []
+        for l in react_file:
+            react.append([float(e) for e in l.split(',')])
 
         nu = np.array(nu)
+        react = np.array(react)
 
         self.crust_model[:, self.C.NU_FLUX_U] = 0
         self.crust_model[:, self.C.NU_FLUX_TH] = 0
         self.crust_model[:, self.C.NU_FLUX_K] = 0
         self.crust_model[:, self.C.NU_SIG_U] = 0
         self.crust_model[:, self.C.NU_SIG_TH] = 0
+        self.crust_model[:, self.C.REACT_FLUX] = react[:, 0]
+        self.crust_model[:, self.C.REACT_SIG33] = react[:, 1]
+        self.crust_model[:, self.C.REACT_SIG11] = react[:, 2]
         layers = []
         for code in self.layers:
             if 's' == code :
@@ -476,8 +487,7 @@ class CrustModel:
                 }
         datas["reactor"] = {
                 "flux": np.empty(shape=(len(lats),len(lons))),
-                "signal": np.empty(shape=(len(lats),len(lons))),
-                "flux33": np.empty(shape=(len(lats),len(lons))),
+                "signal11": np.empty(shape=(len(lats),len(lons))),
                 "signal33": np.empty(shape=(len(lats),len(lons))),
                 }
         datas["mass"] = {
@@ -510,10 +520,10 @@ class CrustModel:
         for i, point in enumerate(cm):
             lon_p = self.crust_model[i, 0]
             lat_p = self.crust_model[i, 1]
-            #datas["reactor"]["flux"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["reactor"]["signal"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            datas["reactor"]["flux"][lat[lat_p],lon[lon_p]] = point[self.C.REACT_FLUX]
+            datas["reactor"]["signal11"][lat[lat_p],lon[lon_p]] = point[self.C.REACT_SIG11]
             #datas["reactor"]["flux33"][lat[lat_p],lon[lon_p]] = point[self.dataout]
-            #datas["reactor"]["signal33"][lat[lat_p],lon[lon_p]] = point[self.dataout]
+            datas["reactor"]["signal33"][lat[lat_p],lon[lon_p]] = point[self.C.REACT_SIG33]
             datas["ocean_f"][lat[lat_p],lon[lon_p]] = point[self.C.OCEAN_F]
             datas["area"][lat[lat_p],lon[lon_p]] = point[self.C.AREA]
             datas["thickness"]["s"][lat[lat_p],lon[lon_p]] = point[self.C.SFTSD_T]
