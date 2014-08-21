@@ -148,12 +148,34 @@ function twodSingletonMult(A, b){
   }
   return result;
 }
+function twodSingletonAdd(A, b){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+        row.push(A[i][ii] + b);
+      }
+    result.push(row);
+  }
+  return result;
+}
 function twodSingletonDiv(A, b){
   var result = new Array();
   for (i = 0; i < A.length; i++){
     row = new Array();
     for (ii = 0; ii < A[i].length; ii++){
         row.push(A[i][ii] / b);
+      }
+    result.push(row);
+  }
+  return result;
+}
+function singletonDivtwod(A, b){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+        row.push(b / A[i][ii]);
       }
     result.push(row);
   }
@@ -200,6 +222,22 @@ function twodAdd(A, B){
         row.push(A[i][ii]);
       } else {
         row.push(A[i][ii] + B[i][ii]);
+      }
+    }
+    result.push(row);
+  }
+  return result;
+}
+
+function twodSqrtofSquares(A, B){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+      if (B.length == 0 ){ //first time called
+        row.push(A[i][ii]);
+      } else {
+        row.push(Math.sqrt(Math.pow(A[i][ii], 2) + Math.pow(B[i][ii], 2)));
       }
     }
     result.push(row);
@@ -481,14 +519,53 @@ function updateThings(){
     max = 80;
     console.log("neutrino");
   } else if ($('#plot_display_selector').val() == 'geonu_fraction') {
+    var mantle_flux = mantle_nu_flux();
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust_data.nu_flux.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust_data.nu_flux.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust_data.nu_flux.k, heatmap);
+    }
+    heatmap = singletonDivtwod(twodSingletonAdd(heatmap, mantle_flux), mantle_flux);
+    from_mantle = 0;
     min = 0;
     max = 1;
   } else if ($('#plot_display_selector').val() == 'mantle_ratio') {
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust_data.nu_signal.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust_data.nu_signal.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust_data.nu_signal.k, heatmap);
+    }
+    if (include.indexOf("r") > -1){
+      heatmap = twodAdd(crust_data.reactor.signal33, heatmap);
+    }
+    from_mantle = mantle_nu_tnu();
+    heatmap = singletonDivtwod(heatmap, from_mantle);
+    from_mantle = 0;
+    max = 10;
     min = 0;
-    max = 1;
   } else if ($('#plot_display_selector').val() == 'mantle_uncertain') {
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust_data.nu_signal.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust_data.nu_signal.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust_data.nu_signal.k, heatmap);
+    }
+    from_mantle = mantle_nu_tnu();
+    heatmap = twodSingletonDiv(twodSqrtofSquares(heatmap, crust_data.reactor.signal33), from_mantle);
+    from_mantle = 0;
     min = 0;
-    max = 1;
+    max = 3;
   }
 
   var dx = heatmap[0].length,
@@ -537,7 +614,7 @@ function updateThings(){
       for (var x = 0; x < dx; ++x) {
         var plot_data = heatmap[y][x] + from_mantle;
         if (plot_data > max){
-          plot_data = max + 1;
+          plot_data = max;
         }
         var c = d3.rgb(color(plot_data));
         image.data[++p] = c.r;
@@ -580,8 +657,12 @@ function updateThings(){
     $("#scale_title_placeholder").html("Geoneutrino Flux (nu cm<sup>-2</sup>s<sup>-1</sup>)");
   } else if (display_value == "neutrino"){
     $("#scale_title_placeholder").html("Geoneutrino Signal (TNU)");
-  } else if (display_value == "ratio"){
-    $("#scale_title_placeholder").text("Mantle/Total Neutrino Flux Ratio");
+  } else if (display_value == "geonu_fraction"){
+    $("#scale_title_placeholder").text("Geo-neutrino Fraction");
+  } else if (display_value == "mantle_ratio"){
+    $("#scale_title_placeholder").text("Mantle Signal-to-Background Ratio");
+  } else if (display_value == "mantle_uncertain"){
+    $("#scale_title_placeholder").text("Mantle Signal Fractional Uncertainty");
   } else {
     $("#scale_title_placeholder").text("Something has gone wrong...");
   }
