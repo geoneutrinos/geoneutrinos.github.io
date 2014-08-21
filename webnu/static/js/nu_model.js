@@ -480,8 +480,15 @@ function updateThings(){
     min = 0;
     max = 80;
     console.log("neutrino");
-  } else if ($('#plot_display_selector').val() == 'ratio') {
-    console.log("ratio");
+  } else if ($('#plot_display_selector').val() == 'geonu_fraction') {
+    min = 0;
+    max = 1;
+  } else if ($('#plot_display_selector').val() == 'mantle_ratio') {
+    min = 0;
+    max = 1;
+  } else if ($('#plot_display_selector').val() == 'mantle_uncertain') {
+    min = 0;
+    max = 1;
   }
 
   var dx = heatmap[0].length,
@@ -528,7 +535,11 @@ function updateThings(){
 
     for (var y = 0, p = -1; y < dy; ++y) {
       for (var x = 0; x < dx; ++x) {
-        var c = d3.rgb(color(heatmap[y][x] + from_mantle));
+        var plot_data = heatmap[y][x] + from_mantle;
+        if (plot_data > max){
+          plot_data = max + 1;
+        }
+        var c = d3.rgb(color(plot_data));
         image.data[++p] = c.r;
         image.data[++p] = c.g;
         image.data[++p] = c.b;
