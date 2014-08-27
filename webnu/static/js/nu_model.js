@@ -654,7 +654,7 @@ function updateThings(){
   } else if (display_value == "heat"){
     $("#scale_title_placeholder").html("Crust Heat Intensity (mW/m<sup>2</sup>)");
   } else if (display_value == "neutrino_flux"){
-    $("#scale_title_placeholder").html("Geoneutrino Flux (nu cm<sup>-2</sup>s<sup>-1</sup>)");
+    $("#scale_title_placeholder").html("Geoneutrino Flux (/cm<sup>2</sup>s)");
   } else if (display_value == "neutrino"){
     $("#scale_title_placeholder").html("Geoneutrino Signal (TNU)");
   } else if (display_value == "geonu_fraction"){
