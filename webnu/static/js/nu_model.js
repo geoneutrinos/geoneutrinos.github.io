@@ -632,7 +632,7 @@ function updateThings(){
   }
 
   // Finally, set the colorbar labels
-  if (max > 100){
+  if (max > 1000){
     var label_start = min + (max - min) * 0.1;
     $("#sl_0_pc").text((label_start).toExponential());
     $("#sl_25_pc").text((label_start + step).toExponential());
