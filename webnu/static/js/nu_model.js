@@ -658,7 +658,7 @@ function updateThings(){
   } else if (display_value == "neutrino"){
     $("#scale_title_placeholder").html("Geoneutrino Signal (TNU)");
   } else if (display_value == "geonu_fraction"){
-    $("#scale_title_placeholder").text("Geo-neutrino Fraction");
+    $("#scale_title_placeholder").text("Mantle Geo-neutrino Fraction");
   } else if (display_value == "mantle_ratio"){
     $("#scale_title_placeholder").text("Mantle Signal-to-Background Ratio");
   } else if (display_value == "mantle_uncertain"){
