@@ -652,7 +652,7 @@ function updateThings(){
   if (display_value == "thickness"){
     $("#scale_title_placeholder").text("Crust Thickness (km)");
   } else if (display_value == "heat"){
-    $("#scale_title_placeholder").html("Heat Flux (mW/m<sup>2</sup>)");
+    $("#scale_title_placeholder").html("Crust Heat Intensity (mW/m<sup>2</sup>)");
   } else if (display_value == "neutrino_flux"){
     $("#scale_title_placeholder").html("Geoneutrino Flux (nu cm<sup>-2</sup>s<sup>-1</sup>)");
   } else if (display_value == "neutrino"){
