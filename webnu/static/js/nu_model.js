@@ -448,6 +448,7 @@ function updateThings(){
   var min = 0;
   var max = 1;
   var heatmap = new Array();
+  var mantle_signal = mantle_nu_tnu(); // we always want this now
   // heatmap init to zeros for if nothing is selected...
   for (i = 0; i < crust_data.area.length; i++){
     row = new Array();
@@ -497,7 +498,7 @@ function updateThings(){
     if (include.indexOf("r") > -1){
       heatmap = twodAdd(crust_data.reactor.flux, heatmap);
     }
-    from_mantle = mantle_nu_flux();
+    from_mantle = mantle_signal;
     min = 0;
     max = 60000000;
     console.log("neutrino");
@@ -1087,11 +1088,6 @@ function mantle_nu_flux(){
       th_lum = th_lum + (th232 * prem[index][3] * th232_lum);
     }
   }
-  u_tnu = (u_lum * 0.55) / 7.6e4; //the tnu calculation for u
-  th_tnu = (th_lum * 0.55) / 2.5e5; //the tnu calculation for th
-  console.log("U_TNU: " + u_tnu);
-  console.log("T_TNU: " + th_tnu);
-
     output = 0;
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       output = output + u_lum;
@@ -1128,6 +1124,9 @@ function mantle_nu_tnu(){
   }
   u_tnu = (u_lum * 0.55) / 7.6e4; //the tnu calculation for u
   th_tnu = (th_lum * 0.55) / 2.5e5; //the tnu calculation for th
+
+  document.getElementById('mantle_tnu_u').textContent = u_tnu.toFixed(1);
+  document.getElementById('mantle_tnu_th').textContent = th_tnu.toFixed(1);
 
   nu = (k_lum + u_lum + th_lum) * 1e-6; // why is this here???
     output = 0;
