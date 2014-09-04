@@ -719,23 +719,27 @@ function mantle_concentric_control_factory(){
       <tbody>\
         <tr>\
           <td>U</td>\
-          <td><input id='mantle_u238_slider"+layer+"' min=0 max=50 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='mantle_u238_slider range_responsive has_ratios' type='range'></td>\
+          <td><input id='mantle_u238_slider"+layer+"' min=0 max=50 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='layered_mantle_slider mantle_u238_slider range_responsive has_ratios' type='range'></td>\
           <td><span id='mantle_u238_label_"+layer+"' data-label-for='mantle_u238_slider"+layer+"' data-label-suffix='ng/g' data-label-precision='1'></span></td>\
         </tr>\
         <tr>\
           <td>Th</td>\
-          <td><input id='mantle_th232_slider"+layer+"' min=0 max=200 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='mantle_th232_slider range_responsive has_ratios' type='range'></td>\
+          <td><input id='mantle_th232_slider"+layer+"' min=0 max=200 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='layered_mantle_slider mantle_th232_slider range_responsive has_ratios' type='range'></td>\
           <td><span id='mantle_th232_label_"+layer+"' data-label-for='mantle_th232_slider"+layer+"' data-label-suffix='ng/g' data-label-precision='1'></span></td>\
         </tr>\
         <tr>\
           <td>K</td>\
-          <td><input id='mantle_k40_slider"+layer+"' min=0 max=600 step=1 data-layer='"+layer+"' data-isotope='k40' class='mantle_k40_slider range_responsive has_ratios' type='range'></td>\
+          <td><input id='mantle_k40_slider"+layer+"' min=0 max=600 step=1 data-layer='"+layer+"' data-isotope='k40' class='layered_mantle_slider mantle_k40_slider range_responsive has_ratios' type='range'></td>\
           <td><span id='mantle_k40_label_"+layer+"' data-label-for='mantle_k40_slider"+layer+"' data-label-suffix='µg/g' data-label-precision='0'></span></td>\
         </tr>\
       </tbody>\
     </table>\
         ");
   }
+    var elements = document.getElementsByClassName("layered_mantle_slider");
+    for (i=0; i < elements.length; i++){
+      elements[i].addEventListener("ratios_done", updateThings);
+    }
     document.getElementById("2_layer_boundary_slider").setAttribute("min", Math.min.apply(Math, mantle_layers));
     document.getElementById("2_layer_boundary_slider").setAttribute("max", Math.max.apply(Math, mantle_layers));
     document.getElementById("2_layer_boundary_slider").value = 32;
@@ -798,7 +802,7 @@ var elms = document.getElementsByClassName("2_layer_mantle");
 for (var i = 0; i < elms.length; i++){
  elms[i].addEventListener("ratios_done", deal_with_2_layer_boundary_change);
 }
-document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
+document.getElementById("2_layer_boundary_slider").addEventListener("ratios_done", deal_with_2_layer_boundary_change);
 
 $(document).ready(function() {
   // just doing this first cause whatever
@@ -861,9 +865,9 @@ $(document).ready(function() {
   deal_with_mantle_uniform_k40_slider_change = uniform_mantle_slider_factory('k40', 'µg/g', 0)
   deal_with_mantle_uniform_th232_slider_change = uniform_mantle_slider_factory('th232', 'ng/g', 1)
   deal_with_mantle_uniform_u238_slider_change = uniform_mantle_slider_factory('u238', 'ng/g', 1)
-  document.getElementById("mantle_uniform_k40_slider").addEventListener("input", deal_with_mantle_uniform_k40_slider_change);
-  document.getElementById("mantle_uniform_th232_slider").addEventListener("input", deal_with_mantle_uniform_th232_slider_change);
-  document.getElementById("mantle_uniform_u238_slider").addEventListener("input", deal_with_mantle_uniform_u238_slider_change);
+  document.getElementById("mantle_uniform_k40_slider").addEventListener("ratios_done", deal_with_mantle_uniform_k40_slider_change);
+  document.getElementById("mantle_uniform_th232_slider").addEventListener("ratios_done", deal_with_mantle_uniform_th232_slider_change);
+  document.getElementById("mantle_uniform_u238_slider").addEventListener("ratios_done", deal_with_mantle_uniform_u238_slider_change);
 
 
   //Set initial Values
