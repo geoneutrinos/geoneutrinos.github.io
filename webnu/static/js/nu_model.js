@@ -659,7 +659,7 @@ function updateThings(){
   } else if (display_value == "neutrino"){
     $("#scale_title_placeholder").html("Geoneutrino Signal (TNU)");
   } else if (display_value == "geonu_fraction"){
-    $("#scale_title_placeholder").text("Mantle Geo-neutrino Fraction");
+    $("#scale_title_placeholder").text("Mantle Geo-neutrino Flux Fraction");
   } else if (display_value == "mantle_ratio"){
     $("#scale_title_placeholder").text("Mantle Signal-to-Background Ratio");
   } else if (display_value == "mantle_uncertain"){
@@ -802,7 +802,7 @@ var elms = document.getElementsByClassName("2_layer_mantle");
 for (var i = 0; i < elms.length; i++){
  elms[i].addEventListener("ratios_done", deal_with_2_layer_boundary_change);
 }
-document.getElementById("2_layer_boundary_slider").addEventListener("ratios_done", deal_with_2_layer_boundary_change);
+document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 
 $(document).ready(function() {
   // just doing this first cause whatever
