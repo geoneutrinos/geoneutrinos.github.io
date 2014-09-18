@@ -557,7 +557,7 @@ function updateThings(){
       heatmap = twodAdd(crust_data.nu_signal.k, heatmap);
     }
     if (include.indexOf("r") > -1){
-      heatmap = twodAdd(crust_data.reactor.signal11, heatmap);
+      heatmap = twodAdd(crust_data.reactor.signal33, heatmap);
     }
     from_mantle = mantle_nu_tnu();
     min = 0;
