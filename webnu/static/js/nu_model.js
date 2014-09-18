@@ -459,19 +459,39 @@ function updateThings(){
     bse_diff_k40 = (elm_total_mass("k40") - bse_elm_mass.k40)/1e20;
     if (bse_diff_u238 > 0 ){
       u238_status = "high";
+      document.getElementById("u_constraint_status").textContent = "Exceeds BSE Constraint";
+      document.getElementById("u_status_row").className = "danger";
     } else {
       u238_status = "low";
+      document.getElementById("u_constraint_status").textContent = "Within BSE Constraint";
+      document.getElementById("u_status_row").className = "success";
     }
     if (bse_diff_th232 > 0 ){
+      document.getElementById("th_constraint_status").textContent = "Exceeds BSE Constraint";
+      document.getElementById("th_status_row").className = "danger";
       th232_status = "high";
     } else {
+      document.getElementById("th_constraint_status").textContent = "Within BSE Constraint";
+      document.getElementById("th_status_row").className = "success";
       th232_status = "low";
     }
     if (bse_diff_k40 > 0 ){
+      document.getElementById("k_constraint_status").textContent = "Exceeds BSE Constraint";
+      document.getElementById("k_status_row").className = "danger";
       k40_status = "high";
     } else {
+      document.getElementById("k_constraint_status").textContent = "Within BSE Constraint";
+      document.getElementById("k_status_row").className = "success";
       k40_status = "low";
     }
+  } else {
+    document.getElementById("u_constraint_status").textContent = "Unconstrained";
+    document.getElementById("th_constraint_status").textContent = "Unconstrained";
+    document.getElementById("k_constraint_status").textContent = "Unconstrained";
+      document.getElementById("u_status_row").className = "";
+      document.getElementById("th_status_row").className = "";
+      document.getElementById("k_status_row").className = "";
+
   }
   // heatmap init to zeros for if nothing is selected...
   for (i = 0; i < crust_data.area.length; i++){
@@ -993,7 +1013,9 @@ $(document).ready(function() {
   }
 
   document.getElementById("plot_container").addEventListener("mousemove", plot_overlay);
-  document.getElementById("bse_u238_slider").addEventListener("input", bse_less_crust_masses);
+  document.getElementById("bse_u238_slider").addEventListener("ratios_done", bse_less_crust_masses);
+  document.getElementById("bse_th232_slider").addEventListener("ratios_done", bse_less_crust_masses);
+  document.getElementById("bse_k40_slider").addEventListener("ratios_done", bse_less_crust_masses);
 });
 
 function plot_overlay(e){
