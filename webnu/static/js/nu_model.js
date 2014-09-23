@@ -14,6 +14,54 @@ var prem  = new Array();
 var crust = {}
 var mantle = {};
 
+var default_mantle_u = 11;
+var default_mantle_th = 40;
+var default_mantle_k = 230;
+
+var prem_top = 6346.8;
+var prem_bottom = 3479;
+
+var c_crust_u_layers = ["c_ssed_u", "c_hsed_u", "c_up_u", "c_mid_u", "c_low_u"];
+var c_crust_th_layers = ["c_ssed_th", "c_hsed_th", "c_up_th", "c_mid_th", "c_low_th"];
+var c_crust_k_layers = ["c_ssed_k", "c_hsed_k", "c_up_k", "c_mid_k", "c_low_k"];
+var o_crust_u_layers = ["o_ssed_u", "o_hsed_u", "o_up_u", "o_mid_u", "o_low_u"];
+var o_crust_th_layers = ["o_ssed_th", "o_hsed_th", "o_up_th", "o_mid_th", "o_low_th"];
+var o_crust_k_layers = ["o_ssed_k", "o_hsed_k", "o_up_k", "o_mid_k", "o_low_k"];
+
+var crust_concentrations = {
+  c_ssed_u : 27.0,
+  c_ssed_th : 105.0,
+  c_ssed_k : 240,
+  c_hsed_u : 27.0,
+  c_hsed_th : 105.0,
+  c_hsed_k : 240,
+  c_up_u : 27.0,
+  c_up_th : 105.0,
+  c_up_k : 240,
+  c_mid_u : 13.0,
+  c_mid_th : 65.0,
+  c_mid_k : 200,
+  c_low_u : 2.0,
+  c_low_th : 12.0,
+  c_low_k : 50,
+  o_ssed_u : 17.0,
+  o_ssed_th : 69.0,
+  o_ssed_k : 150,
+  o_hsed_u : 17.0,
+  o_hsed_th : 69.0,
+  o_hsed_k : 150,
+  o_up_u : 1.0,
+  o_up_th : 20.0,
+  o_up_k : 100,
+  o_mid_u : 1.0,
+  o_mid_th : 20.0,
+  o_mid_k : 100,
+  o_low_u : 1.0,
+  o_low_th : 20.0,
+  o_low_k : 100
+}
+
+
 container_width = $(".plot_container").width()
 var width = container_width,
     height = container_width/2;
@@ -253,6 +301,9 @@ function sumTwoD(A){
   },0);
 }
 
+function updatePrem(){
+}
+
 function updateThingsWithServer(){
   $("#scale_title_placeholder").text("Loading...");
   
@@ -452,11 +503,14 @@ function updateThings(){
   var u238_status = "not";
   var th232_status = "not";
   var k40_status = "not";
+  var mantle_elm_masses;
 
   if (document.getElementById('use_bse_constraint').checked){
-    bse_diff_u238 = (elm_total_mass("u238") - bse_elm_mass.u238)/1e20;
-    bse_diff_th232 = (elm_total_mass("th232") - bse_elm_mass.th232)/1e20;
-    bse_diff_k40 = (elm_total_mass("k40") - bse_elm_mass.k40)/1e20;
+    mantle_elm_masses = elm_total_mass();
+
+    bse_diff_u238 = (mantle_elm_masses.u_mass - bse_elm_mass.u238)/1e20;
+    bse_diff_th232 = (mantle_elm_masses.th_mass - bse_elm_mass.th232)/1e20;
+    bse_diff_k40 = (mantle_elm_masses.k_mass - bse_elm_mass.k40)/1e20;
     if (bse_diff_u238 > 0 ){
       u238_status = "high";
       document.getElementById("u_constraint_status").textContent = "Exceeds BSE Constraint";
@@ -877,49 +931,24 @@ $(document).ready(function() {
   //Mantle Controlls
   //Uuniform Mantle
   // Trying this without jquery to see how fast it might be
-  function uniform_mantle_slider_factory(name, units, precision){
-    function mantle_uniform_slider_generic(with_update){
+  function mantle_uniform_slider_change(){
       with_update = typeof with_update !== 'undefined' ? with_update : true;
       //the whole thing cause this is called outside of an event
-      k40 = document.getElementById("mantle_uniform_k40_slider").value;
-      u238 = document.getElementById("mantle_uniform_u238_slider").value;
-      th232 = document.getElementById("mantle_uniform_th232_slider").value;
-      layer_sliders = document.getElementsByClassName("mantle_k40_slider");
-      for (var i = 0; i < layer_sliders.length; ++i) {
-        layer_sliders[i].value = k40;
-        layer_sliders[i].dispatchEvent(new Event('update_label'));
+      u238 = parseFloat(document.getElementById("mantle_uniform_u238_slider").value);
+      th232 = parseFloat(document.getElementById("mantle_uniform_th232_slider").value);
+      k40 = parseFloat(document.getElementById("mantle_uniform_k40_slider").value);
+      for (var i = 0;  i < prem.length; i++){
+        if (parseFloat(prem[i][0]) > prem_bottom && (parseFloat(prem[i][1]) < prem_top)){
+          prem[i][4] = u238;
+          prem[i][5] = th232;
+          prem[i][6] = k40;
+        }
       }
-      layer_sliders = document.getElementsByClassName("mantle_u238_slider");
-      for (var i = 0; i < layer_sliders.length; ++i) {
-        layer_sliders[i].value = u238;
-        layer_sliders[i].dispatchEvent(new Event('update_label'));
-      }
-      layer_sliders = document.getElementsByClassName("mantle_th232_slider");
-      for (var i = 0; i < layer_sliders.length; ++i) {
-        layer_sliders[i].value = th232;
-        layer_sliders[i].dispatchEvent(new Event('update_label'));
-      }
-      if (with_update){
-      updateThings();
-      }
-    }
-    return mantle_uniform_slider_generic;
+    updateThings();
   }
-  deal_with_mantle_uniform_k40_slider_change = uniform_mantle_slider_factory('k40', 'µg/g', 0)
-  deal_with_mantle_uniform_th232_slider_change = uniform_mantle_slider_factory('th232', 'ng/g', 1)
-  deal_with_mantle_uniform_u238_slider_change = uniform_mantle_slider_factory('u238', 'ng/g', 1)
-  document.getElementById("mantle_uniform_k40_slider").addEventListener("constraint_done", deal_with_mantle_uniform_k40_slider_change);
-  document.getElementById("mantle_uniform_th232_slider").addEventListener("constraint_done", deal_with_mantle_uniform_th232_slider_change);
-  document.getElementById("mantle_uniform_u238_slider").addEventListener("constraint_done", deal_with_mantle_uniform_u238_slider_change);
-
-
-  //Set initial Values
-  $("#mantle_uniform_k40_slider").val(240);
-  $("#mantle_uniform_th232_slider").val(80);
-  $("#mantle_uniform_u238_slider").val(20);
-  deal_with_mantle_uniform_th232_slider_change(false);
-  deal_with_mantle_uniform_k40_slider_change(false);
-  deal_with_mantle_uniform_u238_slider_change(false);
+  document.getElementById("mantle_uniform_k40_slider").addEventListener("input", mantle_uniform_slider_change);
+  document.getElementById("mantle_uniform_th232_slider").addEventListener("input", mantle_uniform_slider_change);
+  document.getElementById("mantle_uniform_u238_slider").addEventListener("input", mantle_uniform_slider_change);
 
   //set the constraints on things with user set ratios
     function deal_with_slider_change_factory(group, isotope){
@@ -1096,201 +1125,58 @@ function load_prem(){
     density = mass/volume;
     geometry = geometry_calc(data[d][0]/1000, data[d][1]/1000) * 100000000;
     geo_factor = geometry * density;
-    prem.push(Array(data[d][0], data[d][1], mass, geo_factor));
+    // the zeros are, in this order, U, Th, K Concentrations, U, Th, K total masses
+    prem.push(Array(data[d][0], data[d][1], mass, geo_factor, default_mantle_u, default_mantle_th, default_mantle_k, 0, 0, 0));
     }
   }
   });
+
 }
+//this doesn't work without jQuery?!?
+$('#collapseOne').on('show.bs.collapse', function (e) {
+  console.log(e);
+})
+$('#collapseTwo').on('show.bs.collapse', function (e) {
+  console.log(e);
+})
+$('#collapseThree').on('show.bs.collapse', function (e) {
+  console.log(e);
+})
 
 function elm_total_mass(elm){
-  var mass = 0;
   var crust_mass = 0;
   var u_range = 1e9/100000;
   var th_range = 1e9/100000;
-  var k_range = 1000000 * 0.000117;
-  var include = new Array();
-  var sources = document.getElementsByClassName("selected_crust_layers");
-  for (i = 0; i < sources.length; i++){
-    if (sources[i].checked){
-      include.push(sources[i].value);
-    }
-  }
+  var k_range = 1000000;
 
-  if (elm == "u238"){
+  var u_mass = 0;
+  var th_mass = 0;
+  var k_mass = 0;
+  var mass_layers = ["s", "h", "u", "m", "l"];
+
     for (index in prem){
       if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-        u238 = parseFloat(document.querySelector('.mantle_u238_slider[data-layer="'+index+'"]').value)/1e9;
-        mass += u238 * prem[index][2];
+        mantle_mass = prem[index][2];
+        u_mass += prem[index][4]/1e9 * mantle_mass;
+        th_mass += prem[index][5]/1e9 * mantle_mass;
+        k_mass += prem[index][6]/1000000 * 0.000117 * mantle_mass;
       }
     }
-    if (include.indexOf("s") > -1){
-      c_k = parseFloat(document.getElementById("c_ssed_u").value)/u_range;
-      o_k = parseFloat(document.getElementById("o_ssed_u").value)/u_range;
     for (i = 0; i < crust_data.area.length; i++){
       for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii]);
+        is_cont = crust_data.crust_f[i][ii];
+        is_ocean = crust_data.ocean_f[i][ii];
+        for (iii = 0; iii < c_crust_u_layers.length; iii++){
+          u_mass += (crust_concentrations[c_crust_u_layers[iii]]/u_range * crust_data.mass[mass_layers[iii]][i][ii] * is_cont)
+          u_mass += (crust_concentrations[o_crust_u_layers[iii]]/u_range * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean)
+          th_mass += (crust_concentrations[c_crust_th_layers[iii]]/th_range * crust_data.mass[mass_layers[iii]][i][ii] * is_cont);
+          th_mass += (crust_concentrations[o_crust_th_layers[iii]]/th_range * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean);
+          k_mass += (crust_concentrations[c_crust_k_layers[iii]]/k_range * 0.000117 * crust_data.mass[mass_layers[iii]][i][ii] * is_cont);
+          k_mass += (crust_concentrations[o_crust_k_layers[iii]]/k_range * 0.000117 * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean);
         }
-      }
-    }
-    if (include.indexOf("h") > -1){
-      c_k = parseFloat(document.getElementById("c_hsed_u").value)/u_range;
-      o_k = parseFloat(document.getElementById("o_ssed_u").value)/u_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("u") > -1){
-      c_k = parseFloat(document.getElementById("c_up_u").value)/u_range;
-      o_k = parseFloat(document.getElementById("o_up_u").value)/u_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("m") > -1){
-      c_k = parseFloat(document.getElementById("c_mid_u").value)/u_range;
-      o_k = parseFloat(document.getElementById("o_mid_u").value)/u_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("l") > -1){
-      c_k = parseFloat(document.getElementById("c_low_u").value)/u_range;
-      o_k = parseFloat(document.getElementById("o_low_u").value)/u_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
     }
   }
-  if (elm == "th232"){
-    for (index in prem){
-      if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-        k40 = parseFloat(document.querySelector('.mantle_th232_slider[data-layer="'+index+'"]').value)/1e9;
-        mass += k40 * prem[index][2];
-      }
-    }
-    if (include.indexOf("s") > -1){
-      c_k = parseFloat(document.getElementById("c_ssed_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_ssed_th").value)/th_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("h") > -1){
-      c_k = parseFloat(document.getElementById("c_hsed_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_ssed_th").value)/th_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("u") > -1){
-      c_k = parseFloat(document.getElementById("c_up_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_up_th").value)/th_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("m") > -1){
-      c_k = parseFloat(document.getElementById("c_mid_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_mid_th").value)/th_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("l") > -1){
-      c_k = parseFloat(document.getElementById("c_low_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_low_th").value)/th_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-  }
-  if (elm == "k40"){
-    for (index in prem){
-      if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-        k40 = parseFloat(document.querySelector('.mantle_k40_slider[data-layer="'+index+'"]').value)/1000000 * 0.000117;
-        mass += k40 * prem[index][2];
-      }
-    }
-    if (include.indexOf("s") > -1){
-      c_k = parseFloat(document.getElementById("c_ssed_k").value)/k_range * 0.000117;
-      o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range * 0.000117;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("h") > -1){
-      c_k = parseFloat(document.getElementById("c_hsed_k").value)/k_range * 0.000117;
-      o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range * 0.000117;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("u") > -1){
-      c_k = parseFloat(document.getElementById("c_up_k").value)/k_range * 0.000117;
-      o_k = parseFloat(document.getElementById("o_up_k").value)/k_range * 0.000117;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("m") > -1){
-      c_k = parseFloat(document.getElementById("c_mid_k").value)/k_range * 0.000117;
-      o_k = parseFloat(document.getElementById("o_mid_k").value)/k_range * 0.000117;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-    if (include.indexOf("l") > -1){
-      c_k = parseFloat(document.getElementById("c_low_k").value)/k_range * 0.000117;
-      o_k = parseFloat(document.getElementById("o_low_k").value)/k_range * 0.000117;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust_mass += (c_k   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii]);
-        crust_mass += (o_k   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii]);
-        }
-      }
-    }
-  }
-  return mass + crust_mass;
+  return {"u_mass":u_mass, "th_mass":th_mass, "k_mass":k_mass};
 }
 
 //calculates the heat from the mantle with given inputs
