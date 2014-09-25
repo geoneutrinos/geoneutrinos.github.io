@@ -862,35 +862,17 @@ function deal_with_2_layer_boundary_change(){
   text_content = pad_str_num(((earth_radius * 1000) - inner_r).toFixed(0), 4, "0");
   document.getElementById("2_layer_boundary_value").textContent = text_content;
   for (layer in prem){
-    if (parseFloat(prem[layer][0]) > 3479 && (parseFloat(prem[layer][1]) < 6346.7)){
+    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
       if (layer > boundary_i){
-        k40 = document.getElementById("2_layer_upper_k40_slider").value;
-        th232 = document.getElementById("2_layer_upper_th232_slider").value;
-        u238 = document.getElementById("2_layer_upper_u238_slider").value;
-        document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").value = k40;
-        document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").value = th232;
-        document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").value = u238;
+        prem[layer][4] = parseFloat(document.getElementById("2_layer_upper_u238_slider").value);
+        prem[layer][5] = parseFloat(document.getElementById("2_layer_upper_th232_slider").value);
+        prem[layer][6] = parseFloat(document.getElementById("2_layer_upper_k40_slider").value);
       } else {
-        k40 = document.getElementById("2_layer_lower_k40_slider").value;
-        th232 = document.getElementById("2_layer_lower_th232_slider").value;
-        u238 = document.getElementById("2_layer_lower_u238_slider").value;
-        document.querySelector(".mantle_k40_slider[data-layer='"+layer+"']").value = k40;
-        document.querySelector(".mantle_th232_slider[data-layer='"+layer+"']").value = th232;
-        document.querySelector(".mantle_u238_slider[data-layer='"+layer+"']").value = u238;
+        prem[layer][4] = parseFloat(document.getElementById("2_layer_lower_u238_slider").value);
+        prem[layer][5] = parseFloat(document.getElementById("2_layer_lower_th232_slider").value);
+        prem[layer][6] = parseFloat(document.getElementById("2_layer_lower_k40_slider").value);
       }
     }
-  }
-  layer_sliders = document.getElementsByClassName("mantle_k40_slider");
-  for (var i = 0; i < layer_sliders.length; ++i) {
-    layer_sliders[i].dispatchEvent(new Event('update_label'));
-  }
-  layer_sliders = document.getElementsByClassName("mantle_u238_slider");
-  for (var i = 0; i < layer_sliders.length; ++i) {
-    layer_sliders[i].dispatchEvent(new Event('update_label'));
-  }
-  layer_sliders = document.getElementsByClassName("mantle_th232_slider");
-  for (var i = 0; i < layer_sliders.length; ++i) {
-    layer_sliders[i].dispatchEvent(new Event('update_label'));
   }
   updateThings()
 }
