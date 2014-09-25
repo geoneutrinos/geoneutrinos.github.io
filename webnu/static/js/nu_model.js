@@ -27,8 +27,11 @@ var c_crust_k_layers = ["c_ssed_k", "c_hsed_k", "c_up_k", "c_mid_k", "c_low_k"];
 var o_crust_u_layers = ["o_ssed_u", "o_hsed_u", "o_up_u", "o_mid_u", "o_low_u"];
 var o_crust_th_layers = ["o_ssed_th", "o_hsed_th", "o_up_th", "o_mid_th", "o_low_th"];
 var o_crust_k_layers = ["o_ssed_k", "o_hsed_k", "o_up_k", "o_mid_k", "o_low_k"];
+var c_crust_layers = c_crust_u_layers.concat(c_crust_th_layers, c_crust_k_layers);
+var o_crust_layers = o_crust_u_layers.concat(o_crust_th_layers, o_crust_k_layers);
+var crust_layers = c_crust_layers.concat(o_crust_layers);
 
-var crust_concentrations = {
+var crust_conc = {
   c_ssed_u : 27.0,
   c_ssed_th : 105.0,
   c_ssed_k : 240,
@@ -316,7 +319,22 @@ function updateThingsWithServer(){
   });
 }
 
+function get_crust_slider_values(){
+  for (var i = 0; i < crust_layers.length; i++){
+    crust_conc[crust_layers[i]] = parseFloat(document.getElementById(crust_layers[i]).value);
+  }
+}
+
+function set_crust_slider_values(){
+  for (var i = 0; i < crust_layers.length; i++){
+    var elm = document.getElementById(crust_layers[i]);
+    elm.value = crust_conc[crust_layers[i]];
+    elm.dispatchEvent(new Event("update_label"));
+  }
+}
+
 function updateCrustThings(){
+  get_crust_slider_values();
   var include = new Array();
   var sources = document.getElementsByClassName("selected_crust_layers");
   for (i = 0; i < sources.length; i++){
@@ -324,63 +342,28 @@ function updateCrustThings(){
       include.push(sources[i].value);
     }
   }
-    
-  // Compute requested thickness
-  var thickness = new Array();
+  var zero_arr = new Array();
   for (i = 0; i < crust_data.area.length; i++){
     row = new Array();
     for (ii = 0; ii < crust_data.area[i].length; ii++){
       row.push(0);
       }
-    thickness.push(row);
+    zero_arr.push(row);
     }
-    if (include.indexOf("s") > -1){
-      thickness = twodAdd(crust_data.thickness.s, thickness);
-    }
-    if (include.indexOf("h") > -1){
-      thickness = twodAdd(crust_data.thickness.h, thickness);
-    }
-    if (include.indexOf("u") > -1){
-      thickness = twodAdd(crust_data.thickness.u, thickness);
-    }
-    if (include.indexOf("m") > -1){
-      thickness = twodAdd(crust_data.thickness.m, thickness);
-    }
-    if (include.indexOf("l") > -1){
-      thickness = twodAdd(crust_data.thickness.l, thickness);
-    }
+    
+  // Compute requested thickness
+  var thickness = zero_arr.map(function(arr){return arr.slice()});
+  for (var i = 0; i < include.length; i++){
+    thickness = twodAdd(crust_data.thickness[include[i]], thickness);
+  }
     crust.thickness = thickness;
 
 
   // Compute requested heat
   crust.heat = {}
-  var heat1 = new Array();
-  for (i = 0; i < crust_data.area.length; i++){
-    row = new Array();
-    for (ii = 0; ii < crust_data.area[i].length; ii++){
-      row.push(0);
-      }
-    heat1.push(row);
-    }
-  crust.heat.u = heat1;
-  var heat2 = new Array();
-  for (i = 0; i < crust_data.area.length; i++){
-    row = new Array();
-    for (ii = 0; ii < crust_data.area[i].length; ii++){
-      row.push(0);
-      }
-    heat2.push(row);
-    }
-  crust.heat.th = heat2;
-  var heat3 = new Array();
-  for (i = 0; i < crust_data.area.length; i++){
-    row = new Array();
-    for (ii = 0; ii < crust_data.area[i].length; ii++){
-      row.push(0);
-      }
-    heat3.push(row);
-    }
-  crust.heat.k = heat3;
+  crust.heat.u = zero_arr.map(function(arr){return arr.slice()});
+  crust.heat.th = zero_arr.map(function(arr){return arr.slice()});
+  crust.heat.k = zero_arr.map(function(arr){return arr.slice()});
   crust.heat.total = 0;
 
   u_range = 10 / 1e-6;
@@ -875,7 +858,7 @@ function deal_with_2_layer_boundary_change(){
 
 var elms = document.getElementsByClassName("2_layer_mantle");
 for (var i = 0; i < elms.length; i++){
- elms[i].addEventListener("constraint_done", deal_with_2_layer_boundary_change);
+ elms[i].addEventListener("input", deal_with_2_layer_boundary_change);
 }
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 
@@ -883,7 +866,6 @@ $(document).ready(function() {
   // just doing this first cause whatever
   load_prem();
   mantle_concentric_control_factory();
-  bse_less_crust_masses();
   connect_labels();
 
 
@@ -1023,6 +1005,7 @@ $(document).ready(function() {
   document.getElementById("bse_u238_slider").addEventListener("ratios_done", bse_less_crust_masses);
   document.getElementById("bse_th232_slider").addEventListener("ratios_done", bse_less_crust_masses);
   document.getElementById("bse_k40_slider").addEventListener("ratios_done", bse_less_crust_masses);
+  bse_less_crust_masses();
 });
 
 function plot_overlay(e){
@@ -1145,12 +1128,12 @@ function elm_total_mass(elm){
         is_cont = crust_data.crust_f[i][ii];
         is_ocean = crust_data.ocean_f[i][ii];
         for (iii = 0; iii < c_crust_u_layers.length; iii++){
-          u_mass += (crust_concentrations[c_crust_u_layers[iii]]/u_range * crust_data.mass[mass_layers[iii]][i][ii] * is_cont)
-          u_mass += (crust_concentrations[o_crust_u_layers[iii]]/u_range * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean)
-          th_mass += (crust_concentrations[c_crust_th_layers[iii]]/th_range * crust_data.mass[mass_layers[iii]][i][ii] * is_cont);
-          th_mass += (crust_concentrations[o_crust_th_layers[iii]]/th_range * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean);
-          k_mass += (crust_concentrations[c_crust_k_layers[iii]]/k_range * 0.000117 * crust_data.mass[mass_layers[iii]][i][ii] * is_cont);
-          k_mass += (crust_concentrations[o_crust_k_layers[iii]]/k_range * 0.000117 * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean);
+          u_mass += (crust_conc[c_crust_u_layers[iii]]/u_range * crust_data.mass[mass_layers[iii]][i][ii] * is_cont)
+          u_mass += (crust_conc[o_crust_u_layers[iii]]/u_range * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean)
+          th_mass += (crust_conc[c_crust_th_layers[iii]]/th_range * crust_data.mass[mass_layers[iii]][i][ii] * is_cont);
+          th_mass += (crust_conc[o_crust_th_layers[iii]]/th_range * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean);
+          k_mass += (crust_conc[c_crust_k_layers[iii]]/k_range * 0.000117 * crust_data.mass[mass_layers[iii]][i][ii] * is_cont);
+          k_mass += (crust_conc[o_crust_k_layers[iii]]/k_range * 0.000117 * crust_data.mass[mass_layers[iii]][i][ii] * is_ocean);
         }
     }
   }
@@ -1277,7 +1260,9 @@ function bse_less_crust_masses(){
   th_heat =  bse_elm_mass.th232 * th232_heat;
   power = (k_heat + u_heat + th_heat) * 1e-12; //TW
   document.getElementById("bse_rad_power").textContent = power.toFixed(1);
-  return power;
+  if (this !== window){
+    updateThings();
+  }
 }
 
 function connect_labels(){
