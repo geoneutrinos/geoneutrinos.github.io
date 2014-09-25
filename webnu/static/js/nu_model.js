@@ -834,10 +834,6 @@ function mantle_concentric_control_factory(){
     </table>\
         ");
   }
-    var elements = document.getElementsByClassName("layered_mantle_slider");
-    for (i=0; i < elements.length; i++){
-      elements[i].addEventListener("constraint_done", updateThings);
-    }
     document.getElementById("2_layer_boundary_slider").setAttribute("min", Math.min.apply(Math, mantle_layers));
     document.getElementById("2_layer_boundary_slider").setAttribute("max", Math.max.apply(Math, mantle_layers));
     document.getElementById("2_layer_boundary_slider").value = 32;
