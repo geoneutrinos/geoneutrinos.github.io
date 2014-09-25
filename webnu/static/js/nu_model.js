@@ -410,8 +410,6 @@ function updateCrustThings(){
       }
     }
 
-
-
   updateThings();
 }
 
@@ -517,7 +515,7 @@ function updateThings(){
     if (include.indexOf("r") > -1){
       heatmap = twodAdd(crust_data.reactor.flux, heatmap);
     }
-    from_mantle = mantle_signal;
+    from_mantle = mantle_nu_flux();
     min = 0;
     max = 60000000;
     //console.log("neutrino");
@@ -534,7 +532,7 @@ function updateThings(){
     if (include.indexOf("r") > -1){
       heatmap = twodAdd(crust_data.reactor.signal33, heatmap);
     }
-    from_mantle = mantle_nu_tnu();
+    from_mantle = mantle_signal;
     min = 0;
     max = 80;
     //console.log("neutrino");
@@ -590,20 +588,8 @@ function updateThings(){
 
   var dx = heatmap[0].length,
   dy = heatmap.length;
-
-  //var min = d3.min(heatmap, function(subunit){
-  //  return d3.min(subunit);
-  //}) + from_mantle;
-  //var max = d3.max(heatmap, function(subunit){
-  //  return d3.max(subunit);
-  //}) + from_mantle;
   
   var step = (max - min)/5;
-
-  // Fix the aspect ratio.
-  // var ka = dy / dx, kb = height / width;
-  // if (ka < kb) height = width * ka;
-  // else width = height / ka;
 
   var x = d3.scale.linear()
     .domain([0, dx])
@@ -618,12 +604,7 @@ function updateThings(){
     .range(["#00008F", "#00f", "#0ff", "#ff0", "#f00", "#8f0000"]);
 
   d3.select("#plot_display")
-    //.attr("width", dx)
-    //.attr("height", dy)
-    //.style("width", width + "px")
-    //.style("height", height + "px")
     .call(drawImage);
-
 
   // Compute the pixel colors; scaled by CSS.
   function drawImage(canvas) {
@@ -697,7 +678,6 @@ function draw_geo_lines(){
     .attr("preserveAspectRatio", "xMinYMin")
     .attr("width", width)
     .attr("height", height)
-
 
     d3.json("/js/plates.json", function(collection) {
       feature = svg.selectAll()
@@ -1086,14 +1066,11 @@ function mantle_heat(){
   th_heat = 0;
 
   mass = 0;
-  for (index in prem){
-    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-      k40 = parseFloat(document.querySelector('.mantle_k40_slider[data-layer="'+index+'"]').value)/1000000 * 0.000117;
-      u238 = parseFloat(document.querySelector('.mantle_u238_slider[data-layer="'+index+'"]').value)/1e9;
-      th232 = parseFloat(document.querySelector('.mantle_th232_slider[data-layer="'+index+'"]').value)/1e9;
-      k_heat = k_heat + (k40 * prem[index][2] * k40_heat);
-      u_heat = u_heat + (u238 * prem[index][2] * u238_heat);
-      th_heat = th_heat + (th232 * prem[index][2] * th232_heat);
+  for (var i = 0; i < prem.length; i++){
+    if (parseFloat(prem[i][0]) > prem_bottom && (parseFloat(prem[i][1]) < prem_top)){
+      u_heat = u_heat + (prem[i][4]/1e9 * prem[i][2] * u238_heat);
+      th_heat = th_heat + (prem[i][5]/1e9 * prem[i][2] * th232_heat);
+      k_heat = k_heat + (prem[i][6]/1000000 * 0.000117 * prem[i][2] * k40_heat);
     }
   }
   heat = k_heat + u_heat + th_heat
@@ -1117,14 +1094,11 @@ function mantle_nu_flux(){
   k_lum = 0;
   u_lum = 0;
   th_lum = 0;
-  for (index in prem){
-    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000 * 0.000117;
-      u238 = parseFloat($(".mantle_u238_slider[data-layer="+index+"]").val())/1e9;
-      th232 = parseFloat($(".mantle_th232_slider[data-layer="+index+"]").val())/1e9;
-      k_lum = k_lum + (k40 *  prem[index][3] * k40_lum);
-      u_lum = u_lum + (u238 * prem[index][3] * u238_lum);
-      th_lum = th_lum + (th232 * prem[index][3] * th232_lum);
+  for (var i = 0; i < prem.length; i++){
+    if (parseFloat(prem[i][0]) > prem_bottom && (parseFloat(prem[i][1]) < prem_top)){
+      u_lum = u_lum + (prem[i][4]/1e9 * prem[i][3] * u238_lum);
+      th_lum = th_lum + (prem[i][5]/1e9 * prem[i][3] * th232_lum);
+      k_lum = k_lum + (prem[i][6]/1000000 * 0.000117 *  prem[i][3] * k40_lum);
     }
   }
     output = 0;
@@ -1151,23 +1125,20 @@ function mantle_nu_tnu(){
   k_lum = 0;
   u_lum = 0;
   th_lum = 0;
-  for (index in prem){
-    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-      k40 = parseFloat($(".mantle_k40_slider[data-layer="+index+"]").val())/1000000 * 0.000117;
-      u238 = parseFloat($(".mantle_u238_slider[data-layer="+index+"]").val())/1e9;
-      th232 = parseFloat($(".mantle_th232_slider[data-layer="+index+"]").val())/1e9;
-      k_lum = k_lum + (k40 *  prem[index][3] * k40_lum);
-      u_lum = u_lum + (u238 * prem[index][3] * u238_lum);
-      th_lum = th_lum + (th232 * prem[index][3] * th232_lum);
+  for (var i = 0; i < prem.length; i++){
+    if (parseFloat(prem[i][0]) > prem_bottom && (parseFloat(prem[i][1]) < prem_top)){
+      u_lum = u_lum + (prem[i][4]/1e9 * prem[i][3] * u238_lum);
+      th_lum = th_lum + (prem[i][5]/1e9 * prem[i][3] * th232_lum);
+      k_lum = k_lum + (prem[i][6]/1000000 * 0.000117 *  prem[i][3] * k40_lum);
     }
   }
+
   u_tnu = (u_lum * 0.55) / 7.6e4; //the tnu calculation for u
   th_tnu = (th_lum * 0.55) / 2.5e5; //the tnu calculation for th
 
   document.getElementById('mantle_tnu_u').textContent = u_tnu.toFixed(1);
   document.getElementById('mantle_tnu_th').textContent = th_tnu.toFixed(1);
 
-  nu = (k_lum + u_lum + th_lum) * 1e-6; // why is this here???
     output = 0;
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       output = output + u_tnu;
