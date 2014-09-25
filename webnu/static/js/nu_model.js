@@ -31,6 +31,14 @@ var c_crust_layers = c_crust_u_layers.concat(c_crust_th_layers, c_crust_k_layers
 var o_crust_layers = o_crust_u_layers.concat(o_crust_th_layers, o_crust_k_layers);
 var crust_layers = c_crust_layers.concat(o_crust_layers);
 
+var crust_l_code = {
+  "s":"ssed",
+  "h":"hsed",
+  "u":"up",
+  "m":"mid",
+  "l":"low"
+};
+
 var crust_conc = {
   c_ssed_u : 27.0,
   c_ssed_th : 105.0,
@@ -373,96 +381,26 @@ function updateCrustThings(){
   c_th_heat = 26.3 * 1e-6;
   c_k_heat = 3.33 * 1e-9;
 
-    if (include.indexOf("s") > -1){
-      c_u = parseFloat(document.getElementById("c_ssed_u").value)/u_range;
-      c_th = parseFloat(document.getElementById("c_ssed_th").value)/th_range;
-      c_k = parseFloat(document.getElementById("c_ssed_k").value)/k_range;
-      o_u = parseFloat(document.getElementById("o_ssed_u").value)/u_range;
-      o_th = parseFloat(document.getElementById("o_ssed_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range;
+  for (var j = 0; j < include.length; j++){
+    code = crust_l_code[include[j]];
+    c_u = crust_conc["c_" + code + "_u"]/u_range;
+    c_th =crust_conc["c_" + code + "_th"]/th_range;
+    c_k = crust_conc["c_" + code + "_k"]/k_range;
+    o_u = crust_conc["o_" + code + "_u"]/u_range;
+    o_th =crust_conc["o_" + code + "_th"]/th_range;
+    o_k = crust_conc["o_" + code + "_k"]/k_range;
     for (i = 0; i < crust_data.area.length; i++){
       for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust.heat.u[i][ii] += (c_u   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (c_th * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (c_k   * crust_data.mass.s[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
-        crust.heat.u[i][ii] += (o_u   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (o_th * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (o_k   * crust_data.mass.s[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (c_u   * crust_data.mass[include[j]][i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (c_th * crust_data.mass[include[j]][i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (c_k   * crust_data.mass[include[j]][i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
+        crust.heat.u[i][ii] += (o_u   * crust_data.mass[include[j]][i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
+        crust.heat.th[i][ii] += (o_th * crust_data.mass[include[j]][i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
+        crust.heat.k[i][ii] += (o_k   * crust_data.mass[include[j]][i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
         }
       }
     }
-    if (include.indexOf("h") > -1){
-      c_u = parseFloat(document.getElementById("c_hsed_u").value)/u_range;
-      c_th = parseFloat(document.getElementById("c_hsed_th").value)/th_range;
-      c_k = parseFloat(document.getElementById("c_hsed_k").value)/k_range;
-      o_u = parseFloat(document.getElementById("o_hsed_u").value)/u_range;
-      o_th = parseFloat(document.getElementById("o_hsed_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_ssed_k").value)/k_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust.heat.u[i][ii] += (c_u   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (c_th * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (c_k   * crust_data.mass.h[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
-        crust.heat.u[i][ii] += (o_u   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (o_th * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (o_k   * crust_data.mass.h[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
-        }
-      }
-    }
-    if (include.indexOf("u") > -1){
-      c_u = parseFloat(document.getElementById("c_up_u").value)/u_range;
-      c_th = parseFloat(document.getElementById("c_up_th").value)/th_range;
-      c_k = parseFloat(document.getElementById("c_up_k").value)/k_range;
-      o_u = parseFloat(document.getElementById("o_up_u").value)/u_range;
-      o_th = parseFloat(document.getElementById("o_up_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_up_k").value)/k_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust.heat.u[i][ii] += (c_u   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (c_th * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (c_k   * crust_data.mass.u[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
-        crust.heat.u[i][ii] += (o_u   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (o_th * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (o_k   * crust_data.mass.u[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
-        }
-      }
-    }
-    if (include.indexOf("m") > -1){
-      c_u = parseFloat(document.getElementById("c_mid_u").value)/u_range;
-      c_th = parseFloat(document.getElementById("c_mid_th").value)/th_range;
-      c_k = parseFloat(document.getElementById("c_mid_k").value)/k_range;
-      o_u = parseFloat(document.getElementById("o_mid_u").value)/u_range;
-      o_th = parseFloat(document.getElementById("o_mid_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_mid_k").value)/k_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust.heat.u[i][ii] += (c_u   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (c_th * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (c_k   * crust_data.mass.m[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
-        crust.heat.u[i][ii] += (o_u   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (o_th * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (o_k   * crust_data.mass.m[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
-        }
-      }
-    }
-    if (include.indexOf("l") > -1){
-      c_u = parseFloat(document.getElementById("c_low_u").value)/u_range;
-      c_th = parseFloat(document.getElementById("c_low_th").value)/th_range;
-      c_k = parseFloat(document.getElementById("c_low_k").value)/k_range;
-      o_u = parseFloat(document.getElementById("o_low_u").value)/u_range;
-      o_th = parseFloat(document.getElementById("o_low_th").value)/th_range;
-      o_k = parseFloat(document.getElementById("o_low_k").value)/k_range;
-    for (i = 0; i < crust_data.area.length; i++){
-      for (ii = 0; ii < crust_data.area[i].length; ii++){
-        crust.heat.u[i][ii] += (c_u   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (c_th * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (c_k   * crust_data.mass.l[i][ii] * crust_data.crust_f[i][ii] * c_k_heat);
-        crust.heat.u[i][ii] += (o_u   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii] * c_u_heat);
-        crust.heat.th[i][ii] += (o_th * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii] * c_th_heat);
-        crust.heat.k[i][ii] += (o_k   * crust_data.mass.l[i][ii] * crust_data.ocean_f[i][ii] * c_k_heat);
-        }
-      }
-    }
+
     for (i = 0; i < crust_data.area.length; i++){
       for (ii = 0; ii < crust_data.area[i].length; ii++){
         crust.heat.total += crust.heat.u[i][ii] + crust.heat.th[i][ii] + crust.heat.k[i][ii];
