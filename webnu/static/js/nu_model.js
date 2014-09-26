@@ -743,6 +743,17 @@ function mantle_concentric_control_factory(){
     document.getElementById("2_layer_boundary_value").textContent = text_content;
   }
 }
+document.getElementById("mantle_layer_container").addEventListener("input", function(e){
+  elm = e.target;
+  if (elm.getAttribute("data-isotope") == "u238"){
+    prem[parseInt(elm.getAttribute("data-layer"))][4] = parseFloat(elm.value);
+  } else if (elm.getAttribute("data-isotope") == "th232"){
+    prem[parseInt(elm.getAttribute("data-layer"))][5] = parseFloat(elm.value);
+  } else if (elm.getAttribute("data-isotope") == "k40"){
+    prem[parseInt(elm.getAttribute("data-layer"))][6] = parseFloat(elm.value);
+  }
+  updateThings();
+});
 
 function pad_str_num(str, width, fill){
   gap = width - str.length;
@@ -779,12 +790,27 @@ for (var i = 0; i < elms.length; i++){
  elms[i].addEventListener("input", deal_with_2_layer_boundary_change);
 }
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
-
+function mantle_uniform_slider_change(){
+    with_update = typeof with_update !== 'undefined' ? with_update : true;
+    //the whole thing cause this is called outside of an event
+    u238 = parseFloat(document.getElementById("mantle_uniform_u238_slider").value);
+    th232 = parseFloat(document.getElementById("mantle_uniform_th232_slider").value);
+    k40 = parseFloat(document.getElementById("mantle_uniform_k40_slider").value);
+    for (var i = 0;  i < prem.length; i++){
+      if (parseFloat(prem[i][0]) > prem_bottom && (parseFloat(prem[i][1]) < prem_top)){
+        prem[i][4] = u238;
+        prem[i][5] = th232;
+        prem[i][6] = k40;
+      }
+    }
+  updateThings();
+}
 $(document).ready(function() {
   // just doing this first cause whatever
   load_prem();
   mantle_concentric_control_factory();
   connect_labels();
+  set_default_mantle_conc();
 
 
   //UI Components
@@ -808,22 +834,6 @@ $(document).ready(function() {
 
   //Mantle Controlls
   //Uuniform Mantle
-  // Trying this without jquery to see how fast it might be
-  function mantle_uniform_slider_change(){
-      with_update = typeof with_update !== 'undefined' ? with_update : true;
-      //the whole thing cause this is called outside of an event
-      u238 = parseFloat(document.getElementById("mantle_uniform_u238_slider").value);
-      th232 = parseFloat(document.getElementById("mantle_uniform_th232_slider").value);
-      k40 = parseFloat(document.getElementById("mantle_uniform_k40_slider").value);
-      for (var i = 0;  i < prem.length; i++){
-        if (parseFloat(prem[i][0]) > prem_bottom && (parseFloat(prem[i][1]) < prem_top)){
-          prem[i][4] = u238;
-          prem[i][5] = th232;
-          prem[i][6] = k40;
-        }
-      }
-    updateThings();
-  }
   document.getElementById("mantle_uniform_k40_slider").addEventListener("input", mantle_uniform_slider_change);
   document.getElementById("mantle_uniform_th232_slider").addEventListener("input", mantle_uniform_slider_change);
   document.getElementById("mantle_uniform_u238_slider").addEventListener("input", mantle_uniform_slider_change);
@@ -1013,13 +1023,25 @@ function load_prem(){
 }
 //this doesn't work without jQuery?!?
 $('#collapseOne').on('show.bs.collapse', function (e) {
-  console.log(e);
+  mantle_uniform_slider_change();
 })
 $('#collapseTwo').on('show.bs.collapse', function (e) {
-  console.log(e);
+  deal_with_2_layer_boundary_change();
 })
 $('#collapseThree').on('show.bs.collapse', function (e) {
-  console.log(e);
+  sliders = document.getElementsByClassName("layered_mantle_slider");
+  for (var i = 0; i < sliders.length; i++){
+    elm = sliders[i];
+    p_i = parseInt(elm.getAttribute("data-layer"));
+    if (elm.getAttribute("data-isotope") == "u238"){
+      elm.value = prem[p_i][4];
+    } else if (elm.getAttribute("data-isotope") == "th232"){
+      elm.value = prem[p_i][5];
+    } else if (elm.getAttribute("data-isotope") == "k40"){
+      elm.value = prem[p_i][6];
+    }
+    elm.dispatchEvent(new Event("update_label"));
+  }
 })
 
 function elm_total_mass(elm){
@@ -1184,5 +1206,20 @@ function connect_labels(){
       suffix = label.getAttribute("data-label-suffix");
       label.textContent = parseFloat(this.value).toFixed(precision) + suffix;
     });
+  }
+}
+
+function set_default_mantle_conc(){
+  var elms = document.getElementById('mantle').getElementsByTagName('input');
+  for (var i = 0; i < elms.length; i++){
+    var iso = elms[i].getAttribute("data-isotope");
+    if (iso == "u238"){
+      elms[i].value = default_mantle_u;
+    } else if (iso == "th232"){
+      elms[i].value = default_mantle_th;
+    } else if (iso == "k40"){
+      elms[i].value = default_mantle_k;
+    }
+    elms[i].dispatchEvent(new Event("update_label"));
   }
 }
