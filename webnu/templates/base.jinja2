@@ -1,8 +1,8 @@
 {% set navigation_bar = [
 ('/', 'index', 'Home'),
-('/model/', 'model', 'Interactive Model'),
-('/proposal/', 'proposal', 'Proposal'),
-('/about/', 'about', 'About')
+('/model', 'model', 'Interactive Model'),
+('/proposal', 'proposal', 'Proposal'),
+('/about', 'about', 'About')
 ] -%}
 {% set active_page = active_page|default('index') -%}
 <!DOCTYPE html>
@@ -11,7 +11,7 @@
     <title>Geoneutrinos.org</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link href="/v/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="/static/vender/css/bootstrap.min.css" rel="stylesheet" media="screen">
     {% block css %}{% endblock %}
   </head>
   <body>
@@ -41,8 +41,8 @@
       <div class="container">
         {% block content %}{% endblock %}
       </div>
-      <script src="/v/js/jquery-1.11.1.min.js"></script>
-      <script src="/v/js/bootstrap.min.js"></script>
+      <script src="/static/vender/js/jquery-1.11.1.min.js"></script>
+      <script src="/static/vender/js/bootstrap.min.js"></script>
       {% block js %}{% endblock %}
     </body>
   </html>

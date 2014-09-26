@@ -320,7 +320,7 @@ function updateThingsWithServer(){
   
   //plotsrc = "/plot.json?layers=shuml&uthk=2.7,2.7,2.7,1.3,0.2,1.7,1.7,0.1,0.1,0.1,10.5,10.5,10.5,6.5,1.2,6.9,6.9,0.2,0.2,0.2,2.4,2.4,2.4,2.0,0.5,1.5,1.5,0.1,0.1,0.1";
 
-  d3.json("/cache/crust_data.json", function(data) {
+  d3.json("/static/cache/crust_data.json", function(data) {
     crust_data = (data);
     crust_data.crust_f = singltonMinusTwoD(crust_data.ocean_f, 1)
     updateCrustThings();
@@ -679,14 +679,14 @@ function draw_geo_lines(){
     .attr("width", width)
     .attr("height", height)
 
-    d3.json("/js/plates.json", function(collection) {
+    d3.json("/static/js/plates.json", function(collection) {
       feature = svg.selectAll()
       .data(collection.features)
       .enter().append("svg:path")
       .attr("d", path)
       .attr("class", "plates")
     });
-    d3.json("/js/bounds.json", function(collection) {
+    d3.json("/static/js/bounds.json", function(collection) {
       feature = svg.selectAll()
       .data(collection.features)
       .enter().append("svg:path")
@@ -1004,7 +1004,7 @@ function load_prem(){
   }
 
   $.ajax({
-    url:'/js/prem.json',
+    url:'/static/js/prem.json',
     dataType: "json",
     async: false,
     success: function(data){
