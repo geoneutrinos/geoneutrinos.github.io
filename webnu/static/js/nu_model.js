@@ -72,6 +72,11 @@ var crust_conc = {
   o_low_k : 100
 }
 
+var update_label = document.createEvent("Event");
+update_label.initEvent("update_label", true, false);
+var ratios_done = document.createEvent("Event");
+ratios_done.initEvent("ratios_done", true, false);
+
 
 container_width = $(".plot_container").width()
 var width = container_width,
@@ -337,7 +342,7 @@ function set_crust_slider_values(){
   for (var i = 0; i < crust_layers.length; i++){
     var elm = document.getElementById(crust_layers[i]);
     elm.value = crust_conc[crust_layers[i]];
-    elm.dispatchEvent(new Event("update_label"));
+    elm.dispatchEvent(update_label);
   }
 }
 
@@ -743,7 +748,7 @@ function mantle_concentric_control_factory(){
     document.getElementById("2_layer_boundary_value").textContent = text_content;
   }
 }
-document.getElementById("mantle_layer_container").addEventListener("input", function(e){
+function mantle_layer_update(e){
   elm = e.target;
   if (elm.getAttribute("data-isotope") == "u238"){
     prem[parseInt(elm.getAttribute("data-layer"))][4] = parseFloat(elm.value);
@@ -753,7 +758,9 @@ document.getElementById("mantle_layer_container").addEventListener("input", func
     prem[parseInt(elm.getAttribute("data-layer"))][6] = parseFloat(elm.value);
   }
   updateThings();
-});
+}
+document.getElementById("mantle_layer_container").addEventListener("input", mantle_layer_update);
+document.getElementById("mantle_layer_container").addEventListener("change", mantle_layer_update);
 
 function pad_str_num(str, width, fill){
   gap = width - str.length;
@@ -788,9 +795,12 @@ function deal_with_2_layer_boundary_change(){
 var elms = document.getElementsByClassName("2_layer_mantle");
 for (var i = 0; i < elms.length; i++){
  elms[i].addEventListener("input", deal_with_2_layer_boundary_change);
+ elms[i].addEventListener("change", deal_with_2_layer_boundary_change);
 }
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
+document.getElementById("2_layer_boundary_slider").addEventListener("change", deal_with_2_layer_boundary_change);
 function mantle_uniform_slider_change(){
+    console.log("hello");
     with_update = typeof with_update !== 'undefined' ? with_update : true;
     //the whole thing cause this is called outside of an event
     u238 = parseFloat(document.getElementById("mantle_uniform_u238_slider").value);
@@ -837,6 +847,10 @@ $(document).ready(function() {
   document.getElementById("mantle_uniform_k40_slider").addEventListener("input", mantle_uniform_slider_change);
   document.getElementById("mantle_uniform_th232_slider").addEventListener("input", mantle_uniform_slider_change);
   document.getElementById("mantle_uniform_u238_slider").addEventListener("input", mantle_uniform_slider_change);
+  // for IE
+  document.getElementById("mantle_uniform_k40_slider").addEventListener("change", mantle_uniform_slider_change);
+  document.getElementById("mantle_uniform_th232_slider").addEventListener("change", mantle_uniform_slider_change);
+  document.getElementById("mantle_uniform_u238_slider").addEventListener("change", mantle_uniform_slider_change);
 
   //set the constraints on things with user set ratios
     function deal_with_slider_change_factory(group, isotope){
@@ -883,18 +897,19 @@ $(document).ready(function() {
         k40_elm.value = k40;
       }
     }
-      u238_elm.dispatchEvent(new Event('update_label'));
-      th232_elm.dispatchEvent(new Event('update_label'));
-      k40_elm.dispatchEvent(new Event('update_label'));
-      this.dispatchEvent(new Event("ratios_done"));
+      u238_elm.dispatchEvent(update_label);
+      th232_elm.dispatchEvent(update_label);
+      k40_elm.dispatchEvent(update_label);
+
+      this.dispatchEvent(ratios_done);
       }
     }
   var has_ratio_list = document.getElementsByClassName("has_ratios");
   var has_constraint_list = document.getElementsByClassName("has_constraint");
   function deal_with_constrained_slider_change_factory(){
     return function(){
-      this.dispatchEvent(new Event('update_label'));
-      this.dispatchEvent(new Event('constraint_done'));
+      this.dispatchEvent(update_label);
+      //this.dispatchEvent(new Event('constraint_done'));
     }
   }
 
@@ -903,12 +918,14 @@ $(document).ready(function() {
     group = has_ratio_list[i].getAttribute("data-layer");
     deal_with_slider_change = deal_with_slider_change_factory(group, isotope);
     has_ratio_list[i].addEventListener('input', deal_with_slider_change);
+    has_ratio_list[i].addEventListener('change', deal_with_slider_change);
   }
   for (var i=has_constraint_list.length; i--;){
     isotope = has_constraint_list[i].getAttribute("data-isotope");
     group = has_constraint_list[i].getAttribute("data-layer");
     deal_with_slider_change = deal_with_constrained_slider_change_factory(group, isotope);
     has_constraint_list[i].addEventListener('input', deal_with_slider_change);
+    has_constraint_list[i].addEventListener('change', deal_with_slider_change);
   }
 
   //Draw Everything and Run the App :)
@@ -926,7 +943,7 @@ $(document).ready(function() {
   draw_geo_lines();
   sliders = document.querySelectorAll("input[type='range']");
   for (var i=sliders.length; i--;){
-    sliders[i].dispatchEvent(new Event("update_label"));
+    sliders[i].dispatchEvent(update_label);
   }
 
   document.getElementById("plot_container").addEventListener("mousemove", plot_overlay);
@@ -1040,7 +1057,7 @@ $('#collapseThree').on('show.bs.collapse', function (e) {
     } else if (elm.getAttribute("data-isotope") == "k40"){
       elm.value = prem[p_i][6];
     }
-    elm.dispatchEvent(new Event("update_label"));
+    elm.dispatchEvent(update_label);
   }
 })
 
@@ -1220,6 +1237,6 @@ function set_default_mantle_conc(){
     } else if (iso == "k40"){
       elms[i].value = default_mantle_k;
     }
-    elms[i].dispatchEvent(new Event("update_label"));
+    elms[i].dispatchEvent(update_label);
   }
 }
