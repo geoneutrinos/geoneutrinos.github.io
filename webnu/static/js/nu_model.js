@@ -947,6 +947,9 @@ $(document).ready(function() {
   }
 
   document.getElementById("plot_container").addEventListener("mousemove", plot_overlay);
+  document.getElementById("bse_u238_slider").addEventListener("ratios_done", bse_set_default);
+  document.getElementById("bse_th232_slider").addEventListener("ratios_done", bse_set_default);
+  document.getElementById("bse_k40_slider").addEventListener("ratios_done", bse_set_default);
   document.getElementById("bse_u238_slider").addEventListener("ratios_done", bse_less_crust_masses);
   document.getElementById("bse_th232_slider").addEventListener("ratios_done", bse_less_crust_masses);
   document.getElementById("bse_k40_slider").addEventListener("ratios_done", bse_less_crust_masses);
@@ -1239,4 +1242,41 @@ function set_default_mantle_conc(){
     }
     elms[i].dispatchEvent(update_label);
   }
+}
+
+
+// Preset stuff
+function bse_preset_event(e){
+  var bse_u, bse_th, bse_u, uth_ratio, ku_ratio;
+  var bse_selected = document.getElementById("bse_preset_selector").value;
+  if (bse_selected == "bills"){
+    bse_u = 20.0;
+    bse_th = 80.0;
+    bse_k = 239;
+    uth_ratio = 4;
+    ku_ratio = 11950;
+  }
+  document.getElementById("use_bse_constraint").checked = true;
+  document.getElementById("fixed_thu_ratio_bool").checked = true;
+  document.getElementById("fixed_ku_ratio_bool").checked = true;
+  document.getElementById("fixed_thu_ratio").value = uth_ratio;
+  document.getElementById("fixed_ku_ratio").value = ku_ratio;
+  document.getElementById("bse_u238_slider").value = bse_u;
+  document.getElementById("bse_th232_slider").value = bse_th;
+  document.getElementById("bse_k40_slider").value = bse_k;
+  document.getElementById("bse_u238_slider").dispatchEvent(update_label);
+  document.getElementById("bse_th232_slider").dispatchEvent(update_label);
+  document.getElementById("bse_k40_slider").dispatchEvent(update_label);
+  k40 = parseFloat(document.getElementById("bse_k40_slider").value);
+  document.getElementById("bse_k40_value").textContent = k40.toFixed(0) + "µg/g";
+  u238 = parseFloat(document.getElementById("bse_u238_slider").value);
+  document.getElementById("bse_u238_value").textContent = u238.toFixed(1) + "ng/g";
+  th232 = parseFloat(document.getElementById("bse_th232_slider").value);
+  document.getElementById("bse_th232_value").textContent = th232.toFixed(1) + "ng/g";
+  bse_less_crust_masses(); //updates the bse
+  updateThings(); //does all the other caluclations
+}
+document.getElementById("bse_preset_selector").addEventListener("change", bse_preset_event)
+function bse_set_default(){
+  document.getElementById("bse_preset_selector").value = "";
 }
