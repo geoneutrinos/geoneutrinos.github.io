@@ -491,10 +491,12 @@ function updateThings(){
     document.getElementById("total_crust_power").textContent = ((crust.heat.total)/1e12).toFixed(1);
     display_power();
   if ($('#plot_display_selector').val() == 'thickness') {
+    enable_crust_controls();
     heatmap = crust.thickness;
     min = 0;
     max = 70;
   } else if ($('#plot_display_selector').val() == 'heat') {
+    enable_crust_controls();
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       heatmap = twodAdd(crust.heat.u, heatmap);
     }
@@ -508,6 +510,7 @@ function updateThings(){
     min = 0;
     max = 140;
   } else if ($('#plot_display_selector').val() == 'neutrino_flux') {
+    only_huang_et_al();
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       heatmap = twodAdd(crust_data.nu_flux.u, heatmap);
     }
@@ -525,6 +528,7 @@ function updateThings(){
     max = 60000000;
     //console.log("neutrino");
   } else if ($('#plot_display_selector').val() == 'neutrino') {
+    only_huang_et_al();
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       heatmap = twodAdd(crust_data.nu_signal.u, heatmap);
     }
@@ -542,6 +546,7 @@ function updateThings(){
     max = 80;
     //console.log("neutrino");
   } else if ($('#plot_display_selector').val() == 'geonu_fraction') {
+    only_huang_et_al();
     var mantle_flux = mantle_nu_flux();
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       heatmap = twodAdd(crust_data.nu_flux.u, heatmap);
@@ -557,6 +562,7 @@ function updateThings(){
     min = 0;
     max = 1;
   } else if ($('#plot_display_selector').val() == 'mantle_ratio') {
+    only_huang_et_al();
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       heatmap = twodAdd(crust_data.nu_signal.u, heatmap);
     }
@@ -575,6 +581,7 @@ function updateThings(){
     max = 10;
     min = 0;
   } else if ($('#plot_display_selector').val() == 'mantle_uncertain') {
+    only_huang_et_al();
     if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
       heatmap = twodAdd(crust_data.nu_signal.u, heatmap);
     }
@@ -823,6 +830,7 @@ $(document).ready(function() {
   mantle_concentric_control_factory();
   connect_labels();
   set_default_mantle_conc();
+  set_crust_slider_values();
 
 
   //UI Components
@@ -935,6 +943,7 @@ $(document).ready(function() {
     updateThings();
   });
   $(".causes_crust_update").on("change", function(){
+    crust_set_default();
     updateCrustThings();
   });
   var width = $(".plot_container").width();
@@ -1331,5 +1340,77 @@ function mantle_preset_event(e){
 document.getElementById("mantle_preset_selector").addEventListener("change", mantle_preset_event)
 function mantle_set_default(){
   document.getElementById("mantle_preset_selector").value = "";
-  console.log("hi");
+}
+
+function crust_preset_event(e){
+  var crust_selected = document.getElementById("crust_preset_selector").value;
+  if (crust_selected == "huang"){
+    var huang = {
+      c_ssed_u : 17.5,
+      c_ssed_th : 81.0,
+      c_ssed_k : 183,
+      c_hsed_u : 17.5,
+      c_hsed_th : 81.0,
+      c_hsed_k : 183,
+      c_up_u : 27.0,
+      c_up_th : 105,
+      c_up_k : 232,
+      c_mid_u : 9.5,
+      c_mid_th : 48.5,
+      c_mid_k : 152,
+      c_low_u : 1.5,
+      c_low_th : 9.5,
+      c_low_k : 61,
+      o_ssed_u : 17.3,
+      o_ssed_th : 81.0,
+      o_ssed_k : 183,
+      o_hsed_u : 17.3,
+      o_hsed_th : 81.0,
+      o_hsed_k : 183,
+      o_up_u : 0.5,
+      o_up_th : 2.0,
+      o_up_k : 7,
+      o_mid_u : 0.5,
+      o_mid_th : 2.0,
+      o_mid_k : 7,
+      o_low_u : 0.5,
+      o_low_th : 2.0,
+      o_low_k : 7
+    }
+  crust_conc = huang;
+  }
+  set_crust_slider_values();
+  if (e = "no_update"){
+    return;
+  }
+  updateCrustThings();
+}
+document.getElementById("crust_preset_selector").addEventListener("change", crust_preset_event)
+function crust_set_default(){
+  document.getElementById("crust_preset_selector").value = "";
+}
+function only_huang_et_al(){
+  document.getElementById("crust_preset_selector").value = "huang";
+  document.getElementById("crust_preset_selector").disabled = true;
+  for (var i = 0; i < crust_layers.length; i++){
+    var elm = document.getElementById(crust_layers[i]);
+    elm.disabled = true;
+  }
+  var selected_c_layers = document.getElementsByClassName("selected_crust_layers");
+  for (var i = 0; i < selected_c_layers.length; i++){
+    selected_c_layers[i].checked = true;
+    selected_c_layers[i].disabled = true;
+  }
+  crust_preset_event("no_update");
+}
+function enable_crust_controls(){
+  document.getElementById("crust_preset_selector").disabled = false;
+  for (var i = 0; i < crust_layers.length; i++){
+    var elm = document.getElementById(crust_layers[i]);
+    elm.disabled = false;
+  }
+  var selected_c_layers = document.getElementsByClassName("selected_crust_layers");
+  for (var i = 0; i < selected_c_layers.length; i++){
+    selected_c_layers[i].disabled = false;
+  }
 }
