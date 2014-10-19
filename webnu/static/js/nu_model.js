@@ -757,6 +757,7 @@ function mantle_layer_update(e){
   } else if (elm.getAttribute("data-isotope") == "k40"){
     prem[parseInt(elm.getAttribute("data-layer"))][6] = parseFloat(elm.value);
   }
+  mantle_set_default();
   updateThings();
 }
 document.getElementById("mantle_layer_container").addEventListener("input", mantle_layer_update);
@@ -789,6 +790,7 @@ function deal_with_2_layer_boundary_change(){
       }
     }
   }
+  mantle_set_default()
   updateThings()
 }
 
@@ -800,7 +802,6 @@ for (var i = 0; i < elms.length; i++){
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 document.getElementById("2_layer_boundary_slider").addEventListener("change", deal_with_2_layer_boundary_change);
 function mantle_uniform_slider_change(){
-    console.log("hello");
     with_update = typeof with_update !== 'undefined' ? with_update : true;
     //the whole thing cause this is called outside of an event
     u238 = parseFloat(document.getElementById("mantle_uniform_u238_slider").value);
@@ -813,6 +814,7 @@ function mantle_uniform_slider_change(){
         prem[i][6] = k40;
       }
     }
+    mantle_set_default();
   updateThings();
 }
 $(document).ready(function() {
@@ -1247,7 +1249,7 @@ function set_default_mantle_conc(){
 
 // Preset stuff
 function bse_preset_event(e){
-  var bse_u, bse_th, bse_u, uth_ratio, ku_ratio;
+  var bse_u, bse_th, bse_k, uth_ratio, ku_ratio;
   var bse_selected = document.getElementById("bse_preset_selector").value;
   if (bse_selected == "bills"){
     bse_u = 20.0;
@@ -1279,4 +1281,55 @@ function bse_preset_event(e){
 document.getElementById("bse_preset_selector").addEventListener("change", bse_preset_event)
 function bse_set_default(){
   document.getElementById("bse_preset_selector").value = "";
+}
+
+function mantle_preset_event(e){
+  var mantle_u, mantle_th, mantle_k;
+  var mantle_selected = document.getElementById("mantle_preset_selector").value;
+  if (mantle_selected == "salters2004"){
+    mantle_u = 4.7;
+    mantle_th = 13.7;
+    mantle_k = 60;
+  }
+  if (mantle_selected == "workman2005"){
+    mantle_u = 3.2;
+    mantle_th = 7.9;
+    mantle_k = 50;
+  }
+  if (mantle_selected == "boyet2008"){
+    mantle_u = 5.4;
+    mantle_th = 16;
+    mantle_k = 240;
+  }
+  if (mantle_selected == "arevalo2010"){
+    mantle_u = 8.0;
+    mantle_th = 22;
+    mantle_k = 152;
+  }
+
+  var elms = document.getElementById('mantle').getElementsByTagName('input');
+  for (var i = 0; i < elms.length; i++){
+    var iso = elms[i].getAttribute("data-isotope");
+    if (iso == "u238"){
+      elms[i].value = mantle_u;
+    } else if (iso == "th232"){
+      elms[i].value = mantle_th;
+    } else if (iso == "k40"){
+      elms[i].value = mantle_k;
+    }
+    elms[i].dispatchEvent(update_label);
+  }
+  for (layer in prem){
+    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+        prem[layer][4] = mantle_u;
+        prem[layer][5] = mantle_th;
+        prem[layer][6] = mantle_k;
+      }
+  }
+  updateThings();
+}
+document.getElementById("mantle_preset_selector").addEventListener("change", mantle_preset_event)
+function mantle_set_default(){
+  document.getElementById("mantle_preset_selector").value = "";
+  console.log("hi");
 }
