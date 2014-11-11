@@ -31,6 +31,9 @@ var c_crust_layers = c_crust_u_layers.concat(c_crust_th_layers, c_crust_k_layers
 var o_crust_layers = o_crust_u_layers.concat(o_crust_th_layers, o_crust_k_layers);
 var crust_layers = c_crust_layers.concat(o_crust_layers);
 
+var crust_elm_masses = {};
+var mantle_elm_masses = {};
+
 var crust_l_code = {
   "s":"ssed",
   "h":"hsed",
@@ -415,6 +418,7 @@ function updateCrustThings(){
       }
     }
 
+  calc_crust_elm__mass();
   updateThings();
 }
 
@@ -429,6 +433,7 @@ function updateThings(){
   var k40_status = "not";
   var mantle_elm_masses;
 
+  calc_mantle_elm_masses();
   if (document.getElementById('use_bse_constraint').checked){
     mantle_elm_masses = elm_total_mass();
 
@@ -778,13 +783,108 @@ function pad_str_num(str, width, fill){
     return str;
   }
 }
+function solve_lower_mantle(elm, direction, stop){
+  var boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
+  var prem_elm_i;
+  var value;
+  var lower_slider = document.getElementById("2_layer_lower_"+elm+"_slider");
+  var min = parseFloat(lower_slider.min);
+  var max = parseFloat(lower_slider.max);
+  var step = parseFloat(lower_slider.step);
+  if (elm == 'u238'){
+    prem_elm_i = 4;
+  } else if (elm == 'th232'){
+    prem_elm_i = 5;
+  } else if (elm == 'k40'){
+    prem_elm_i = 6;
+  }
+  if (direction == 'down'){
+    value = parseFloat(lower_slider.value) - step;
+    if (value < min){
+      return;
+    }
+    lower_slider.value = value;
+    lower_slider.dispatchEvent(update_label);
+  }
+  if (direction == 'up'){
+    value = parseFloat(lower_slider.value) + step;
+    if (value > max){
+      return;
+    }
+    lower_slider.value = value;
+    lower_slider.dispatchEvent(update_label);
+  }
+  for (var layer = 0; layer < prem.length; layer++){
+    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+      if (layer <= boundary_i){
+        prem[layer][prem_elm_i] = value;
+      }
+    }
+  }
+  calc_mantle_elm_masses();
+  var elm_diff;
+  if (elm == 'u238'){
+    elm_diff = elm_total_mass().u_mass - bse_elm_mass.u238;
+  } else if (elm == 'th232'){
+    elm_diff = elm_total_mass().th_mass - bse_elm_mass.th232;
+  } else if (elm == 'k40'){
+    elm_diff = elm_total_mass().k_mass - bse_elm_mass.k40;
+  }
+  if (stop){
+    return;
+  }
+  if (direction == 'down'){
+    if (elm_diff > 0){
+      solve_lower_mantle(elm, direction, false);
+    }
+  }
+  if (direction == 'up'){
+    if (elm_diff < 0){
+      solve_lower_mantle(elm, direction, false);
+    } else {
+      solve_lower_mantle(elm, 'down', true);
+    }
+  }
+}
+
+function upper_mantle_change(){
+  var boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
+  var value = this.value;
+  var element = this.getAttribute('data-isotope');
+  for (var layer = 0; layer < prem.length; layer++){
+    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+      if (layer > boundary_i){
+        prem[layer][4] = parseFloat(document.getElementById("2_layer_upper_u238_slider").value);
+        prem[layer][5] = parseFloat(document.getElementById("2_layer_upper_th232_slider").value);
+        prem[layer][6] = parseFloat(document.getElementById("2_layer_upper_k40_slider").value);
+      }
+    }
+  }
+  calc_mantle_elm_masses();
+  var elm_diff;
+  if (element == 'u238'){
+    elm_diff = elm_total_mass().u_mass - bse_elm_mass.u238;
+  } else if (element == 'th232'){
+    elm_diff = elm_total_mass().th_mass - bse_elm_mass.th232;
+  } else if (element == 'k40'){
+    elm_diff = elm_total_mass().k_mass - bse_elm_mass.k40;
+  }
+
+  if (elm_diff > 0){
+    solve_lower_mantle(element, 'down', false);
+  } else {
+    solve_lower_mantle(element, 'up', false);
+  }
+  mantle_set_default()
+  updateThings()
+}
 
 function deal_with_2_layer_boundary_change(){
   boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
   inner_r = prem[boundary_i][0];
   text_content = pad_str_num(((earth_radius * 1000) - inner_r).toFixed(0), 4, "0");
   document.getElementById("2_layer_boundary_value").textContent = text_content;
-  for (layer in prem){
+  for (var layer = 0; layer < prem.length; layer++){
     if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
       if (layer > boundary_i){
         prem[layer][4] = parseFloat(document.getElementById("2_layer_upper_u238_slider").value);
@@ -801,10 +901,10 @@ function deal_with_2_layer_boundary_change(){
   updateThings()
 }
 
-var elms = document.getElementsByClassName("2_layer_mantle");
+var elms = document.getElementsByClassName("upper_mantle");
 for (var i = 0; i < elms.length; i++){
- elms[i].addEventListener("input", deal_with_2_layer_boundary_change);
- elms[i].addEventListener("change", deal_with_2_layer_boundary_change);
+ elms[i].addEventListener("input", upper_mantle_change);
+ //elms[i].addEventListener("change", upper_mantle_change);
 }
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 document.getElementById("2_layer_boundary_slider").addEventListener("change", deal_with_2_layer_boundary_change);
@@ -1075,7 +1175,25 @@ $('#collapseThree').on('show.bs.collapse', function (e) {
   }
 })
 
-function elm_total_mass(elm){
+function calc_mantle_elm_masses(){
+  var u_mass = 0;
+  var th_mass = 0;
+  var k_mass = 0;
+
+  for (var index = 0; index < prem.length; index++){
+    if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
+      mantle_mass = prem[index][2];
+      u_mass += prem[index][4]/1e9 * mantle_mass;
+      th_mass += prem[index][5]/1e9 * mantle_mass;
+      k_mass += prem[index][6]/1000000 * 0.000117 * mantle_mass;
+    }
+  }
+  mantle_elm_masses.u = u_mass;
+  mantle_elm_masses.th = th_mass;
+  mantle_elm_masses.k = k_mass;
+}
+
+function calc_crust_elm__mass(){
   var crust_mass = 0;
   var u_range = 1e9/100000;
   var th_range = 1e9/100000;
@@ -1086,14 +1204,6 @@ function elm_total_mass(elm){
   var k_mass = 0;
   var mass_layers = ["s", "h", "u", "m", "l"];
 
-    for (index in prem){
-      if (parseFloat(prem[index][0]) > 3479 && (parseFloat(prem[index][1]) < 6346.7)){
-        mantle_mass = prem[index][2];
-        u_mass += prem[index][4]/1e9 * mantle_mass;
-        th_mass += prem[index][5]/1e9 * mantle_mass;
-        k_mass += prem[index][6]/1000000 * 0.000117 * mantle_mass;
-      }
-    }
     for (i = 0; i < crust_data.area.length; i++){
       for (ii = 0; ii < crust_data.area[i].length; ii++){
         is_cont = crust_data.crust_f[i][ii];
@@ -1108,6 +1218,14 @@ function elm_total_mass(elm){
         }
     }
   }
+    crust_elm_masses.u = u_mass;
+    crust_elm_masses.th = th_mass;
+    crust_elm_masses.k = k_mass;
+}
+function elm_total_mass(elm){
+  var u_mass = crust_elm_masses.u + mantle_elm_masses.u;
+  var th_mass = crust_elm_masses.th + mantle_elm_masses.th;
+  var k_mass = crust_elm_masses.k + mantle_elm_masses.k;
   return {"u_mass":u_mass, "th_mass":th_mass, "k_mass":k_mass};
 }
 
