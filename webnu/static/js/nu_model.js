@@ -783,14 +783,19 @@ function pad_str_num(str, width, fill){
     return str;
   }
 }
-function solve_lower_mantle(elm, direction, stop){
+function solve_mantle(mantle_layer, elm, direction, stop){
   var boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
   var prem_elm_i;
   var value;
-  var lower_slider = document.getElementById("2_layer_lower_"+elm+"_slider");
-  var min = parseFloat(lower_slider.min);
-  var max = parseFloat(lower_slider.max);
-  var step = parseFloat(lower_slider.step);
+  var other_layer_slider;
+  if (mantle_layer == "2_layer_upper"){
+    other_layer_slider = document.getElementById("2_layer_lower_"+elm+"_slider");
+  } else {
+    other_layer_slider = document.getElementById("2_layer_upper_"+elm+"_slider");
+  }
+  var min = parseFloat(other_layer_slider.min);
+  var max = parseFloat(other_layer_slider.max);
+  var step = parseFloat(other_layer_slider.step);
   if (elm == 'u238'){
     prem_elm_i = 4;
   } else if (elm == 'th232'){
@@ -799,25 +804,35 @@ function solve_lower_mantle(elm, direction, stop){
     prem_elm_i = 6;
   }
   if (direction == 'down'){
-    value = parseFloat(lower_slider.value) - step;
+    value = parseFloat(other_layer_slider.value) - step;
     if (value < min){
       return;
     }
-    lower_slider.value = value;
-    lower_slider.dispatchEvent(update_label);
+    other_layer_slider.value = value;
+    other_layer_slider.dispatchEvent(update_label);
   }
   if (direction == 'up'){
-    value = parseFloat(lower_slider.value) + step;
+    value = parseFloat(other_layer_slider.value) + step;
     if (value > max){
       return;
     }
-    lower_slider.value = value;
-    lower_slider.dispatchEvent(update_label);
+    other_layer_slider.value = value;
+    other_layer_slider.dispatchEvent(update_label);
   }
-  for (var layer = 0; layer < prem.length; layer++){
-    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
-      if (layer <= boundary_i){
-        prem[layer][prem_elm_i] = value;
+  if (mantle_layer == "2_layer_upper"){
+    for (var layer = 0; layer < prem.length; layer++){
+      if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+        if (layer <= boundary_i){
+          prem[layer][prem_elm_i] = value;
+        }
+      }
+    }
+  } else {
+    for (var layer = 0; layer < prem.length; layer++){
+      if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+        if (layer > boundary_i){
+          prem[layer][prem_elm_i] = value;
+        }
       }
     }
   }
@@ -835,22 +850,24 @@ function solve_lower_mantle(elm, direction, stop){
   }
   if (direction == 'down'){
     if (elm_diff > 0){
-      solve_lower_mantle(elm, direction, false);
+      solve_mantle(mantle_layer, elm, direction, false);
     }
   }
   if (direction == 'up'){
     if (elm_diff < 0){
-      solve_lower_mantle(elm, direction, false);
+      solve_mantle(mantle_layer, elm, direction, false);
     } else {
-      solve_lower_mantle(elm, 'down', true);
+      solve_mantle(mantle_layer, elm, 'down', true);
     }
   }
 }
 
-function upper_mantle_change(){
+function two_layer_mantle_change(){
   var boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
   var value = this.value;
   var element = this.getAttribute('data-isotope');
+  var mantle_layer = this.getAttribute('data-layer');
+  if (mantle_layer == "2_layer_upper"){
   for (var layer = 0; layer < prem.length; layer++){
     if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
       if (layer > boundary_i){
@@ -859,6 +876,17 @@ function upper_mantle_change(){
         prem[layer][6] = parseFloat(document.getElementById("2_layer_upper_k40_slider").value);
       }
     }
+  }
+  } else {
+  for (var layer = 0; layer < prem.length; layer++){
+    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+      if (layer <= boundary_i){
+        prem[layer][4] = parseFloat(document.getElementById("2_layer_lower_u238_slider").value);
+        prem[layer][5] = parseFloat(document.getElementById("2_layer_lower_th232_slider").value);
+        prem[layer][6] = parseFloat(document.getElementById("2_layer_lower_k40_slider").value);
+      }
+    }
+  }
   }
   calc_mantle_elm_masses();
   var elm_diff;
@@ -871,9 +899,9 @@ function upper_mantle_change(){
   }
 
   if (elm_diff > 0){
-    solve_lower_mantle(element, 'down', false);
+    solve_mantle(mantle_layer, element, 'down', false);
   } else {
-    solve_lower_mantle(element, 'up', false);
+    solve_mantle(mantle_layer, element, 'up', false);
   }
   mantle_set_default()
   updateThings()
@@ -901,10 +929,10 @@ function deal_with_2_layer_boundary_change(){
   updateThings()
 }
 
-var elms = document.getElementsByClassName("upper_mantle");
+var elms = document.getElementsByClassName("2_layer_mantle");
 for (var i = 0; i < elms.length; i++){
- elms[i].addEventListener("input", upper_mantle_change);
- //elms[i].addEventListener("change", upper_mantle_change);
+ elms[i].addEventListener("input", two_layer_mantle_change);
+ elms[i].addEventListener("change", two_layer_mantle_change);
 }
 document.getElementById("2_layer_boundary_slider").addEventListener("input", deal_with_2_layer_boundary_change);
 document.getElementById("2_layer_boundary_slider").addEventListener("change", deal_with_2_layer_boundary_change);
