@@ -889,19 +889,21 @@ function two_layer_mantle_change(){
   }
   }
   calc_mantle_elm_masses();
-  var elm_diff;
-  if (element == 'u238'){
-    elm_diff = elm_total_mass().u_mass - bse_elm_mass.u238;
-  } else if (element == 'th232'){
-    elm_diff = elm_total_mass().th_mass - bse_elm_mass.th232;
-  } else if (element == 'k40'){
-    elm_diff = elm_total_mass().k_mass - bse_elm_mass.k40;
-  }
+  if (document.getElementById("use_bse_constraint").checked){
+    var elm_diff;
+    if (element == 'u238'){
+      elm_diff = elm_total_mass().u_mass - bse_elm_mass.u238;
+    } else if (element == 'th232'){
+      elm_diff = elm_total_mass().th_mass - bse_elm_mass.th232;
+    } else if (element == 'k40'){
+      elm_diff = elm_total_mass().k_mass - bse_elm_mass.k40;
+    }
 
-  if (elm_diff > 0){
-    solve_mantle(mantle_layer, element, 'down', false);
-  } else {
-    solve_mantle(mantle_layer, element, 'up', false);
+    if (elm_diff > 0){
+      solve_mantle(mantle_layer, element, 'down', false);
+    } else {
+      solve_mantle(mantle_layer, element, 'up', false);
+    }
   }
   mantle_set_default()
   updateThings()
@@ -1462,24 +1464,75 @@ function mantle_preset_event(e){
     mantle_k = 152;
   }
 
-  var elms = document.getElementById('mantle').getElementsByTagName('input');
-  for (var i = 0; i < elms.length; i++){
-    var iso = elms[i].getAttribute("data-isotope");
-    if (iso == "u238"){
-      elms[i].value = mantle_u;
-    } else if (iso == "th232"){
-      elms[i].value = mantle_th;
-    } else if (iso == "k40"){
-      elms[i].value = mantle_k;
+  if (document.getElementById("collapseTwo").className.indexOf("in") > -1){
+    var elms = document.getElementsByClassName("upper_mantle");
+    for (var i = 0; i < elms.length; i++){
+      var iso = elms[i].getAttribute("data-isotope");
+      if (iso == "u238"){
+        elms[i].value = mantle_u;
+      } else if (iso == "th232"){
+        elms[i].value = mantle_th;
+      } else if (iso == "k40"){
+        elms[i].value = mantle_k;
+      }
+      elms[i].dispatchEvent(update_label);
     }
-    elms[i].dispatchEvent(update_label);
+  } else {
+    var elms = document.getElementById('mantle').getElementsByTagName('input');
+    for (var i = 0; i < elms.length; i++){
+      var iso = elms[i].getAttribute("data-isotope");
+      if (iso == "u238"){
+        elms[i].value = mantle_u;
+      } else if (iso == "th232"){
+        elms[i].value = mantle_th;
+      } else if (iso == "k40"){
+        elms[i].value = mantle_k;
+      }
+      elms[i].dispatchEvent(update_label);
+    }
   }
-  for (layer in prem){
-    if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+  if (document.getElementById("collapseTwo").className.indexOf("in") > -1){
+    var boundary_i = parseInt(document.getElementById("2_layer_boundary_slider").value);
+    for (var layer = 0; layer < prem.length; layer++){
+      if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
+        if (layer > boundary_i){
+          prem[layer][4] = mantle_u;
+          prem[layer][5] = mantle_th;
+          prem[layer][6] = mantle_k;
+        }
+      }
+    }
+  calc_mantle_elm_masses();
+  if (document.getElementById("use_bse_constraint").checked){
+    var u238_diff, th232_diff, k40_diff;
+      u238_diff = elm_total_mass().u_mass - bse_elm_mass.u238;
+      th232_diff = elm_total_mass().th_mass - bse_elm_mass.th232;
+      k40_diff = elm_total_mass().k_mass - bse_elm_mass.k40;
+
+    if (u238_diff > 0){
+      solve_mantle("2_layer_upper", "u238", 'down', false);
+    } else {
+      solve_mantle("2_layer_upper", "u238", 'up', false);
+    }
+    if (th232_diff > 0){
+      solve_mantle("2_layer_upper", "th232", 'down', false);
+    } else {
+      solve_mantle("2_layer_upper", "th232", 'up', false);
+    }
+    if (k40_diff > 0){
+      solve_mantle("2_layer_upper", "k40", 'down', false);
+    } else {
+      solve_mantle("2_layer_upper", "k40", 'up', false);
+    }
+  }
+  } else{
+    for (var layer = 0; layer < prem.length; layer++){
+      if (parseFloat(prem[layer][0]) > prem_bottom && (parseFloat(prem[layer][1]) < prem_top)){
         prem[layer][4] = mantle_u;
         prem[layer][5] = mantle_th;
         prem[layer][6] = mantle_k;
       }
+    }
   }
   updateThings();
 }
