@@ -8,7 +8,7 @@ def proposal():
 
 @app.route("/about")
 def about():
-    return render_template('base.jinja2')
+    return render_template('about.jinja2')
 
 @app.route("/model")
 def model():
