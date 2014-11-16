@@ -950,7 +950,6 @@ function deal_with_2_layer_boundary_change(){
       solve_mantle("2_layer_upper", "k40", 'up', false);
     }
   }
-  mantle_set_default()
   updateThings()
 }
 
