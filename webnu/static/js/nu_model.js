@@ -735,17 +735,17 @@ function mantle_concentric_control_factory(){
       <tbody>\
         <tr>\
           <td>U</td>\
-          <td><input id='mantle_u238_slider"+layer+"' min=0 max=50 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='layered_mantle_slider mantle_u238_slider range_responsive has_constraint' type='range'></td>\
+          <td><input id='mantle_u238_slider"+layer+"' min=0 max=400 step=0.5 data-layer='"+layer+"' data-isotope='u238' class='layered_mantle_slider mantle_u238_slider range_responsive has_constraint' type='range'></td>\
           <td><span id='mantle_u238_label_"+layer+"' data-label-for='mantle_u238_slider"+layer+"' data-label-suffix='ng/g' data-label-precision='1'></span></td>\
         </tr>\
         <tr>\
           <td>Th</td>\
-          <td><input id='mantle_th232_slider"+layer+"' min=0 max=200 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='layered_mantle_slider mantle_th232_slider range_responsive has_constraint' type='range'></td>\
+          <td><input id='mantle_th232_slider"+layer+"' min=0 max=1500 step=0.5 data-layer='"+layer+"' data-isotope='th232' class='layered_mantle_slider mantle_th232_slider range_responsive has_constraint' type='range'></td>\
           <td><span id='mantle_th232_label_"+layer+"' data-label-for='mantle_th232_slider"+layer+"' data-label-suffix='ng/g' data-label-precision='1'></span></td>\
         </tr>\
         <tr>\
           <td>K</td>\
-          <td><input id='mantle_k40_slider"+layer+"' min=0 max=600 step=1 data-layer='"+layer+"' data-isotope='k40' class='layered_mantle_slider mantle_k40_slider range_responsive has_constraint' type='range'></td>\
+          <td><input id='mantle_k40_slider"+layer+"' min=0 max=1200 step=1 data-layer='"+layer+"' data-isotope='k40' class='layered_mantle_slider mantle_k40_slider range_responsive has_constraint' type='range'></td>\
           <td><span id='mantle_k40_label_"+layer+"' data-label-for='mantle_k40_slider"+layer+"' data-label-suffix='µg/g' data-label-precision='0'></span></td>\
         </tr>\
       </tbody>\
@@ -925,6 +925,29 @@ function deal_with_2_layer_boundary_change(){
         prem[layer][5] = parseFloat(document.getElementById("2_layer_lower_th232_slider").value);
         prem[layer][6] = parseFloat(document.getElementById("2_layer_lower_k40_slider").value);
       }
+    }
+  }
+  calc_mantle_elm_masses();
+  if (document.getElementById("use_bse_constraint").checked){
+    var u238_diff, th232_diff, k40_diff;
+      u238_diff = elm_total_mass().u_mass - bse_elm_mass.u238;
+      th232_diff = elm_total_mass().th_mass - bse_elm_mass.th232;
+      k40_diff = elm_total_mass().k_mass - bse_elm_mass.k40;
+
+    if (u238_diff > 0){
+      solve_mantle("2_layer_upper", "u238", 'down', false);
+    } else {
+      solve_mantle("2_layer_upper", "u238", 'up', false);
+    }
+    if (th232_diff > 0){
+      solve_mantle("2_layer_upper", "th232", 'down', false);
+    } else {
+      solve_mantle("2_layer_upper", "th232", 'up', false);
+    }
+    if (k40_diff > 0){
+      solve_mantle("2_layer_upper", "k40", 'down', false);
+    } else {
+      solve_mantle("2_layer_upper", "k40", 'up', false);
     }
   }
   mantle_set_default()
