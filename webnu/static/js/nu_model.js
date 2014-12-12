@@ -1437,6 +1437,13 @@ function bse_preset_event(e){
     uth_ratio = 4;
     ku_ratio = 11950;
   }
+  if (bse_selected == "javoy"){
+    bse_u = 15.3;
+    bse_th = 54.7;
+    bse_k = 213;
+    uth_ratio = 3.57;
+    ku_ratio = 13921;
+  }
   document.getElementById("use_bse_constraint").checked = true;
   document.getElementById("fixed_thu_ratio_bool").checked = true;
   document.getElementById("fixed_ku_ratio_bool").checked = true;
@@ -1483,6 +1490,16 @@ function mantle_preset_event(e){
   if (mantle_selected == "arevalo2010"){
     mantle_u = 8.0;
     mantle_th = 22;
+    mantle_k = 152;
+  }
+  if (mantle_selected == "javoy2014"){
+    mantle_u = 5.9;
+    mantle_th = 15.83;
+    mantle_k = 112;
+  }
+  if (mantle_selected == "huang2013"){
+    mantle_u = 8.0;
+    mantle_th = 21.9;
     mantle_k = 152;
   }
 
