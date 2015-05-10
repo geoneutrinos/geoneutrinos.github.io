@@ -14,6 +14,10 @@ def about():
 def model():
     return render_template('model.jinja2')
 
+@app.route("/test/osc")
+def tests():
+    return render_template('nu_osc_test.html')
+
 @app.route("/")
 def index():
     return render_template('home.jinja2')
