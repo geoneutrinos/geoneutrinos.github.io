@@ -226,8 +226,8 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
 
   clx = e.offsetX;
   cly = e.offsetY;
-  lat = 90 - (180/this.height) * cly;
-  lon = clx * (360/this.width) -180;
+  lat = (90 - (180/this.height) * cly) * (Math.PI/180);
+  lon = (clx * (360/this.width) -180) * (Math.PI/180);
   console.log(lat, lon)
 
   x1 = earth_radius * Math.cos(lat) * Math.cos(lon);
