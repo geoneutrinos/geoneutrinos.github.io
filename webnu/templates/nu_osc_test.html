@@ -22,6 +22,11 @@ path {
 <p>baserate events <span id="fluxnorm2"></span></p>
 
 <img id="the_map" src="/static/images/eq_map.png" width="50%" height="50%">
+<p>
+Lat: <span id="cursor_lat"></span><br>
+Lon: <span id="cursor_lon"></span><br>
+Sum: <span id="tnu_output"></span>
+</p>
 
 <p>The osc output</p>
 <div id='graph'></div>
@@ -226,9 +231,12 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
 
   clx = e.offsetX;
   cly = e.offsetY;
-  lat = (90 - (180/this.height) * cly) * (Math.PI/180);
-  lon = (clx * (360/this.width) -180) * (Math.PI/180);
-  console.log(lat, lon)
+  lat_deg = (90 - (180/this.height) * cly);
+  lon_deg = (clx * (360/this.width) -180);
+  document.getElementById("cursor_lat").textContent = lat_deg.toFixed(2);
+  document.getElementById("cursor_lon").textContent = lon_deg.toFixed(2);
+  lat = lat_deg  * (Math.PI/180);
+  lon = lon_deg * (Math.PI/180);
 
   x1 = earth_radius * Math.cos(lat) * Math.cos(lon);
   y1 = earth_radius * Math.cos(lat) * Math.sin(lon);
@@ -240,12 +248,17 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
     z2 = react_data[i][2];
     power = react_data[i][3];
     distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2,  2) + Math.pow(z1 - z2, 2));
-    console.log(distance)
     data = nuosc(distance, power);
     for (var ii=0; ii < data.length; ii++){
       output[ii][1] = output[ii][1] + data[ii] * spectrum[ii];
     }
   }
+  var total = 0;
+  for (var i=0; i < output.length; i++){
+    total += output[i][1];
+  }
+  document.getElementById("tnu_output").textContent = total.toFixed(0);
+
     x.domain([0, d3.max(output, function(d) { return d[0]; })]);
     y.domain([0, d3.max(output, function(d) { return d[1]; })]);
     svg.select(".line")
