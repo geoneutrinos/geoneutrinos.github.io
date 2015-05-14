@@ -25,7 +25,8 @@ path {
 <p>
 Lat: <input id="cursor_lat"><br>
 Lon: <input id="cursor_lon"><br>
-Sum: <span id="tnu_output"></span>
+Sum: <span id="tnu_output"></span><br>
+<label><input id="is_locked" type="checkbox"> Lock Location</label>
 </p>
 
 <div id='graph'></div>
@@ -230,6 +231,10 @@ var svg = d3.select("#graph")
 
 var earth_radius = 6371;
 document.getElementById("the_map").addEventListener("mousemove", function(e){
+  var checkbox = document.getElementById("is_locked");
+  if (checkbox.checked){
+    return;
+  }
   clx = e.offsetX;
   cly = e.offsetY;
   lat_deg = (90 - (180/this.height) * cly);
@@ -237,6 +242,14 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
   document.getElementById("cursor_lat").value = lat_deg.toFixed(2);
   document.getElementById("cursor_lon").value = lon_deg.toFixed(2);
   update_map();
+});
+document.getElementById("the_map").addEventListener("click", function(e){
+  var checkbox = document.getElementById("is_locked");
+  if (checkbox.checked){
+    checkbox.checked = false;
+  } else {
+    checkbox.checked = true;
+  }
 });
 document.getElementById("cursor_lat").addEventListener("input", function(e){
   update_map();
