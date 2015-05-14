@@ -23,8 +23,8 @@ path {
   <div class="col-md-5">
 
 <p>
-Lat: <input id="cursor_lat"><br>
-Lon: <input id="cursor_lon"><br>
+Lat: <input id="cursor_lat" value="44.35"><br>
+Lon: <input id="cursor_lon" value="-103.75"><br>
 Sum: <span id="tnu_output"></span><br>
 <label><input id="is_locked" type="checkbox"> Lock Location</label>
 </p>
@@ -254,7 +254,7 @@ document.getElementById("the_map").addEventListener("click", function(e){
 document.getElementById("cursor_lat").addEventListener("input", function(e){
   update_map();
 });
-document.getElementById("cursor_lat").addEventListener("input", function(e){
+document.getElementById("cursor_lon").addEventListener("input", function(e){
   update_map();
 });
 function update_map(){
@@ -299,5 +299,6 @@ function update_map(){
     svg.select("#yaxis")
       .call(yAxis);
 }
+update_map();
 </script>
 {% endblock %}
