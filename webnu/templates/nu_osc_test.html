@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends 'base.jinja2' %}
+{% set active_page ="model" %}
+{% block content %}
   <style>
 path { 
   stroke: steelblue;
@@ -16,23 +16,23 @@ path {
       shape-rendering: crispEdges;
     }
   </style>
-</head>
-<body>
-<p>spectrum scaling <span id="fluxnorm1"></span> <span id="scale"></span></p>
-<p>baserate events <span id="fluxnorm2"></span></p>
+<div class="row">
+  <div class="col-md-7">
+<img id="the_map" src="/static/images/eq_map.png" width="100%" height="100%">
+  </div>
+  <div class="col-md-5">
 
-<img id="the_map" src="/static/images/eq_map.png" width="50%" height="50%">
 <p>
-Lat: <span id="cursor_lat"></span><br>
-Lon: <span id="cursor_lon"></span><br>
+Lat: <input id="cursor_lat"><br>
+Lon: <input id="cursor_lon"><br>
 Sum: <span id="tnu_output"></span>
 </p>
 
-<p>The osc output</p>
 <div id='graph'></div>
-<p><label>Detector Distance: <input value=60 id="dist" type="range" min="10" max="1000" step="1" /></label></p>
-<textarea readonly id="osc_out" rows=8>
+<textarea readonly id="osc_out" rows=8 style="width:100%;">
 </textarea>
+  </div>
+</div>
 <script src="/static/js/spherical_power.js"></script>
 <script>
 </script>
@@ -80,10 +80,6 @@ for (var i=0; i < spectrum.length; i++){
   }
 }
 var scale = baserate/fluxnorm;
-// this next part just displays on the page these data, ignore this
-document.getElementById("fluxnorm1").textContent = fluxnorm;
-document.getElementById("scale").textContent = scale.toExponential();
-// stop ignoring
 
 // because we have declared the variable above, we don't need to put a
 // "var" in front of this, simply reset to 0;
@@ -154,26 +150,23 @@ for (var i=0; i < osc.length; i++){
 
    Just ignore unless you want to see how the SVG sausage is made
    */
-document.getElementById("fluxnorm2").textContent = fluxnorm.toExponential();
 function tof11(elm){
   return elm.toFixed(11);
 }
 
-document.getElementById("osc_out").value = osc.map(tof11).join('\n');
 </script>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script>
 
-var user_dist = document.getElementById("dist").value;
-var data = nuosc(user_dist, 3.2);
+var data = nuosc(60, 3.2);
 for (var i=0; i < osc.length; i++){
   data[i] = [i, data[i] * spectrum[i]];
 }
 
 // Set the dimensions of the canvas / graph
 var margin = {top: 30, right: 20, bottom: 30, left: 50},
-    width = 600 - margin.left - margin.right,
+    width = 400 - margin.left - margin.right,
     height = 270 - margin.top - margin.bottom;
 
 // Parse the date / time
@@ -202,7 +195,7 @@ var svg = d3.select("#graph")
     .append("g")
         .attr("transform", 
               "translate(" + margin.left + "," + margin.top + ")");
-    x.domain([0, d3.max(data, function(d) { return d[0]; })]);
+    x.domain([0, d3.max(data, function(d) { return d[0]/100; })]);
     y.domain([0, d3.max(data, function(d) { return d[1]; })]);
 
     // Add the valueline path.
@@ -221,20 +214,44 @@ var svg = d3.select("#graph")
         .attr("class", "y axis")
         .attr("id", "yaxis")
         .call(yAxis);
+   svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("y", 6)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("Count?");
+    svg.append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "end")
+      .attr("x", width)
+      .attr("y", height - 6)
+      .text("MeV?");
 
 var earth_radius = 6371;
 document.getElementById("the_map").addEventListener("mousemove", function(e){
+  clx = e.offsetX;
+  cly = e.offsetY;
+  lat_deg = (90 - (180/this.height) * cly);
+  lon_deg = (clx * (360/this.width) -180);
+  document.getElementById("cursor_lat").value = lat_deg.toFixed(2);
+  document.getElementById("cursor_lon").value = lon_deg.toFixed(2);
+  update_map();
+});
+document.getElementById("cursor_lat").addEventListener("input", function(e){
+  update_map();
+});
+document.getElementById("cursor_lat").addEventListener("input", function(e){
+  update_map();
+});
+function update_map(){
+  lon_deg = document.getElementById("cursor_lon").value;
+  lat_deg = document.getElementById("cursor_lat").value;
   var output = new Array(1000);
   for (var i=0; i < output.length; i++){
     output[i] = [i, 0];
   }
 
-  clx = e.offsetX;
-  cly = e.offsetY;
-  lat_deg = (90 - (180/this.height) * cly);
-  lon_deg = (clx * (360/this.width) -180);
-  document.getElementById("cursor_lat").textContent = lat_deg.toFixed(2);
-  document.getElementById("cursor_lon").textContent = lon_deg.toFixed(2);
   lat = lat_deg  * (Math.PI/180);
   lon = lon_deg * (Math.PI/180);
 
@@ -254,9 +271,12 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
     }
   }
   var total = 0;
+  osc = new Array(1000);
   for (var i=0; i < output.length; i++){
     total += output[i][1];
+    osc[i] = output[i][1];
   }
+  document.getElementById("osc_out").value = osc.map(tof11).join('\n');
   document.getElementById("tnu_output").textContent = total.toFixed(0);
 
     x.domain([0, d3.max(output, function(d) { return d[0]; })]);
@@ -265,7 +285,6 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
         .attr("d", valueline(output));
     svg.select("#yaxis")
       .call(yAxis);
-});
+}
 </script>
-</body>
-</html>
+{% endblock %}
