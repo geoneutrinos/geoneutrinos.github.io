@@ -18,7 +18,9 @@ path {
     }
   </style>
   <div class="col-md-7">
-<img id="the_map" src="/static/images/eq_map.png" width="100%" height="100%">
+    <div id="map_container">
+      <img id="the_map" src="/static/images/eq_map.png" width="100%" height="100%">
+    </div>
   </div>
   <div class="col-md-5">
     <ul class="nav nav-tabs">
@@ -31,42 +33,42 @@ path {
           <div class="panel-heading">Spectrum</div>
           <div class="panel-body">
             <div id='graph'></div>
-TNU: <span id="tnu_output"></span><br>
+            TNU: <span id="tnu_output"></span><br>
           </div>
         </div>
-<p>
-</p>
-<div class="panel panel-default">
-  <div class="panel-heading">Location</div>
-  <div class="panel-body">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label for="cursor_lat" class="col-sm-2 control-label">Latitude</label>
-        <div class="col-sm-10">
-          <input type="number" class="form-control input-sm" id="cursor_lat" value="44.35">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="cursor_lon" class="col-sm-2 control-label">Longitude</label>
-        <div class="col-sm-10">
-          <input type="number" class="form-control input-sm" id="cursor_lon" value="-103.75">
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <div class="checkbox">
-            <label>
-              <input id="is_locked" type="checkbox" checked> Follow Cursor On Map
-            </label>
+        <p>
+        </p>
+        <div class="panel panel-default">
+          <div class="panel-heading">Location</div>
+          <div class="panel-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="cursor_lat" class="col-sm-2 control-label">Latitude</label>
+                <div class="col-sm-10">
+                  <input type="number" class="form-control input-sm" id="cursor_lat" value="44.35">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="cursor_lon" class="col-sm-2 control-label">Longitude</label>
+                <div class="col-sm-10">
+                  <input type="number" class="form-control input-sm" id="cursor_lon" value="-103.75">
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <div class="checkbox">
+                    <label>
+                      <input id="is_locked" type="checkbox" checked> Follow Cursor On Map
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
-    </form>
-  </div>
-</div>
 
-<textarea readonly id="osc_out" rows=8 style="width:100%;">
-</textarea>
+        <textarea readonly id="osc_out" rows=8 style="width:100%;">
+        </textarea>
       </div>
       <div class="tab-pane" id="reactor">
       </div>
@@ -75,6 +77,18 @@ TNU: <span id="tnu_output"></span><br>
   </div>
 <script src="/static/js/spherical_power.js"></script>
 <script>
+function image_coordinates_to_lon_lat(x, y, width, height){
+  lat_deg = (90 - (180/height) * y);
+  lon_deg = (x * (360/width) -180);
+
+  return [lon_deg, lat_deg];
+}
+function lon_lat_to_image_coordinates(lon, lat, width, height){
+  x = ((90 - lat)/height) * height;
+  y  = ((lon + 180)/width) * width;
+
+  return [x, y];
+}
 </script>
 
 <script>
@@ -123,10 +137,10 @@ var scale = baserate/fluxnorm;
 
 // because we have declared the variable above, we don't need to put a
 // "var" in front of this, simply reset to 0;
-fluxnorm = 0;
+//fluxnorm = 0;
 for (var i=0; i < spectrum.length; i++){
   spectrum[i] = spectrum[i] * scale;
-  fluxnorm += spectrum[i];
+  //fluxnorm += spectrum[i];
 }
 
 /*
@@ -134,7 +148,7 @@ for (var i=0; i < spectrum.length; i++){
    So here we would create the array and just give it back to the caller
    of the function for them to deal with (usually assigned to some var)
    */
-function nuosc(dist, pwr){
+function nuosc(dist, pwr, spectrum){
   var earth_rad_sq = 4.059e7;
   var dmsq21 = 7.50e-5;
   var ds2t13 = 0.19e-5;
@@ -174,16 +188,16 @@ function nuosc(dist, pwr){
       pee = 1 - supr21 - supr31 - supr32;
 
       //pee = c4t13 * (1 - s22t12 * Math.pow(Math.sin(oscarg/enu), 2)) + s2t13 * s2t13;
-      oscspec[i] = pee * flux;
+      oscspec[i] = pee * flux * spectrum[i];
     }
   }
   return oscspec;
 }
 
-var osc = nuosc(60, 3.2);
-for (var i=0; i < osc.length; i++){
-  osc[i] = osc[i] * spectrum[i];
-}
+//var osc = nuosc(60, 3.2, spectrum);
+//for (var i=0; i < osc.length; i++){
+//  osc[i] = osc[i] * spectrum[i];
+//}
 
 /*
    Everything after here is making the output print on the webpage
@@ -191,7 +205,7 @@ for (var i=0; i < osc.length; i++){
    Just ignore unless you want to see how the SVG sausage is made
    */
 function tof11(elm){
-  return elm.toFixed(11);
+  return (elm/1000).toFixed(11);
 }
 
 </script>
@@ -224,17 +238,15 @@ svg.selectAll('.x.label')
   update_map();
 }
 
-var data = nuosc(60, 3.2);
-for (var i=0; i < osc.length; i++){
-  data[i] = [i, data[i] * spectrum[i]];
+var data = nuosc(60, 3.2, spectrum);
+for (var i=0; i < data.length; i++){
+  data[i] = [i, data[i]];// * spectrum[i]];
 }
 
-// Set the dimensions of the canvas / graph
+// Set the dimensions of the graph
 var margin = {top: 30, right: 20, bottom: 30, left: 50},
     width = parseInt(d3.select('#graph').style('width'), 10) - margin.left - margin.right,
     height = 270 - margin.top - margin.bottom;
-
-// Parse the date / time
 
 // Set the ranges
 var x = d3.scale.linear().range([0, width]);
@@ -245,23 +257,23 @@ var xAxis = d3.svg.axis().scale(x)
     .orient("bottom").ticks(5).tickFormat(function(d) {return (d/100).toFixed(0)});
 
 var yAxis = d3.svg.axis().scale(y)
-    .orient("left").ticks(5).tickFormat(function(d) {return (d/100).toFixed(2)});
+    .orient("left").ticks(5).tickFormat(function(d) {return (d/1000)});
 
 // Define the line
 var valueline = d3.svg.line()
-    .x(function(d) { return x(d[0]); })
-    .y(function(d) { return y(d[1]); });
+    .x(function(d, i) { return x(i); })
+    .y(function(d) { return y(d); });
     
 // Adds the svg canvas
 var svg = d3.select("#graph")
     .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
     .append("g")
-        .attr("transform", 
-              "translate(" + margin.left + "," + margin.top + ")");
-    x.domain([0, d3.max(data, function(d) { return d[0]; })]);
-    y.domain([0, d3.max(data, function(d) { return d[1]; })]);
+    .attr("transform", 
+        "translate(" + margin.left + "," + margin.top + ")");
+    x.domain([0, d3.max(data, function(d, i) { return i; })]);
+    y.domain([0, d3.max(data, function(d) { return d; })]);
 
     // Add the valueline path.
     svg.append("path")
@@ -279,34 +291,36 @@ var svg = d3.select("#graph")
         .attr("class", "y axis")
         .attr("id", "yaxis")
         .call(yAxis);
-   svg.append("text")
-    .attr("class", "y label")
-    .attr("text-anchor", "end")
-    .attr("y", 6)
-    .attr("dy", ".75em")
-    .attr("transform", "rotate(-90)")
-    .text("Events/ 10 keV/ 10^32 f.p. per month");
+
+  // Add the axis labels
     svg.append("text")
-      .attr("class", "x label")
-      .attr("text-anchor", "end")
-      .attr("x", width)
-      .attr("y", height - 6)
-      .text("MeV");
+        .attr("class", "y label")
+        .attr("text-anchor", "end")
+        .attr("y", 6)
+        .attr("dy", ".75em")
+        .attr("transform", "rotate(-90)")
+        .text("TNU/10 keV");
+    svg.append("text")
+        .attr("class", "x label")
+        .attr("text-anchor", "end")
+        .attr("x", width)
+        .attr("y", height - 6)
+        .text("MeV");
 
 var earth_radius = 6371;
+
 document.getElementById("the_map").addEventListener("mousemove", function(e){
   var checkbox = document.getElementById("is_locked");
   if (!checkbox.checked){
     return;
   }
-  clx = e.offsetX;
-  cly = e.offsetY;
-  lat_deg = (90 - (180/this.height) * cly);
-  lon_deg = (clx * (360/this.width) -180);
-  document.getElementById("cursor_lat").value = lat_deg.toFixed(2);
-  document.getElementById("cursor_lon").value = lon_deg.toFixed(2);
+  xy = image_coordinates_to_lon_lat(e.offsetX, e.offsetY, this.width, this.height);
+
+  document.getElementById("cursor_lat").value = xy[1].toFixed(2);
+  document.getElementById("cursor_lon").value = xy[0].toFixed(2);
   update_map();
 });
+
 document.getElementById("the_map").addEventListener("click", function(e){
   var checkbox = document.getElementById("is_locked");
   if (checkbox.checked){
@@ -315,49 +329,78 @@ document.getElementById("the_map").addEventListener("click", function(e){
     checkbox.checked = true;
   }
 });
+
 document.getElementById("cursor_lat").addEventListener("input", function(e){
   update_map();
 });
 document.getElementById("cursor_lon").addEventListener("input", function(e){
   update_map();
 });
+
+function distance(p1, p2){
+  var dx = p1.x - p2.x;
+  var dy = p1.y - p2.y;
+  var dz = p1.z - p2.z;
+
+  var dx2 = Math.pow(dx, 2);
+  var dy2 = Math.pow(dy, 2);
+  var dz2 = Math.pow(dz, 2);
+  
+  return Math.sqrt(dx2 + dy2 + dz2);
+}
+
+function squish_array(two_d_array){
+  var output = new Array(two_d_array[0].length);
+  for (var i=0; i < output.length; i++){
+    output[i] = 0;
+  }
+
+  for (var i=0; i < two_d_array.length; i++){
+    for (var ii=0; ii < output.length; ii++){
+      output[ii] += two_d_array[i][ii];
+    }
+  }
+  return output;
+}
+
 function update_map(){
   lon_deg = document.getElementById("cursor_lon").value;
   lat_deg = document.getElementById("cursor_lat").value;
-  var output = new Array(1000);
-  for (var i=0; i < output.length; i++){
-    output[i] = [i, 0];
-  }
+
+  var react_spectrum = [];
 
   lat = lat_deg  * (Math.PI/180);
   lon = lon_deg * (Math.PI/180);
 
-  x1 = earth_radius * Math.cos(lat) * Math.cos(lon);
-  y1 = earth_radius * Math.cos(lat) * Math.sin(lon);
-  z1 = earth_radius * Math.sin(lat);
+  p1 = {
+   x : earth_radius * Math.cos(lat) * Math.cos(lon),
+   y : earth_radius * Math.cos(lat) * Math.sin(lon),
+   z : earth_radius * Math.sin(lat)
+  };
 
   for (var i=0; i<react_data.length; i++){
-    x2 = react_data[i][0];
-    y2 = react_data[i][1];
-    z2 = react_data[i][2];
-    power = react_data[i][3];
-    distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2,  2) + Math.pow(z1 - z2, 2));
-    data = nuosc(distance, power);
-    for (var ii=0; ii < data.length; ii++){
-      output[ii][1] = output[ii][1] + data[ii] * spectrum[ii];
-    }
-  }
-  var total = 0;
-  osc = new Array(1000);
-  for (var i=0; i < output.length; i++){
-    total += output[i][1];
-    osc[i] = output[i][1];
-  }
-  document.getElementById("osc_out").value = osc.map(tof11).join('\n');
-  document.getElementById("tnu_output").textContent = (total/1000).toFixed(1);
 
-    x.domain([0, d3.max(output, function(d) { return d[0]; })]);
-    y.domain([0, d3.max(output, function(d) { return d[1]; })]);
+    p2 = {
+      x : react_data[i][0],
+      y : react_data[i][1],
+      z : react_data[i][2]
+    };
+
+    power = react_data[i][3];
+    dist = distance(p1, p2);
+
+    react_spectrum.push(nuosc(dist, power, spectrum));
+
+  }
+  output = squish_array(react_spectrum);
+  var total = 0;
+
+
+  document.getElementById("osc_out").value = output.map(tof11).join('\n');
+  document.getElementById("tnu_output").textContent = (d3.sum(output)/1000).toFixed(1);
+
+    x.domain([0, d3.max(output, function(d, i) { return i; })]);
+    y.domain([0, d3.max(output, function(d) { return d; })]);
     svg.select(".line")
         .attr("d", valueline(output));
     svg.select("#yaxis")
