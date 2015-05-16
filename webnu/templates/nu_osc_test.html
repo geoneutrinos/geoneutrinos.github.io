@@ -1,10 +1,11 @@
 {% extends 'base.jinja2' %}
 {% set active_page ="model" %}
-{% block content %}
+{% block fluid_content %}
   <style>
 path { 
-  stroke: steelblue;
-  stroke-width: 2;
+  stroke: black;
+  stroke-width: 1;
+  /*stroke-dasharray: 1, 1; */
   fill: none;
 }
 
@@ -16,24 +17,62 @@ path {
       shape-rendering: crispEdges;
     }
   </style>
-<div class="row">
   <div class="col-md-7">
 <img id="the_map" src="/static/images/eq_map.png" width="100%" height="100%">
   </div>
   <div class="col-md-5">
-
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#detector" data-toggle="tab">Detector</a></li>
+      <li><a href="#reactor" data-toggle="tab">Reactor</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="detector">
+        <div class="panel panel-default">
+          <div class="panel-heading">Spectrum</div>
+          <div class="panel-body">
+            <div id='graph'></div>
+TNU: <span id="tnu_output"></span><br>
+          </div>
+        </div>
 <p>
-Lat: <input id="cursor_lat" value="44.35"><br>
-Lon: <input id="cursor_lon" value="-103.75"><br>
-Sum: <span id="tnu_output"></span><br>
-<label><input id="is_locked" type="checkbox"> Lock Location</label>
 </p>
-
-<div id='graph'></div>
-<textarea readonly id="osc_out" rows=8 style="width:100%;">
-</textarea>
+<div class="panel panel-default">
+  <div class="panel-heading">Location</div>
+  <div class="panel-body">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="cursor_lat" class="col-sm-2 control-label">Latitude</label>
+        <div class="col-sm-10">
+          <input type="number" class="form-control input-sm" id="cursor_lat" value="44.35">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="cursor_lon" class="col-sm-2 control-label">Longitude</label>
+        <div class="col-sm-10">
+          <input type="number" class="form-control input-sm" id="cursor_lon" value="-103.75">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <div class="checkbox">
+            <label>
+              <input id="is_locked" type="checkbox" checked> Follow Cursor On Map
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
+
+<textarea readonly id="osc_out" rows=8 style="width:100%;">
+</textarea>
+      </div>
+      <div class="tab-pane" id="reactor">
+      </div>
+    </div>
+
+  </div>
 <script src="/static/js/spherical_power.js"></script>
 <script>
 </script>
@@ -159,6 +198,31 @@ function tof11(elm){
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script>
+d3.select(window).on('resize', resize); 
+
+function resize() {
+    // update width
+    width = parseInt(d3.select('#graph').style('width'), 10);
+    width = width - margin.left - margin.right;
+
+    // reset x range
+    x.range([0, width]);
+
+    // do the actual resize...
+d3.select(svg.node().parentNode)
+        .style('width', (width + margin.left + margin.right) + 'px');
+
+svg.selectAll('.x.label')
+        .attr('x', width);
+
+    svg.select(".x.axis")
+        .call(xAxis);
+
+    svg.selectAll('rect.background')
+        .attr('width', width);
+
+  update_map();
+}
 
 var data = nuosc(60, 3.2);
 for (var i=0; i < osc.length; i++){
@@ -167,7 +231,7 @@ for (var i=0; i < osc.length; i++){
 
 // Set the dimensions of the canvas / graph
 var margin = {top: 30, right: 20, bottom: 30, left: 50},
-    width = 400 - margin.left - margin.right,
+    width = parseInt(d3.select('#graph').style('width'), 10) - margin.left - margin.right,
     height = 270 - margin.top - margin.bottom;
 
 // Parse the date / time
@@ -178,10 +242,10 @@ var y = d3.scale.linear().range([height, 0]);
 
 // Define the axes
 var xAxis = d3.svg.axis().scale(x)
-    .orient("bottom").ticks(5);
+    .orient("bottom").ticks(5).tickFormat(function(d) {return (d/100).toFixed(0)});
 
 var yAxis = d3.svg.axis().scale(y)
-    .orient("left").ticks(5);
+    .orient("left").ticks(5).tickFormat(function(d) {return (d/100).toFixed(2)});
 
 // Define the line
 var valueline = d3.svg.line()
@@ -196,7 +260,7 @@ var svg = d3.select("#graph")
     .append("g")
         .attr("transform", 
               "translate(" + margin.left + "," + margin.top + ")");
-    x.domain([0, d3.max(data, function(d) { return d[0]/100; })]);
+    x.domain([0, d3.max(data, function(d) { return d[0]; })]);
     y.domain([0, d3.max(data, function(d) { return d[1]; })]);
 
     // Add the valueline path.
@@ -221,18 +285,18 @@ var svg = d3.select("#graph")
     .attr("y", 6)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("Count?");
+    .text("Events/ 10 keV/ 10^32 f.p. per month");
     svg.append("text")
       .attr("class", "x label")
       .attr("text-anchor", "end")
       .attr("x", width)
       .attr("y", height - 6)
-      .text("MeV?");
+      .text("MeV");
 
 var earth_radius = 6371;
 document.getElementById("the_map").addEventListener("mousemove", function(e){
   var checkbox = document.getElementById("is_locked");
-  if (checkbox.checked){
+  if (!checkbox.checked){
     return;
   }
   clx = e.offsetX;
@@ -290,7 +354,7 @@ function update_map(){
     osc[i] = output[i][1];
   }
   document.getElementById("osc_out").value = osc.map(tof11).join('\n');
-  document.getElementById("tnu_output").textContent = total.toFixed(0);
+  document.getElementById("tnu_output").textContent = (total/1000).toFixed(1);
 
     x.domain([0, d3.max(output, function(d) { return d[0]; })]);
     y.domain([0, d3.max(output, function(d) { return d[1]; })]);
