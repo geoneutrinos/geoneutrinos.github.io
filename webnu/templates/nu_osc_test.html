@@ -2,10 +2,16 @@
 {% set active_page ="model" %}
 {% block fluid_content %}
   <style>
-path { 
+.total.line { 
   stroke: black;
-  stroke-width: 1;
+  stroke-width: 0.6;
   /*stroke-dasharray: 1, 1; */
+  fill: none;
+}
+.reac.line { 
+  stroke: black;
+  stroke-width: 0.5;
+  stroke-dasharray: 2, 1;
   fill: none;
 }
 
@@ -34,6 +40,7 @@ path {
           <div class="panel-body">
             <div id='graph'></div>
             TNU: <span id="tnu_output"></span><br>
+            Distance to User Reactor: <span id="user_dist"></span> KM
           </div>
         </div>
         <p>
@@ -277,7 +284,11 @@ var svg = d3.select("#graph")
 
     // Add the valueline path.
     svg.append("path")
-        .attr("class", "line")
+        .attr("class", "reac line")
+        .attr("d", valueline(data));
+
+    svg.append("path")
+        .attr("class", "total line")
         .attr("d", valueline(data));
 
     // Add the X Axis
@@ -367,6 +378,15 @@ function update_map(){
   lon_deg = document.getElementById("cursor_lon").value;
   lat_deg = document.getElementById("cursor_lat").value;
 
+  reac_lon = 0;
+  reac_lat = 0;
+  reac_p = {
+   x : earth_radius * Math.cos(reac_lat) * Math.cos(reac_lon),
+   y : earth_radius * Math.cos(reac_lat) * Math.sin(reac_lon),
+   z : earth_radius * Math.sin(reac_lat)
+  };
+  reac_power = 3000;
+
   var react_spectrum = [];
 
   lat = lat_deg  * (Math.PI/180);
@@ -392,17 +412,24 @@ function update_map(){
     react_spectrum.push(nuosc(dist, power, spectrum));
 
   }
-  output = squish_array(react_spectrum);
-  var total = 0;
+  user_dist = distance(p1, reac_p);
+  user_react_spectrum = nuosc(user_dist, reac_power, spectrum);
+  console.log(user_dist);
 
 
-  document.getElementById("osc_out").value = output.map(tof11).join('\n');
-  document.getElementById("tnu_output").textContent = (d3.sum(output)/1000).toFixed(1);
+  iaea = squish_array(react_spectrum);
+  total = squish_array([iaea, user_react_spectrum]);
 
-    x.domain([0, d3.max(output, function(d, i) { return i; })]);
-    y.domain([0, d3.max(output, function(d) { return d; })]);
-    svg.select(".line")
-        .attr("d", valueline(output));
+  document.getElementById("osc_out").value = total.map(tof11).join('\n');
+  document.getElementById("tnu_output").textContent = (d3.sum(total)/1000).toFixed(1);
+  document.getElementById("user_dist").textContent = user_dist.toFixed(0)
+
+    x.domain([0, d3.max(total, function(d, i) { return i; })]);
+    y.domain([0, d3.max(total, function(d) { return d; })]);
+    svg.select(".reac")
+        .attr("d", valueline(iaea));
+    svg.select(".total")
+        .attr("d", valueline(total));
     svg.select("#yaxis")
       .call(yAxis);
 }
