@@ -73,6 +73,7 @@
                   <input type="number" class="form-control input-sm" id="cursor_lon" value="-103.75">
                 </div>
               </div>
+
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <div class="checkbox">
@@ -82,6 +83,30 @@
                   </div>
                 </div>
               </div>
+
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <select id="detector_preset"class="form-control">
+                    <!-- value="lat,lon" -->
+                    <option disabled selected value="none">Location Presets</option>
+                    <option value="42.45,13.57">Gran Sasso</option>
+                    <option value="46.47,-81.20">Sudbury</option>
+                    <option value="36.43,137.31">Kamioka</option>
+                    <option value="22.12,112.52">DongKeng</option>
+                    <option value="35.05,126.70">GuemSeong</option>
+                    <option value="19.72,-156.32">Hawaii</option>
+                    <option value="63.66,26.05">Pyhäsalmi</option>
+                    <option value="54.55,-0.82">Boulby</option>
+                    <option value="42.70,-0.52">Canfranc</option>
+                    <option value="45.13,6.68">Fréjus</option>
+                    <option value="45.23,25.94">Slănic</option>
+                    <option value="51.55,16.03">Sieroszowice</option>
+                    <option value="44.35,-103.75">Homestake</option>
+                    <option value="43.20,42.72">Baksan</option>
+                  </select>
+                </div>
+              </div>
+
             </form>
           </div>
         </div>
@@ -387,7 +412,7 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
   if (!checkbox.checked){
     return;
   }
-  console.log(e);
+  document.getElementById("detector_preset").value = "none";
   xy = image_coordinates_to_lon_lat(e.layerX, e.layerY, this.width, this.height);
 
   document.getElementById("cursor_lat").value = xy[1].toFixed(2);
@@ -503,4 +528,15 @@ function update_map(){
 }
 update_map();
 </script>
+  <script>
+document.getElementById("detector_preset").addEventListener("change", function(e){
+  var point = this.value.split(',');
+  var lat = point[0];
+  var lon = point[1];
+  document.getElementById("cursor_lat").value = lat;
+  document.getElementById("cursor_lon").value = lon;
+  document.getElementById("is_locked").checked = false;
+  update_map();
+});
+  </script>
 {% endblock %}
