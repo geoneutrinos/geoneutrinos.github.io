@@ -20,6 +20,11 @@
       top: 0px;
       pointer-events: none;
     }
+    #reactor_icon{
+      position: absolute;
+      top: 0px;
+      pointer-events: none;
+    }
     #map_container{
       overflow: hidden;
     }
@@ -37,6 +42,9 @@
       <img id="the_map" src="/static/images/eq_map.png" width="100%" height="100%">
       <div id="detector_icon">
         <img src="/static/images/nu_detector.png" height="20px" width="20px">
+      </div>
+      <div id="reactor_icon">
+        <img src="/static/images/nu_react.png" height="20px" width="20px">
       </div>
     </div>
   </div>
@@ -435,6 +443,18 @@ document.getElementById("cursor_lat").addEventListener("input", function(e){
 document.getElementById("cursor_lon").addEventListener("input", function(e){
   update_map();
 });
+document.getElementById("react_lat").addEventListener("input", function(e){
+  update_map();
+});
+document.getElementById("react_lon").addEventListener("input", function(e){
+  update_map();
+});
+document.getElementById("react_power").addEventListener("input", function(e){
+  update_map();
+});
+document.getElementById("user_reactor").addEventListener("change", function(e){
+  update_map();
+});
 
 function distance(p1, p2){
   var dx = p1.x - p2.x;
@@ -466,14 +486,27 @@ function squish_array(two_d_array){
 function update_map(){
   var map_height = document.getElementById("the_map").height;
   var map_width = document.getElementById("the_map").width;
+
   var lon_deg = parseFloat(document.getElementById("cursor_lon").value);
   var lat_deg = parseFloat(document.getElementById("cursor_lat").value);
   var detct_image_coords = lon_lat_to_image_coordinates(lon_deg, lat_deg, map_width, map_height);
   document.getElementById("detector_icon").style.top = detct_image_coords[0] + "px";
   document.getElementById("detector_icon").style.left = detct_image_coords[1] + 15 + "px";
 
-  reac_lon = parseFloat(document.getElementById("react_lon").value) * (Math.PI/180);
-  reac_lat = parseFloat(document.getElementById("react_lat").value) * (Math.PI/180);
+  var reac_lon_deg = parseFloat(document.getElementById("react_lon").value);
+  var reac_lat_deg = parseFloat(document.getElementById("react_lat").value);
+  var react_image_coords = lon_lat_to_image_coordinates(reac_lon_deg, reac_lat_deg, map_width, map_height);
+  document.getElementById("reactor_icon").style.top = react_image_coords[0] + "px";
+  document.getElementById("reactor_icon").style.left = react_image_coords[1] + 15 + "px";
+  var reac_lat = reac_lat_deg * (Math.PI/180);
+  var reac_lon = reac_lon_deg * (Math.PI/180);
+  var user_input = document.getElementById("user_reactor").checked;
+  if (user_input){
+  document.getElementById("reactor_icon").style.display = "block";
+  } else {
+  document.getElementById("reactor_icon").style.display = "none";
+  }
+
   reac_p = {
    x : earth_radius * Math.cos(reac_lat) * Math.cos(reac_lon),
    y : earth_radius * Math.cos(reac_lat) * Math.sin(reac_lon),
@@ -507,7 +540,13 @@ function update_map(){
 
   }
   user_dist = distance(p1, reac_p);
-  user_react_spectrum = nuosc(user_dist, reac_power, spectrum);
+  if (user_input){
+    user_react_spectrum = nuosc(user_dist, reac_power, spectrum);
+    document.getElementById("user_dist").textContent = user_dist.toFixed(0);
+  } else {
+    user_react_spectrum = nuosc(user_dist, 0, spectrum);
+    document.getElementById("user_dist").textContent = "N/A";
+  }
 
 
   iaea = squish_array(react_spectrum);
@@ -515,7 +554,6 @@ function update_map(){
 
   document.getElementById("osc_out").value = total.map(tof11).join('\n');
   document.getElementById("tnu_output").textContent = (d3.sum(total)/1000).toFixed(1);
-  document.getElementById("user_dist").textContent = user_dist.toFixed(0)
 
     x.domain([0, d3.max(total, function(d, i) { return i; })]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
