@@ -170,6 +170,8 @@
                 </div>
               </div>
 
+              <button id="place_reactor" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Allows clicking the map to place the reactor">Place Reactor</button>
+
             </form>
           </div>
         </div>
@@ -177,7 +179,15 @@
     </div>
 
   </div>
+{% endblock %}
+{% block js %}
 <script src="/static/js/spherical_power.js"></script>
+<script>
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+})
+var mode = "normal";
+</script>
 <script>
 function image_coordinates_to_lon_lat(x, y, width, height){
   var lat_deg = (90 - (180/height) * y);
@@ -416,6 +426,9 @@ var svg = d3.select("#graph")
 var earth_radius = 6371;
 
 document.getElementById("the_map").addEventListener("mousemove", function(e){
+  if (mode == "place_reactor"){
+    return;
+  }
   var checkbox = document.getElementById("is_locked");
   if (!checkbox.checked){
     return;
@@ -429,11 +442,37 @@ document.getElementById("the_map").addEventListener("mousemove", function(e){
 });
 
 document.getElementById("the_map").addEventListener("click", function(e){
-  var checkbox = document.getElementById("is_locked");
-  if (checkbox.checked){
-    checkbox.checked = false;
+  if (mode == "normal"){
+    var checkbox = document.getElementById("is_locked");
+    if (checkbox.checked){
+      checkbox.checked = false;
+    } else {
+      checkbox.checked = true;
+    }
+  }
+  if (mode == "place_reactor"){
+    xy = image_coordinates_to_lon_lat(e.layerX, e.layerY, this.width, this.height);
+    document.getElementById("react_lat").value = xy[1].toFixed(2);
+    document.getElementById("react_lon").value = xy[0].toFixed(2);
+    mode = "normal";
+    $("#place_reactor").addClass("btn-success");
+    $("#place_reactor").removeClass("btn-danger");
+    document.getElementById("place_reactor").textContent = "Place Reactor";
+  update_map();
+  }
+});
+
+document.getElementById("place_reactor").addEventListener("click", function(e){
+  if ($(this).hasClass("btn-success")){
+    $(this).removeClass("btn-success");
+    $(this).addClass("btn-danger");
+    this.textContent = "Cancel Reactor Placement";
+    mode = "place_reactor";
   } else {
-    checkbox.checked = true;
+    mode = "normal";
+    $(this).addClass("btn-success");
+    $(this).removeClass("btn-danger");
+    this.textContent = "Place Reactor";
   }
 });
 
