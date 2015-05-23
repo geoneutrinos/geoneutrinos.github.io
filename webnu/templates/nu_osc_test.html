@@ -59,7 +59,8 @@
           <div class="panel-heading">Spectrum</div>
           <div class="panel-body">
             <div id='graph'></div>
-            TNU: <span id="tnu_output"></span><br>
+            TNU<sub>Total</sub>: <span id="tnu_output"></span><br>
+            TNU<sub>E < 3.275 MeV</sub>: <span id="tnu_output_geo"></span><br>
             Distance to User Reactor: <span id="user_dist"></span> KM
           </div>
         </div>
@@ -593,6 +594,7 @@ function update_map(){
 
   document.getElementById("osc_out").value = total.map(tof11).join('\n');
   document.getElementById("tnu_output").textContent = (d3.sum(total)/1000).toFixed(1);
+  document.getElementById("tnu_output_geo").textContent = (d3.sum(total.slice(0, 326))/1000).toFixed(1);
 
     x.domain([0, d3.max(total, function(d, i) { return i; })]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
