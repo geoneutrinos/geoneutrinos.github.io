@@ -62,6 +62,11 @@
             TNU<sub>Total</sub>: <span id="tnu_output"></span><br>
             TNU<sub>E < 3.275 MeV</sub>: <span id="tnu_output_geo"></span><br>
             Distance to User Reactor: <span id="user_dist"></span> KM
+                  <div class="checkbox">
+                    <label>
+                      <input id="mass_invert" type="checkbox"> Invert Neutrino Mass Hierarchy
+                    </label>
+                  </div>
           </div>
         </div>
         <p>
@@ -189,6 +194,7 @@ $(function () {
     $('[data-toggle="tooltip"]').tooltip()
 })
 var mode = "normal";
+var mass_invert = false;
 </script>
 <script>
 function image_coordinates_to_lon_lat(x, y, width, height){
@@ -262,7 +268,7 @@ for (var i=0; i < spectrum.length; i++){
    So here we would create the array and just give it back to the caller
    of the function for them to deal with (usually assigned to some var)
    */
-function nuosc(dist, pwr, spectrum){
+function nuosc(dist, pwr, spectrum, inverted){
   var earth_rad_sq = 4.059e7;
   var dmsq21 = 7.50e-5;
   var ds2t13 = 0.19e-5;
@@ -278,8 +284,13 @@ function nuosc(dist, pwr, spectrum){
   var s22t13 = 4 * s2t13 * (1-s2t13);
   var c22t12 = 1 - s22t12;
 
+  if (inverted){
+  var dmsq32 = 2.457e-3;
+  var dmsq31 = dmsq32 - dmsq21;
+  } else {
   var dmsq31 = 2.457e-3;
   var dmsq32 = dmsq31 - dmsq21;
+  }
 
   var oscarg21 = 1.27 * dmsq21 * dist * 1000;
   var oscarg31 = 1.27 * dmsq31 * dist * 1000;
@@ -352,7 +363,7 @@ svg.selectAll('.x.label')
   update_map();
 }
 
-var data = nuosc(60, 3.2, spectrum);
+var data = nuosc(60, 3.2, spectrum, mass_invert);
 for (var i=0; i < data.length; i++){
   data[i] = [i, data[i]];// * spectrum[i]];
 }
@@ -496,6 +507,10 @@ document.getElementById("react_power").addEventListener("input", function(e){
 document.getElementById("user_reactor").addEventListener("change", function(e){
   update_map();
 });
+document.getElementById("mass_invert").addEventListener("change", function(e){
+  mass_invert = this.checked;
+  update_map();
+});
 
 function distance(p1, p2){
   var dx = p1.x - p2.x;
@@ -577,15 +592,15 @@ function update_map(){
     power = react_data[i][3];
     dist = distance(p1, p2);
 
-    react_spectrum.push(nuosc(dist, power, spectrum));
+    react_spectrum.push(nuosc(dist, power, spectrum, mass_invert));
 
   }
   user_dist = distance(p1, reac_p);
   if (user_input){
-    user_react_spectrum = nuosc(user_dist, reac_power, spectrum);
+    user_react_spectrum = nuosc(user_dist, reac_power, spectrum, mass_invert);
     document.getElementById("user_dist").textContent = user_dist.toFixed(0);
   } else {
-    user_react_spectrum = nuosc(user_dist, 0, spectrum);
+    user_react_spectrum = nuosc(user_dist, 0, spectrum, mass_invert);
     document.getElementById("user_dist").textContent = "N/A";
   }
 
