@@ -2,19 +2,18 @@
 {% set active_page ="model" %}
 {% block fluid_content %}
   <style>
-.total.line { 
-  stroke: black;
-  stroke-width: 0.6;
-  /*stroke-dasharray: 1, 1; */
-  fill: none;
-}
-.reac.line { 
-  stroke: black;
-  stroke-width: 0.5;
-  stroke-dasharray: 2, 1;
-  fill: none;
-}
-
+    .total.line { 
+      stroke: black;
+      stroke-width: 0.6;
+      /*stroke-dasharray: 1, 1; */
+      fill: none;
+    }
+    .reac.line { 
+      stroke: black;
+      stroke-width: 0.5;
+      stroke-dasharray: 2, 1;
+      fill: none;
+    }
     #detector_icon{
       position: absolute;
       top: 0px;
@@ -62,16 +61,14 @@
             R<sub>Total</sub>: <span id="tnu_output"></span> TNU<br>
             R<sub>E < 3.275 MeV</sub>: <span id="tnu_output_geo"></span> TNU<br>
             Distance to User Reactor: <span id="user_dist"></span> km
-                  <div class="checkbox">
-                    <label>
-                      <input id="mass_invert" type="checkbox"> Invert Neutrino Mass Hierarchy
-                    </label>
-                  </div>
+            <div class="checkbox">
+              <label>
+                <input id="mass_invert" type="checkbox"> Invert Neutrino Mass Hierarchy
+              </label>
+            </div>
             <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
           </div>
         </div>
-        <p>
-        </p>
         <div class="panel panel-default">
           <div class="panel-heading">Location</div>
           <div class="panel-body">
@@ -197,13 +194,23 @@
 {% block js %}
 <script src="/static/js/spherical_power.js"></script>
 <script>
+// Enable the tool tips for all elements with them
 $(function () {
     $('[data-toggle="tooltip"]').tooltip()
 })
+
+// Some global "switches" which alter certain behavior
+// Mode determines what happens when clicking or mousing over the map:
+// "normal" - follows the mouse around for spectrum
+// "place_reactor" - clicking the map places a reactor at that location
+// mass_invert inverts the neutrnio mass hierarchy when true
 var mode = "normal";
 var mass_invert = false;
+
 </script>
+
 <script>
+// this section contains some helpers to convert image coordinates to lat lon and the reverse
 function image_coordinates_to_lon_lat(x, y, width, height){
   var lat_deg = (90 - (180/height) * y);
   var lon_deg = (x * (360/width) -180);
@@ -261,13 +268,8 @@ for (var i=0; i < spectrum.length; i++){
   }
 }
 var scale = baserate/fluxnorm;
-
-// because we have declared the variable above, we don't need to put a
-// "var" in front of this, simply reset to 0;
-//fluxnorm = 0;
 for (var i=0; i < spectrum.length; i++){
   spectrum[i] = spectrum[i] * scale;
-  //fluxnorm += spectrum[i];
 }
 
 /*
@@ -292,11 +294,11 @@ function nuosc(dist, pwr, spectrum, inverted){
   var c22t12 = 1 - s22t12;
 
   if (inverted){
-  var dmsq32 = 2.457e-3;
-  var dmsq31 = dmsq32 - dmsq21;
+    var dmsq32 = 2.457e-3;
+    var dmsq31 = dmsq32 - dmsq21;
   } else {
-  var dmsq31 = 2.457e-3;
-  var dmsq32 = dmsq31 - dmsq21;
+    var dmsq31 = 2.457e-3;
+    var dmsq32 = dmsq31 - dmsq21;
   }
 
   var oscarg21 = 1.27 * dmsq21 * dist * 1000;
@@ -310,7 +312,6 @@ function nuosc(dist, pwr, spectrum, inverted){
   for (var i=0; i < oscspec.length; i++){
     oscspec[i] = 0;
     if (i >= 179){
-      // I don't know what the 0.01 is doing here.
       enu = (i + 1) * 0.01;
       
       supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
@@ -319,17 +320,11 @@ function nuosc(dist, pwr, spectrum, inverted){
 
       pee = 1 - supr21 - supr31 - supr32;
 
-      //pee = c4t13 * (1 - s22t12 * Math.pow(Math.sin(oscarg/enu), 2)) + s2t13 * s2t13;
       oscspec[i] = pee * flux * spectrum[i];
     }
   }
   return oscspec;
 }
-
-//var osc = nuosc(60, 3.2, spectrum);
-//for (var i=0; i < osc.length; i++){
-//  osc[i] = osc[i] * spectrum[i];
-//}
 
 /*
    Everything after here is making the output print on the webpage
@@ -370,11 +365,6 @@ svg.selectAll('.x.label')
   update_map();
 }
 
-var data = nuosc(60, 3.2, spectrum, mass_invert);
-for (var i=0; i < data.length; i++){
-  data[i] = [i, data[i]];// * spectrum[i]];
-}
-
 // Set the dimensions of the graph
 var margin = {top: 30, right: 20, bottom: 30, left: 50},
     width = parseInt(d3.select('#graph').style('width'), 10) - margin.left - margin.right,
@@ -404,17 +394,12 @@ var svg = d3.select("#graph")
     .append("g")
     .attr("transform", 
         "translate(" + margin.left + "," + margin.top + ")");
-    x.domain([0, d3.max(data, function(d, i) { return i; })]);
-    y.domain([0, d3.max(data, function(d) { return d; })]);
-
-    // Add the valueline path.
-    svg.append("path")
-        .attr("class", "reac line")
-        .attr("d", valueline(data));
 
     svg.append("path")
-        .attr("class", "total line")
-        .attr("d", valueline(data));
+        .attr("class", "reac line");
+
+    svg.append("path")
+        .attr("class", "total line");
 
     // Add the X Axis
     svg.append("g")
