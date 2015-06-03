@@ -658,6 +658,8 @@ function update_map(){
         .attr("d", valueline(total));
     svg.select("#yaxis")
       .call(yAxis);
+    svg.select(".x.axis")
+        .call(xAxis);
 }
 update_map();
 </script>
