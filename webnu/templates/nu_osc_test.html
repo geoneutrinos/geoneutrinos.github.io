@@ -59,7 +59,8 @@
           <div class="panel-body">
             <div id='graph'></div>
             R<sub>Total</sub>: <span id="tnu_output"></span> TNU<br>
-            R<sub>E < 3.275 MeV</sub>: <span id="tnu_output_geo"></span> TNU<br>
+            R<sub>E &lt; 3.275 MeV</sub>: <span id="tnu_output_geo"></span> TNU<br>
+            R<sub>Closest</sub>: <span id="tnu_output_close"></span> TNU (<span id="close_percent"></span>% of total)<br>
             Distance to Closest Reactor: <span id="closest_dist"></span> km<br>
             Distance to User Reactor: <span id="user_dist"></span> km
             <div class="checkbox">
@@ -659,7 +660,11 @@ function update_map(){
   total = squish_array([iaea, user_react_spectrum]);
 
   document.getElementById("osc_out").value = total.map(tof11).join('\n');
-  document.getElementById("tnu_output").textContent = (d3.sum(total)/1000).toFixed(1);
+  var total_tnu = (d3.sum(total)/1000).toFixed(1)
+  var close_tnu = (d3.sum(closest)/1000).toFixed(1)
+  document.getElementById("tnu_output").textContent = total_tnu;
+  document.getElementById("tnu_output_close").textContent = close_tnu;
+  document.getElementById("close_percent").textContent = (close_tnu/total_tnu * 100).toFixed(0);
   document.getElementById("tnu_output_geo").textContent = (d3.sum(total.slice(0, 326))/1000).toFixed(1);
 
     x.domain([0, d3.max(total, function(d, i) { return i; })]);
