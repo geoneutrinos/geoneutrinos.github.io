@@ -60,6 +60,7 @@
             <div id='graph'></div>
             R<sub>Total</sub>: <span id="tnu_output"></span> TNU<br>
             R<sub>E < 3.275 MeV</sub>: <span id="tnu_output_geo"></span> TNU<br>
+            Distance to Closest Reactor: <span id="closest_dist"></span> km<br>
             Distance to User Reactor: <span id="user_dist"></span> km
             <div class="checkbox">
               <label>
@@ -445,6 +446,9 @@ var svg = d3.select("#graph")
         .attr("class", "reac line");
 
     svg.append("path")
+        .attr("class", "close line");
+
+    svg.append("path")
         .attr("class", "total line");
 
     // Add the X Axis
@@ -619,6 +623,9 @@ function update_map(){
    z : earth_radius * Math.sin(lat)
   };
 
+  // we want to find the smallest element, so start someplace big...
+  var min_dist = 1e10;
+  var min_index;
   for (var i=0; i<react_data.length; i++){
 
     p2 = {
@@ -629,9 +636,12 @@ function update_map(){
 
     power = react_data[i][3];
     dist = distance(p1, p2);
+    if (dist < min_dist){
+      min_dist = dist;
+      min_index = i;
+    }
 
     react_spectrum.push(nuosc(dist, power, spectrum, mass_invert));
-
   }
   user_dist = distance(p1, reac_p);
   if (user_input){
@@ -641,8 +651,10 @@ function update_map(){
     user_react_spectrum = nuosc(user_dist, 0, spectrum, mass_invert);
     document.getElementById("user_dist").textContent = "N/A";
   }
+  document.getElementById("closest_dist").textContent = min_dist.toFixed(0);
 
 
+  closest = react_spectrum[min_index];
   iaea = squish_array(react_spectrum);
   total = squish_array([iaea, user_react_spectrum]);
 
@@ -654,6 +666,8 @@ function update_map(){
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
         .attr("d", valueline(iaea));
+    svg.select(".close")
+        .attr("d", valueline(closest));
     svg.select(".total")
         .attr("d", valueline(total));
     svg.select("#yaxis")
