@@ -14,6 +14,10 @@
       stroke-dasharray: 2, 1;
       fill: none;
     }
+    .c_reac.line{ 
+      stroke: none;
+      fill: #999;
+    }
     #detector_icon{
       position: absolute;
       top: 0px;
@@ -447,7 +451,7 @@ var svg = d3.select("#graph")
         .attr("class", "reac line");
 
     svg.append("path")
-        .attr("class", "close line");
+        .attr("class", "c_reac line");
 
     svg.append("path")
         .attr("class", "total line");
@@ -671,7 +675,7 @@ function update_map(){
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
         .attr("d", valueline(iaea));
-    svg.select(".close")
+    svg.select(".c_reac")
         .attr("d", valueline(closest));
     svg.select(".total")
         .attr("d", valueline(total));
