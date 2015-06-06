@@ -448,10 +448,10 @@ var svg = d3.select("#graph")
         "translate(" + margin.left + "," + margin.top + ")");
 
     svg.append("path")
-        .attr("class", "reac line");
+        .attr("class", "c_reac line");
 
     svg.append("path")
-        .attr("class", "c_reac line");
+        .attr("class", "reac line");
 
     svg.append("path")
         .attr("class", "total line");
@@ -482,6 +482,54 @@ var svg = d3.select("#graph")
         .attr("x", width)
         .attr("y", height - 6)
         .text("MeV");
+
+    le = svg.append("g")
+        .attr("transform", "translate(" + (width - 40) + ",0)");
+
+
+    le.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", "-2.1em")
+        .attr("y", "0.3em")
+        .text("Total");
+    le.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", "-2.1em")
+        .attr("y", "1.5em")
+        .text("Closest Reactor");
+    le.append("text")
+        .attr("text-anchor", "end")
+        .attr("class", "reac")
+        .attr("x", "-2.1em")
+        .attr("y", "2.6em")
+      .style("display", "none")
+        .text("User Reactor");
+
+    le.append("line")
+      .attr("x1", "-1.9em")
+      .attr("x2", "0")
+      .attr("y1", "0")
+      .attr("y2", "0")
+      .attr("stroke-width", 2)
+      .style("stroke", "#000");
+
+    le.append("rect")
+      .attr("width", "1.9em")
+      .attr("height", "1em")
+      .attr("x", "-1.9em")
+      .attr("y", "0.5em")
+      .style("fill", "#999");
+
+    le.append("line")
+      .attr("x1", "-1.9em")
+      .attr("x2", "0")
+      .attr("y1", "2.3em")
+      .attr("y2", "2.3em")
+      .attr("stroke-width", 2)
+      .style("stroke", "#000")
+      .style("stroke-dasharray", "2,1")
+      .attr("class", "reac")
+      .style("display", "none");
 
 var earth_radius = 6371;
 
@@ -630,7 +678,7 @@ function update_map(){
 
   // we want to find the smallest element, so start someplace big...
   var min_dist = 1e10;
-  var min_index;
+  var min_spec;
   for (var i=0; i<react_data.length; i++){
 
     p2 = {
@@ -641,27 +689,34 @@ function update_map(){
 
     power = react_data[i][3];
     dist = distance(p1, p2);
+    var spec = nuosc(dist, power, spectrum, mass_invert);
+
+    react_spectrum.push(spec);
     if (dist < min_dist){
       min_dist = dist;
-      min_index = i;
+      min_spec = spec;
     }
-
-    react_spectrum.push(nuosc(dist, power, spectrum, mass_invert));
   }
-  user_dist = distance(p1, reac_p);
+  var user_dist = distance(p1, reac_p);
   if (user_input){
     user_react_spectrum = nuosc(user_dist, reac_power, spectrum, mass_invert);
     document.getElementById("user_dist").textContent = user_dist.toFixed(0);
+    d3.selectAll(".reac").style("display", "");
+    if (user_dist < min_dist){
+      min_dist = user_dist;
+      min_spec = user_react_spectrum;
+    }
   } else {
     user_react_spectrum = nuosc(user_dist, 0, spectrum, mass_invert);
     document.getElementById("user_dist").textContent = "N/A";
+    d3.selectAll(".reac").style("display", "none");
   }
   document.getElementById("closest_dist").textContent = min_dist.toFixed(0);
 
 
-  closest = react_spectrum[min_index];
-  iaea = squish_array(react_spectrum);
-  total = squish_array([iaea, user_react_spectrum]);
+  closest = min_spec;
+  user_spec = squish_array([user_react_spectrum]);
+  total = squish_array([squish_array(react_spectrum), user_spec]);
 
   document.getElementById("osc_out").value = total.map(tof11).join('\n');
   var total_tnu = (d3.sum(total)/1000).toFixed(1)
@@ -674,7 +729,7 @@ function update_map(){
     x.domain([0, d3.max(total, function(d, i) { return i; })]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
-        .attr("d", valueline(iaea));
+        .attr("d", valueline(user_spec));
     svg.select(".c_reac")
         .attr("d", valueline(closest));
     svg.select(".total")
