@@ -118,6 +118,32 @@ It has several important tasks:
 * Set the detector and reactor icon locations on the map.
 * Update the spectrum text output.
 
+When the spectrum update function is called it performs the following actions.
+First, the detecor and user reactor locations are set.
+To do this, the latitude and longitude of the detecor and user reactor are taken directly from the text in put fields on the webpage.
+Then the geogrpahic coordinates are converted to the image coordinates of the map, where the point (0, 0) is in the upper left corner.
+The detecor and user reactor image positions are then set with the image coordinates.
+If the user does not want the custom reactor to be used, the reactor image display attribute is set to "none".
+
+Next the distance and neutrino spectrum contributions for each reactor are calculated.
+For computational simplicity, we are storing all the reactor positions in a three dimentional Cartesian coordinate system.
+The distance between each reactor and the user provided detector location is given by the Euclidean distance.
+The neutrino spectrum functinon is called for each reactor, the returning spectrums are stored seperately temporarily.
+The distance loop also records which reactor is the closest to the detector so its contribution may be plotted seperately on the output figure.
+
+The spectrum update function then calculates all the ancilary output parameters: the distances to the user reactor and the closest reactor, and the TNU outputs.
+It also update the text spectrum output box.
+
+Finally, the line plot figure is updated.
+Since we are using the d3.js data binding library, this is done sinply by instructing d3 to use the newly calculated values.
+The y-axis domain is also updated.
+The entire figure does not need to be redrawn, only what has changed.
+
+The Survival Probability Subroutine
+-----------------------------------
+
+TODO: Write this next
+
 
 Some outline ideas
 ------------------
