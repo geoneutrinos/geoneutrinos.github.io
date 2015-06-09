@@ -139,10 +139,10 @@ Since we are using the d3.js data binding library, this is done sinply by instru
 The y-axis domain is also updated.
 The entire figure does not need to be redrawn, only what has changed.
 
-The Survival Probability Subroutine
------------------------------------
-
-TODO: Write this next
+The Survival Probability Method
+-------------------------------
+The survival probability method calculates the oscilated survival probability spectrum for an input distance.
+Due to multiple calls to computationally expensive trigonometric functions, the computed spectrum for any given input distance is cached for future use.
 
 
 Some outline ideas
