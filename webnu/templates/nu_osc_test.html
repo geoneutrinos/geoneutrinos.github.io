@@ -118,17 +118,17 @@
                       <option value="54.55,-0.82">Boulby</option>
                       <option value="42.70,-0.52">Canfranc</option>
                       <option value="45.13,6.68">Fréjus</option>
-                      <option value="42.45,13.57">Gran Sasso</option>
+                      <option value="42.45,13.57">LNGS</option>
                       <option value="63.66,26.05">Pyhäsalmi</option>
                       <option value="51.55,16.03">Sieroszowice</option>
                       <option value="45.23,25.94">Slănic</option>
                     </optgroup>
                     <optgroup label="North America">
                       <option value="41.753,-81.286">Fairport (IMB)</option>
-                      <option value="44.35,-103.75">Homestake</option>
+                      <option value="44.35,-103.75">SURF</option>
                       <option value="37.382,-80.656">KURF</option>
                       <option value="47.82,-92.24">Soudan</option>
-                      <option value="46.47,-81.20">Sudbury</option>
+                      <option value="46.47,-81.20">SNOLAB</option>
                       <option value="32.372,-103.794">WIPP</option>
                     </optgroup>
                     <optgroup label="Pacific Ocean">
@@ -423,6 +423,7 @@ svg.selectAll('.x.label')
 
     svg.selectAll('rect.background')
         .attr('width', width);
+    le.attr("transform", "translate(" + (width - 40) + ",0)");
 
   update_map();
 }
