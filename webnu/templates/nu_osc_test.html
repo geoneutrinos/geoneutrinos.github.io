@@ -54,7 +54,7 @@
   <div class="col-md-5">
     <ul class="nav nav-tabs">
       <li class="active"><a href="#detector" data-toggle="tab">Detector</a></li>
-      <li><a href="#reactor" data-toggle="tab">Reactor</a></li>
+      <li><a href="#reactor" data-toggle="tab">Reactors</a></li>
       <li><a href="#output" data-toggle="tab">Output</a></li>
     </ul>
     <div class="tab-content">
@@ -153,7 +153,17 @@
       </div>
       <div class="tab-pane" id="reactor">
         <div class="panel panel-default">
-          <div class="panel-heading">Power</div>
+          <div class="panel-heading">Reactor Load Factors</div>
+          <div class="panel-body">
+              <select id="load_factor" class="form-control">
+                    <!-- value="index" -->
+                <option value="3">Mean LF</option>
+                <option value="4">2013 LF</option>
+              </select>
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">Custom Reactor</div>
           <div class="panel-body">
 
             <form class='form-horizontal'>
@@ -177,8 +187,6 @@
 
             </form>
 
-          </div>
-        </div>
         <div class="panel panel-default">
           <div class="panel-heading">Location</div>
           <div class="panel-body">
@@ -202,6 +210,8 @@
               <button id="place_reactor" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="right" title="Allows clicking the map to place the reactor">Place Reactor</button>
 
             </form>
+          </div>
+        </div>
           </div>
         </div>
       </div>
@@ -229,6 +239,7 @@ $(function () {
 // mass_invert inverts the neutrnio mass hierarchy when true
 var mode = "normal";
 var mass_invert = false;
+var power_type = 3;
 
 </script>
 
@@ -705,7 +716,7 @@ function update_map(){
       z : react_data[i][2]
     };
 
-    power = react_data[i][3];
+    power = react_data[i][power_type];
     dist = distance(p1, p2);
     var spec = nuosc(dist, power, spectrum, mass_invert);
 
@@ -767,6 +778,10 @@ document.getElementById("detector_preset").addEventListener("change", function(e
   document.getElementById("cursor_lat").value = lat;
   document.getElementById("cursor_lon").value = lon;
   document.getElementById("is_locked").checked = false;
+  update_map();
+});
+document.getElementById("load_factor").addEventListener("change", function(e){
+  power_type = parseInt(this.value);
   update_map();
 });
   </script>
