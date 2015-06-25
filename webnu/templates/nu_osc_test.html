@@ -319,7 +319,7 @@ function osc_spec(dist, inverted){
 
     //added nuosc13
     var s22t13 = 4 * s2t13 * (1-s2t13);
-    var c22t12 = 1 - s22t12;
+    var c2t12 = 1 - s2t12;
 
     if (inverted){
       var dmsq32 = 2.457e-3;
@@ -341,8 +341,8 @@ function osc_spec(dist, inverted){
         enu = (i + 1) * 0.01;
         
         supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
-        supr31 = s22t13 * c22t12 * Math.pow(Math.sin(oscarg31/enu), 2);
-        supr32 = s22t13 * s22t12 * Math.pow(Math.sin(oscarg32/enu), 2);
+        supr31 = s22t13 * c2t12 * Math.pow(Math.sin(oscarg31/enu), 2);
+        supr32 = s22t13 * s2t12 * Math.pow(Math.sin(oscarg32/enu), 2);
 
         pee = 1 - supr21 - supr31 - supr32;
 
