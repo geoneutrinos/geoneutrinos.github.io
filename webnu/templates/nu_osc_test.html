@@ -721,7 +721,7 @@ function update_map(){
     var spec = nuosc(dist, power, spectrum, mass_invert);
 
     react_spectrum.push(spec);
-    if (dist < min_dist){
+    if ((dist < min_dist) && (d3.sum(spec) > 0)){
       min_dist = dist;
       min_spec = spec;
     }
