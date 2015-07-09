@@ -226,6 +226,7 @@
 {% endblock %}
 {% block js %}
 <script src="/static/js/spherical_power.js"></script>
+<script src="/static/cache/huang.js"></script>
 <script>
 // Enable the tool tips for all elements with them
 $(function () {
@@ -305,21 +306,34 @@ var scale = baserate/fluxnorm;
 for (var i=0; i < spectrum.length; i++){
   spectrum[i] = spectrum[i] * scale;
 }
+var dmsq21 = 7.50e-5;
+var ds2t13 = 0.19e-5;
+var s2t13 = 0.0218;
+var ds2t13 = 0.0010;
+var s2t12 = 0.304;
+var ds2t12 = 0.013;
+
+var c4t13 = (1 - s2t13) * (1 - s2t13);
+var s22t12 = 4 * s2t12 * (1 - s2t12);
+
+//added nuosc13
+var s22t13 = 4 * s2t13 * (1-s2t13);
+var c2t12 = 1 - s2t12;
+
+function geo_nu(lat, lon){
+  pee = c4t13*(1.-s22t12*0.5)+s2t13*s2t13;
+  if (lat < 0){
+    lat += 1;
+  }
+  if (lon < 0){
+    lon += 1;
+  }
+  var lat = Math.round(lat); 
+  var lon = Math.round(lon);
+  return pee * (huang[lat][lon]["U"]);
+}
 
 function osc_spec(dist, inverted){
-    var dmsq21 = 7.50e-5;
-    var ds2t13 = 0.19e-5;
-    var s2t13 = 0.0218;
-    var ds2t13 = 0.0010;
-    var s2t12 = 0.304;
-    var ds2t12 = 0.013;
-
-    var c4t13 = (1 - s2t13) * (1 - s2t13);
-    var s22t12 = 4 * s2t12 * (1 - s2t12);
-
-    //added nuosc13
-    var s22t13 = 4 * s2t13 * (1-s2t13);
-    var c2t12 = 1 - s2t12;
 
     if (inverted){
       var dmsq32 = 2.457e-3;
@@ -695,6 +709,7 @@ function update_map(){
   reac_power = parseFloat(document.getElementById("react_power").value);
 
   var react_spectrum = [];
+  console.log(geo_nu(lon_deg, lat_deg));
 
   lat = lat_deg  * (Math.PI/180);
   lon = lon_deg * (Math.PI/180);
