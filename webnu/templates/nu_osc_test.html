@@ -216,9 +216,16 @@
         </div>
       </div>
       <div class="tab-pane" id="output">
-        TODO: write a description here
+        The following box contains the total spectrum output from 0 to 10 MeV in units of TNU in 10 KeV bins.
+        There are a total of 1000 data points.
         <textarea readonly id="osc_out" rows=8 style="width:100%;">
         </textarea>
+
+        <div>
+          <h4>Debug Output</h4>
+          <p>Crust U: <span id="crust_u_tnu"></span> TNU</p>
+          <p>Crust Th: <span id="crust_th_tnu"></span> TNU</p>
+        </div>
       </div>
     </div>
 
@@ -322,6 +329,8 @@ var c2t12 = 1 - s2t12;
 
 function geo_nu(lat, lon){
   pee = c4t13*(1.-s22t12*0.5)+s2t13*s2t13;
+  // These "add one" operations are due to differences in how python
+  // and Javascipt treat their "round" operations.
   if (lat < 0){
     lat += 1;
   }
@@ -330,7 +339,11 @@ function geo_nu(lat, lon){
   }
   var lat = Math.round(lat); 
   var lon = Math.round(lon);
-  return pee * (huang[lat][lon]["U"]);
+  var crust_u = huang[lat][lon]["U"] * 13.2;
+  var crust_th = huang[lat][lon]["Th"] * 4.0;
+  document.getElementById("crust_u_tnu").textContent = crust_u;
+  document.getElementById("crust_th_tnu").textContent = crust_th;
+  return pee;
 }
 
 function osc_spec(dist, inverted){
