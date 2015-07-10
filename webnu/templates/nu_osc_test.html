@@ -218,6 +218,7 @@
       <div class="tab-pane" id="output">
         The following box contains the total spectrum output from 0 to 10 MeV in units of TNU in 10 KeV bins.
         There are a total of 1000 data points.
+        The first 180 data points will have a value of 0.
         <textarea readonly id="osc_out" rows=8 style="width:100%;">
         </textarea>
 
@@ -339,8 +340,8 @@ function geo_nu(lat, lon){
   }
   var lat = Math.round(lat); 
   var lon = Math.round(lon);
-  var crust_u = huang[lat][lon]["U"] * 13.2;
-  var crust_th = huang[lat][lon]["Th"] * 4.0;
+  var crust_u = huang[lat][lon]["U"] * 13.2 * pee;
+  var crust_th = huang[lat][lon]["Th"] * 4.0 * pee;
   document.getElementById("crust_u_tnu").textContent = crust_u;
   document.getElementById("crust_th_tnu").textContent = crust_th;
   return pee;
