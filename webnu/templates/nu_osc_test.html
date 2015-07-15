@@ -18,6 +18,18 @@
       stroke: none;
       fill: #999;
     }
+    .geo_u.line{ 
+      stroke: black;
+      stroke-width: 1;
+      stroke-dasharray: 2, 1;
+      fill: none;
+    }
+    .geo_th.line{ 
+      stroke: black;
+      stroke-width: 1;
+      stroke-dasharray: 2, 1;
+      fill: none;
+    }
     #detector_icon{
       position: absolute;
       top: 0px;
@@ -55,6 +67,7 @@
     <ul class="nav nav-tabs">
       <li class="active"><a href="#detector" data-toggle="tab">Detector</a></li>
       <li><a href="#reactor" data-toggle="tab">Reactors</a></li>
+      <li><a href="#geonu" data-toggle="tab">GeoNu</a></li>
       <li><a href="#output" data-toggle="tab">Output</a></li>
     </ul>
     <div class="tab-content">
@@ -216,6 +229,41 @@
           </div>
         </div>
       </div>
+
+      <div class="tab-pane" id="geonu">
+        <div class="panel panel-default">
+          <div class="panel-heading">Mantle</div>
+          <div class="panel-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="mantle_signal" class="col-sm-4 control-label">Mantle Signal</label>
+                <div class="col-sm-8">
+                  <div class="input-group">
+                  <input type="number" class="form-control input-sm" id="mantle_signal" value="8">
+                    <div class="input-group-addon">TNU</div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="react_lat" class="col-sm-4 control-label">Th/U Ratio</label>
+                <div class="col-sm-8">
+                  <input type="number" class="form-control input-sm" id="thu_ratio" value="4">
+                </div>
+              </div>
+            </form>
+
+
+          </div>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">Crust</div>
+          <div class="panel-body">
+            We are using a precomputed crust model provided by Huang et al. 2013.
+          </div>
+        </div>
+
+      </div>
+
       <div class="tab-pane" id="output">
         The following box contains the total spectrum output from 0 to 10 MeV in units of TNU in 10 KeV bins.
         There are a total of 1000 data points.
@@ -223,12 +271,9 @@
         <textarea readonly id="osc_out" rows=8 style="width:100%;">
         </textarea>
 
-        <div>
-          <h4>Debug Output</h4>
-          <p>Crust U: <span id="crust_u_tnu"></span> TNU</p>
-          <p>Crust Th: <span id="crust_th_tnu"></span> TNU</p>
-        </div>
       </div>
+
+
     </div>
 
   </div>
@@ -236,6 +281,7 @@
 {% block js %}
 <script src="/static/js/spherical_power.js"></script>
 <script src="/static/cache/huang.js"></script>
+<script src="/static/cache/geo_nu_spectra.js"></script>
 <script>
 // Enable the tool tips for all elements with them
 $(function () {
@@ -343,9 +389,26 @@ function geo_nu(lat, lon){
   var lon = Math.round(lon);
   var crust_u = huang[lat][lon]["U"] * 13.2 * pee;
   var crust_th = huang[lat][lon]["Th"] * 4.0 * pee;
-  document.getElementById("crust_u_tnu").textContent = crust_u;
-  document.getElementById("crust_th_tnu").textContent = crust_th;
-  return pee;
+  var user_mantle_signal = parseFloat(document.getElementById("mantle_signal").value);
+  var user_mantle_ratio = parseFloat(document.getElementById("thu_ratio").value);
+  var mantle_u = user_mantle_signal/(1 + 0.065*user_mantle_ratio);
+  var mantle_th = user_mantle_signal - mantle_u;
+  var total_u = crust_u + mantle_u;
+  var total_th = crust_th + mantle_th;
+  var u_spectra = new Array(1000);
+  var th_spectra = new Array(1000);
+  for (var i=0; i < geo_nu_spectra.u238.length; i++){
+    u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 100;
+  }
+  for (var i=0; i < geo_nu_spectra.th232.length; i++){
+    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 100;
+  }
+  return {
+    "u_tnu": total_u,
+    "th_tnu": total_th,
+    "u_spec": u_spectra,
+    "th_spec": th_spectra
+  }
 }
 
 function osc_spec(dist, inverted){
@@ -507,6 +570,11 @@ var svg = d3.select("#graph")
 
     svg.append("path")
         .attr("class", "c_reac line");
+
+    svg.append("path")
+        .attr("class", "geo_u line");
+    svg.append("path")
+        .attr("class", "geo_th line");
 
     svg.append("path")
         .attr("class", "reac line");
@@ -724,7 +792,7 @@ function update_map(){
   reac_power = parseFloat(document.getElementById("react_power").value);
 
   var react_spectrum = [];
-  console.log(geo_nu(lon_deg, lat_deg));
+  var geo_nu_spectra = geo_nu(lon_deg, lat_deg);
 
   lat = lat_deg  * (Math.PI/180);
   lon = lon_deg * (Math.PI/180);
@@ -791,6 +859,10 @@ function update_map(){
         .attr("d", valueline(user_spec));
     svg.select(".c_reac")
         .attr("d", valueline(closest));
+    svg.select(".geo_u")
+        .attr("d", valueline(geo_nu_spectra.u_spec));
+    svg.select(".geo_th")
+        .attr("d", valueline(geo_nu_spectra.th_spec));
     svg.select(".total")
         .attr("d", valueline(total));
     svg.select("#yaxis")
