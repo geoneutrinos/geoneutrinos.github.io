@@ -398,10 +398,10 @@ function geo_nu(lat, lon){
   var u_spectra = new Array(1000);
   var th_spectra = new Array(1000);
   for (var i=0; i < geo_nu_spectra.u238.length; i++){
-    u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 100;
+    u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 1000;
   }
   for (var i=0; i < geo_nu_spectra.th232.length; i++){
-    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 100;
+    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 1000;
   }
   return {
     "u_tnu": total_u,
