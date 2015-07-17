@@ -549,7 +549,7 @@ var y = d3.scale.linear().range([height, 0]);
 
 // Define the axes
 var xAxis = d3.svg.axis().scale(x)
-    .orient("bottom").ticks(5).tickFormat(function(d) {return (d/100).toFixed(0)});
+    .orient("bottom").ticks(8).tickFormat(function(d) {return ((d/100)+1).toFixed(0)});
 
 var yAxis = d3.svg.axis().scale(y)
     .orient("left").ticks(5).tickFormat(function(d) {return (d/1000)});
@@ -856,15 +856,15 @@ function update_map(){
     x.domain([0, d3.max(total, function(d, i) { return i; })]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
-        .attr("d", valueline(user_spec));
+        .attr("d", valueline(user_spec.slice(100)));
     svg.select(".c_reac")
-        .attr("d", valueline(closest));
+        .attr("d", valueline(closest.slice(100)));
     svg.select(".geo_u")
-        .attr("d", valueline(geo_nu_spectra.u_spec));
+        .attr("d", valueline(geo_nu_spectra.u_spec.slice(100)));
     svg.select(".geo_th")
-        .attr("d", valueline(geo_nu_spectra.th_spec));
+        .attr("d", valueline(geo_nu_spectra.th_spec.slice(100)));
     svg.select(".total")
-        .attr("d", valueline(total));
+        .attr("d", valueline(total.slice(100)));
     svg.select("#yaxis")
       .call(yAxis);
     svg.select(".x.axis")
