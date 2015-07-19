@@ -6,7 +6,7 @@
       stroke: black;
       stroke-width: 0.6;
       /*stroke-dasharray: 1, 1; */
-      fill: none;
+      fill: yellow;
     }
     .reac.line { 
       stroke: black;
@@ -14,20 +14,24 @@
       stroke-dasharray: 2, 1;
       fill: none;
     }
+    .iaea.line { 
+      stroke: black;
+      stroke-width: 0.5;
+      stroke-dasharray: 2, 1;
+      fill: green;
+    }
     .c_reac.line{ 
       stroke: none;
       fill: #999;
     }
     .geo_u.line{ 
-      stroke: black;
-      stroke-width: 1;
-      stroke-dasharray: 2, 1;
+      stroke: blue;
+      stroke-width: 2;
       fill: none;
     }
     .geo_th.line{ 
-      stroke: black;
-      stroke-width: 1;
-      stroke-dasharray: 2, 1;
+      stroke: red;
+      stroke-width: 2;
       fill: none;
     }
     #detector_icon{
@@ -569,6 +573,12 @@ var svg = d3.select("#graph")
         "translate(" + margin.left + "," + margin.top + ")");
 
     svg.append("path")
+        .attr("class", "total line");
+
+    svg.append("path")
+        .attr("class", "iaea line");
+
+    svg.append("path")
         .attr("class", "c_reac line");
 
     svg.append("path")
@@ -579,8 +589,6 @@ var svg = d3.select("#graph")
     svg.append("path")
         .attr("class", "reac line");
 
-    svg.append("path")
-        .attr("class", "total line");
 
     // Add the X Axis
     svg.append("g")
@@ -843,7 +851,8 @@ function update_map(){
 
   closest = min_spec;
   user_spec = squish_array([user_react_spectrum]);
-  total = squish_array([squish_array(react_spectrum), user_spec]);
+  iaea = squish_array([squish_array(react_spectrum), user_spec]);
+  total = squish_array([squish_array(react_spectrum), user_spec, geo_nu_spectra.u_spec, geo_nu_spectra.th_spec]);
 
   document.getElementById("osc_out").value = total.map(tof11).join('\n');
   var total_tnu = (d3.sum(total)/1000).toFixed(1)
@@ -865,6 +874,8 @@ function update_map(){
         .attr("d", valueline(geo_nu_spectra.th_spec.slice(100)));
     svg.select(".total")
         .attr("d", valueline(total.slice(100)));
+    svg.select(".iaea")
+        .attr("d", valueline(iaea.slice(100)));
     svg.select("#yaxis")
       .call(yAxis);
     svg.select(".x.axis")
