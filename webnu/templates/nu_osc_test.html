@@ -910,7 +910,7 @@ function update_map(){
   document.getElementById("close_percent").textContent = (close_tnu/total_tnu * 100).toFixed(0);
   document.getElementById("tnu_output_geo").textContent = (d3.sum(total.slice(0, 326))/1000).toFixed(1);
 
-    x.domain([0, d3.max(total, function(d, i) { return i; })]);
+    x.domain([0, d3.max(total, function(d, i) { return i; })- 200]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
         .attr("d", valueline(user_spec.slice(100)));
