@@ -4,7 +4,7 @@
   <style>
     .total.line { 
       stroke: black;
-      stroke-width: 0.6;
+      stroke-width: 2;
       /*stroke-dasharray: 1, 1; */
       fill: yellow;
     }
@@ -15,7 +15,7 @@
       fill: none;
     }
     .iaea.line { 
-      stroke: black;
+      stroke: none;
       stroke-width: 0.5;
       stroke-dasharray: 2, 1;
       fill: green;
@@ -609,13 +609,13 @@ var svg = d3.select("#graph")
         .attr("y", 6)
         .attr("dy", ".75em")
         .attr("transform", "rotate(-90)")
-        .text("TNU/10 keV");
+        .text("Rate (TNU/10 keV)");
     svg.append("text")
         .attr("class", "x label")
         .attr("text-anchor", "end")
         .attr("x", width)
         .attr("y", height - 6)
-        .text("MeV");
+        .text("Antineutrino Energy (MeV)");
 
     le = svg.append("g")
         .attr("transform", "translate(" + (width - 40) + ",0)");
@@ -633,9 +633,29 @@ var svg = d3.select("#graph")
         .text("Closest Reactor");
     le.append("text")
         .attr("text-anchor", "end")
+        .attr("x", "-2.1em")
+        .attr("y", "2.5em")
+        .text("Reactors");
+    le.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", "-2.1em")
+        .attr("y", "3.5em")
+        .text("Geoneutinos");
+    le.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", "-2.1em")
+        .attr("y", "4.5em")
+        .text("Thorium");
+    le.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", "-2.1em")
+        .attr("y", "5.5em")
+        .text("Uranium");
+    le.append("text")
+        .attr("text-anchor", "end")
         .attr("class", "reac")
         .attr("x", "-2.1em")
-        .attr("y", "2.6em")
+        .attr("y", "6.6em")
       .style("display", "none")
         .text("User Reactor");
 
@@ -646,6 +666,20 @@ var svg = d3.select("#graph")
       .attr("y2", "0")
       .attr("stroke-width", 2)
       .style("stroke", "#000");
+    le.append("line")
+      .attr("x1", "-1.9em")
+      .attr("x2", "0")
+      .attr("y1", "5.2em")
+      .attr("y2", "5.2em")
+      .attr("stroke-width", 2)
+      .style("stroke", "red");
+    le.append("line")
+      .attr("x1", "-1.9em")
+      .attr("x2", "0")
+      .attr("y1", "4.2em")
+      .attr("y2", "4.2em")
+      .attr("stroke-width", 2)
+      .style("stroke", "blue");
 
     le.append("rect")
       .attr("width", "1.9em")
@@ -653,12 +687,24 @@ var svg = d3.select("#graph")
       .attr("x", "-1.9em")
       .attr("y", "0.5em")
       .style("fill", "#999");
+    le.append("rect")
+      .attr("width", "1.9em")
+      .attr("height", "1em")
+      .attr("x", "-1.9em")
+      .attr("y", "1.5em")
+      .style("fill", "green");
+    le.append("rect")
+      .attr("width", "1.9em")
+      .attr("height", "1em")
+      .attr("x", "-1.9em")
+      .attr("y", "2.5em")
+      .style("fill", "yellow");
 
     le.append("line")
       .attr("x1", "-1.9em")
       .attr("x2", "0")
-      .attr("y1", "2.3em")
-      .attr("y2", "2.3em")
+      .attr("y1", "6.3em")
+      .attr("y2", "6.3em")
       .attr("stroke-width", 2)
       .style("stroke", "#000")
       .style("stroke-dasharray", "2,1")
