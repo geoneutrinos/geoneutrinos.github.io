@@ -910,20 +910,26 @@ function update_map(){
   document.getElementById("close_percent").textContent = (close_tnu/total_tnu * 100).toFixed(0);
   document.getElementById("tnu_output_geo").textContent = (d3.sum(total.slice(0, 326))/1000).toFixed(1);
 
+  function for_plot(arr){
+    arr = arr.slice(100,899);
+    arr.push(0);
+    return arr;
+  }
+
     x.domain([0, d3.max(total, function(d, i) { return i; })- 200]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
-        .attr("d", valueline(user_spec.slice(100,900)));
+        .attr("d", valueline(for_plot(user_spec)));
     svg.select(".c_reac")
-        .attr("d", valueline(closest.slice(100,900)));
+        .attr("d", valueline(for_plot(closest)));
     svg.select(".geo_u")
         .attr("d", valueline(geo_nu_spectra.u_spec.slice(100,900)));
     svg.select(".geo_th")
         .attr("d", valueline(geo_nu_spectra.th_spec.slice(100,900)));
     svg.select(".total")
-        .attr("d", valueline(total.slice(100,900)));
+        .attr("d", valueline(for_plot(total)));
     svg.select(".iaea")
-        .attr("d", valueline(iaea.slice(100,900)));
+        .attr("d", valueline(for_plot(iaea)));
     svg.select("#yaxis")
       .call(yAxis);
     svg.select(".x.axis")
