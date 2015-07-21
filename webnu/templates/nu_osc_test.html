@@ -913,17 +913,17 @@ function update_map(){
     x.domain([0, d3.max(total, function(d, i) { return i; })- 200]);
     y.domain([0, d3.max(total, function(d) { return d; })]);
     svg.select(".reac")
-        .attr("d", valueline(user_spec.slice(100,800)));
+        .attr("d", valueline(user_spec.slice(100,900)));
     svg.select(".c_reac")
-        .attr("d", valueline(closest.slice(100,800)));
+        .attr("d", valueline(closest.slice(100,900)));
     svg.select(".geo_u")
-        .attr("d", valueline(geo_nu_spectra.u_spec.slice(100,800)));
+        .attr("d", valueline(geo_nu_spectra.u_spec.slice(100,900)));
     svg.select(".geo_th")
-        .attr("d", valueline(geo_nu_spectra.th_spec.slice(100,800)));
+        .attr("d", valueline(geo_nu_spectra.th_spec.slice(100,900)));
     svg.select(".total")
-        .attr("d", valueline(total.slice(100,800)));
+        .attr("d", valueline(total.slice(100,900)));
     svg.select(".iaea")
-        .attr("d", valueline(iaea.slice(100,800)));
+        .attr("d", valueline(iaea.slice(100,900)));
     svg.select("#yaxis")
       .call(yAxis);
     svg.select(".x.axis")
