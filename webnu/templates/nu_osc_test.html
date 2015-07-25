@@ -72,7 +72,7 @@
       <li class="active"><a href="#detector" data-toggle="tab">Detector</a></li>
       <li><a href="#reactor" data-toggle="tab">Reactors</a></li>
       <li><a href="#geonu" data-toggle="tab">GeoNu</a></li>
-      <li><a href="#output" data-toggle="tab">Output</a></li>
+      <li><a href="#output" data-toggle="tab">Output &amp; Stats</a></li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="detector">
@@ -269,9 +269,11 @@
       </div>
 
       <div class="tab-pane" id="output">
-        The following box contains the total spectrum output from 0 to 10 MeV in units of TNU in 10 KeV bins.
-        There are a total of 1000 data points.
+        The following box contains the spectrum output from 0 to 10 MeV in units of TNU in 10 KeV bins.
+        The comma seperated columns of data are: total, known IAEA reactor core total, the closest core, the user defined core (0 if not using a custom reactor), and U and Th geoneutrino background.
+        There are a total of 1000 data rows of data with a header.
         The first 180 data points will have a value of 0.
+        Simply clopy and paste the contents of this box into a text file or spreadsheet program.
         <textarea readonly id="osc_out" rows=8 style="width:100%;">
         </textarea>
 
@@ -902,7 +904,12 @@ function update_map(){
   iaea = squish_array([squish_array(react_spectrum), user_spec]);
   total = squish_array([squish_array(react_spectrum), user_spec, geo_nu_spectra.u_spec, geo_nu_spectra.th_spec]);
 
-  document.getElementById("osc_out").value = total.map(tof11).join('\n');
+  text_out = Array(1001);
+  text_out[0] = "total,iaea,close,user,geo_u,geo_th";
+  for (var i=0; i< iaea.length; i++){
+    text_out[i+1] = tof11(total[i]) + "," + tof11(iaea[i])+","+ tof11(closest[i]) + "," + tof11(user_spec[i]) + "," + tof11(geo_nu_spectra.u_spec[i]) + "," + tof11(geo_nu_spectra.th_spec[i]);
+  }
+  document.getElementById("osc_out").value = text_out.join('\n');
   var total_tnu = (d3.sum(total)/1000).toFixed(1)
   var close_tnu = (d3.sum(closest)/1000).toFixed(1)
   document.getElementById("tnu_output").textContent = total_tnu;
