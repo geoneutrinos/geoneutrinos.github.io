@@ -1037,8 +1037,8 @@ function update_map(){
 update_map();
 
 function signal_stats(){
-  var min_i = parseInt(document.getElementById("min_e").value) * 100;
-  var max_i = parseInt(document.getElementById("max_e").value) * 100;
+  var min_i = parseInt(parseFloat(document.getElementById("min_e").value) * 100);
+  var max_i = parseInt(parseFloat(document.getElementById("max_e").value) * 100);
 
   var solve_for = document.getElementById("solve_for").value;
   var signal_source = document.getElementById("signal_source").value;
