@@ -15,6 +15,7 @@ def model():
     return render_template('model.jinja2')
 
 @app.route("/hide/reactors")
+@app.route("/reactors")
 def tests():
     return render_template('nu_osc_test.html')
 
