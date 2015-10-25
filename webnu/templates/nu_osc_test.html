@@ -335,7 +335,7 @@
         There are a total of 1000 rows of data under each column. 
         The first 180 data rows have value 0 due to the energy threshold of the electron antineutrino inverse beta decay interaction on a free proton. 
         For plotting or further analysis, simply copy and paste the contents of this box into a text file or spreadsheet program. 
-        Please refer to this website if using these data: geoneutrinos.org/reactors.
+        Please cite this website if using these data as: Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," arXiv:1510.05633 (2015).
         <textarea readonly id="osc_out" rows=8 style="width:100%;">
         </textarea>
       </div>
@@ -1078,13 +1078,13 @@ function signal_stats(){
     document.getElementById("sigma").removeAttribute("readonly");
     var sigma = parseFloat(document.getElementById("sigma").value);;
     document.getElementById("time").setAttribute("readonly", "true");
-    document.getElementById("time").value = (signal + 2 * background) * (sigma/signal) * (sigma/signal);
+    document.getElementById("time").value = ((signal + 2 * background) * (sigma/signal) * (sigma/signal)).toFixed(3);
   } else if (solve_for == "1"){
     document.getElementById("sigma").setAttribute("readonly", "true");
     var time = parseFloat(document.getElementById("time").value);
     document.getElementById("time").removeAttribute("readonly");
     var sigma = signal * Math.sqrt(time)/Math.sqrt(signal + 2 * background);
-    document.getElementById("sigma").value = sigma;
+    document.getElementById("sigma").value = sigma.toFixed(2);
   }
 }
 </script>
