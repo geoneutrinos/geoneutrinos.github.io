@@ -547,6 +547,9 @@ function nuosc(dist, pwr, spectrum, inverted){
 
   var oscspec = new Array(1000);
 
+  //locks the distance to integer kilometers
+  var dist = Math.round(dist);
+
   if (inverted){
     var pee = neutrnio_survival_probability(dist);
   } else {
@@ -1063,13 +1066,11 @@ function signal_stats(){
     var sigma = parseFloat(document.getElementById("sigma").value);;
     document.getElementById("time").setAttribute("readonly", "true");
     document.getElementById("time").value = (signal + 2 * background) * (sigma/signal) * (sigma/signal);
-    console.log('hi');
   } else if (solve_for == "1"){
     document.getElementById("sigma").setAttribute("readonly", "true");
     var time = parseFloat(document.getElementById("time").value);
     document.getElementById("time").removeAttribute("readonly");
     var sigma = signal * Math.sqrt(time)/Math.sqrt(signal + 2 * background);
-      console.log(sigma, time, signal, background);
     document.getElementById("sigma").value = sigma;
   }
 }
