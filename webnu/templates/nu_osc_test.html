@@ -262,6 +262,11 @@
       <div class="panel panel-default">
         <div class="panel-heading">Crust</div>
         <div class="panel-body">
+                <div class="checkbox">
+                  <label>
+                    <input id="include_crust" type="checkbox" checked> Include Crust Signal
+                  </label>
+                </div>
           We use a pre-computed model of the crust flux provided by W.F. McDonough and described in Y. Huang et al., "A reference Earth model for the heat producing elements and associated geoneutrino flux," Geochem., Geophys., Geosyst. 14, 2003 (2013).
         </div>
       </div>
@@ -451,8 +456,13 @@ function geo_nu(lat, lon){
   }
   var lat = Math.round(lat); 
   var lon = Math.round(lon);
-  var crust_u = huang[lat][lon]["U"] * 13.2 * pee;
-  var crust_th = huang[lat][lon]["Th"] * 4.0 * pee;
+  if (document.getElementById("include_crust").checked){
+    var include_crust = 1;
+  } else {
+    var include_crust = 0;
+  }
+  var crust_u = huang[lat][lon]["U"] * 13.2 * pee * include_crust;
+  var crust_th = huang[lat][lon]["Th"] * 4.0 * pee * include_crust;
   var user_mantle_signal = parseFloat(document.getElementById("mantle_signal").value);
   var user_mantle_ratio = parseFloat(document.getElementById("thu_ratio").value);
   var mantle_u = user_mantle_signal/(1 + 0.065*user_mantle_ratio);
@@ -852,6 +862,9 @@ document.getElementById("react_power").addEventListener("input", function(e){
   update_map();
 });
 document.getElementById("user_reactor").addEventListener("change", function(e){
+  update_map();
+});
+document.getElementById("include_crust").addEventListener("change", function(e){
   update_map();
 });
 document.getElementById("mass_invert").addEventListener("change", function(e){
