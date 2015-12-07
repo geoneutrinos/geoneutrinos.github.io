@@ -117,6 +117,7 @@
                     <input id="is_locked" type="checkbox" checked> Follow Cursor On Map
                   </label>
                 </div>
+                <button onclick="use_nav_pos()" type="button" class="btn btn-primary">Use My Current Position</button>
               </div>
             </div>
 
@@ -1102,5 +1103,12 @@ document.getElementById("load_factor").addEventListener("change", function(e){
   power_type = parseInt(this.value);
   update_map();
 });
+function use_nav_pos(){
+  navigator.geolocation.getCurrentPosition(function(pos){
+  document.getElementById("cursor_lat").value = pos.coords.latitude;
+  document.getElementById("cursor_lon").value = pos.coords.longitude;
+  document.getElementById("is_locked").checked = false;
+  update_map();
+  })};
   </script>
   {% endblock %}
