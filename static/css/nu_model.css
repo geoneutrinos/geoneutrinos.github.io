@@ -1,0 +1,37 @@
+.plates{
+  fill:none;
+  stroke:#fff;
+  visibility: hidden;
+}
+.bounds{
+  fill:none;
+  stroke:#fff;
+  visibility: hidden;
+}
+
+
+svg,
+canvas {
+  position: absolute;
+}
+svg{
+  z-index: 2;
+}
+canvas{
+  z-index: 1;
+}
+.scale_labels{
+}
+.scale_labels span{
+  float: left;
+  text-align:center;
+  width: 20%;
+}
+
+.scale_title{
+  text-align:center;
+  font-size: 1.2em;
+}
+.range_responsive{
+  width: 100%;
+}
