@@ -1,0 +1,111 @@
+<div class="panel panel-default">
+  <div class="panel-heading">Display</div>
+  <div class="panel-body">
+    <select id="plot_display_selector" class="causes_update form-control">
+      <option value="thickness" selected>Crust Thickness (km)</option>
+      <option value="heat">Crust Heat Intensity (mW/m^2)</option>
+      <option value="neutrino_flux">Neutrino Flux (/cm^2/s)</option>
+      <option value="neutrino">Neutrino Signal (TNU)</option>
+      <option value="geonu_fraction">Mantle Geo-neutrino Flux Fraction</option>
+      <option value="mantle_ratio">Mantle Signal-to-Background Ratio</option>
+      <option value="mantle_uncertain">Mantle Signal Fractional Uncertainty</option>
+    </select>
+    <h5>Sources</h5>
+    <div class="checkbox">
+      <label>
+        <input class="sources_checkboxes causes_update" name="sources" value="u" type="checkbox" checked> Uranium
+      </label><br/>
+      <label>
+        <input class="sources_checkboxes causes_update" name="sources" value="th" type="checkbox" checked> Thorium
+      </label><br/>
+      <label>
+        <input class="sources_checkboxes causes_update" name="sources" value="k" type="checkbox" checked> Potassium
+      </label><br/>
+      <label>
+        <input class="sources_checkboxes causes_update" name="sources" value="r" type="checkbox" checked> Reactors
+      </label>
+    </div>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Map Overlays</div>
+  <div class="panel-body">
+    <p>
+    Plate Boundries
+    <button id="plate_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
+    <button id="plate_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
+    </p>
+    <p>
+    Continental Boundries
+    <button id="continental_boundries_on" type="button" class="btn btn-xs btn-success">ON</button>
+    <button id="continental_boundries_off" type="button" class="btn btn-xs btn-danger">OFF</button>
+    </p>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Bulk Silicate Earth</div>
+  <div class="panel-body">
+    <div class="panel panel-default">
+      <div class="panel-heading">BSE Presets</div>
+      <div class="panel-body">
+        <select id="bse_preset_selector" class="form-control">
+          <option value="" disabled default selected>None</option>
+          <option value="bills">McDonough and Sun (1995)</option>
+          <option value="javoy">Javoy and Kaminski (2014)</option>
+        </select>
+      </div>
+    </div>
+    <div class="checkbox">
+      <label>
+        <input class="causes_update" type="checkbox" id="use_bse_constraint" checked> Constrain Total Radiogenic Power
+      </label>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">Fixed Ratios</div>
+      <div class="panel-body">
+        <div class="input-group">
+          <span class="input-group-addon">
+            <label><input id="fixed_thu_ratio_bool" type="checkbox" checked> Th/U</label>
+          </span>
+          <input id="fixed_thu_ratio" step="0.1" type="number" class="form-control" value="4">
+        </div><!-- /input-group -->
+        <br />
+
+        <div class="input-group">
+          <span class="input-group-addon">
+            <label><input id="fixed_ku_ratio_bool" type="checkbox" checked> K/U</label>
+          </span>
+          <input id="fixed_ku_ratio" step="100" type="number" class="form-control" value="12000">
+        </div><!-- /input-group -->
+
+      </div>
+    </div>
+    <p>Total Radiogenic Power: <span id="bse_rad_power">###</span> TW</p>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Param</th>
+          <th>Change</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>U</td>
+          <td><input value="20" min="0" max="50" step="0.5" id="bse_u238_slider" data-layer="bse" data-isotope="u238" class="range_responsive has_ratios" type="range"></td>
+          <td><span id="bse_u238_value"></span></td>
+        </tr>
+        <tr>
+          <td>Th</td>
+          <td><input value="80" min="0" max="200" step="0.5" id="bse_th232_slider" data-layer="bse" data-isotope="th232" class="range_responsive has_ratios" type="range"></td>
+          <td><span id="bse_th232_value"></span></td>
+        </tr>
+        <tr>
+          <td>K</td>
+          <td><input value="240" min="0" max="600" step="1" id="bse_k40_slider" data-layer="bse" data-isotope="k40" class="range_responsive has_ratios" type="range"></td>
+          <td><span id="bse_k40_value"></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

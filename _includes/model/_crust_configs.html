@@ -1,0 +1,322 @@
+<div class="panel panel-default">
+  <div class="panel-heading">Crust Presets</div>
+  <div class="panel-body">
+    <select id="crust_preset_selector" class="causes_update form-control">
+      <option value="" disabled default selected>None</option>
+      <option value="huang">Huang et al. (2013)</option>
+    </select>
+  </div>
+</div>
+<div class="panel panel-info">
+  <div class="panel-heading">Note:</div>
+  <div class="panel-body">
+    Crust control is only available for thickness and heat.
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Crust Layers</div>
+  <div class="panel-body">
+    <div class="checkbox">
+      <label>
+        <input class="selected_crust_layers causes_crust_update" name="crust_layers" value="s" type="checkbox" checked> Soft Sediments
+      </label><br/>
+      <label>
+        <input class="selected_crust_layers causes_crust_update" name="crust_layers" value="h" type="checkbox" checked> Hard Sediments
+      </label><br/>
+      <label>
+        <input class="selected_crust_layers causes_crust_update" name="crust_layers" value="u" type="checkbox" checked> Upper Crust
+      </label><br/>
+      <label>
+        <input class="selected_crust_layers causes_crust_update" name="crust_layers" value="m" type="checkbox" checked> Middle Crust
+      </label><br/>
+      <label>
+        <input class="selected_crust_layers causes_crust_update" name="crust_layers" value="l" type="checkbox" checked> Lower Crust
+      </label>
+    </div>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Crust Concetrations</div>
+  <div class="panel-body">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#crust_continental" data-toggle="tab">Continental</a></li>
+      <li><a href="#crust_oceanic" data-toggle="tab">Oceanic</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="crust_continental">
+        <h5>Soft Sediments</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="27" min="0" max="50" step="0.5" id="c_ssed_u" data-layer="c_ssed" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_ssed_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="105" min="0" max="200" step="0.5" id="c_ssed_th" data-layer="c_ssed" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_ssed_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="240" min="0" max="600" step="1" id="c_ssed_k" data-layer="c_ssed" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_ssed_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Hard Sediments</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="27" min="0" max="50" step="0.5" id="c_hsed_u" data-layer="c_hsed" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_hsed_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="105" min="0" max="200" step="0.5" id="c_hsed_th" data-layer="c_hsed" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_hsed_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="240" min="0" max="600" step="1" id="c_hsed_k" data-layer="c_hsed" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_hsed_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Upper Crust</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="27" min="0" max="50" step="0.5" id="c_up_u" data-layer="c_up" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_up_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="105" min="0" max="200" step="0.5" id="c_up_th" data-layer="c_up" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_up_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="240" min="0" max="600" step="1" id="c_up_k" data-layer="c_up" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_up_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Middle Crust</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="13" min="0" max="50" step="0.5" id="c_mid_u" data-layer="c_mid" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_mid_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="65" min="0" max="200" step="0.5" id="c_mid_th" data-layer="c_mid" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_mid_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="200" min="0" max="600" step="1" id="c_mid_k" data-layer="c_mid" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_mid_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Lower Crust</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="2" min="0" max="50" step="0.5" id="c_low_u" data-layer="c_low" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_low_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="12" min="0" max="200" step="0.5" id="c_low_th" data-layer="c_low" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_low_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="50" min="0" max="600" step="1" id="c_low_k" data-layer="c_low" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="c_low_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tab-pane" id="crust_oceanic">
+        <h5>Soft Sediments</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="17" min="0" max="50" step="0.5" id="o_ssed_u" data-layer="o_ssed" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_ssed_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="69" min="0" max="200" step="0.5" id="o_ssed_th" data-layer="o_ssed" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_ssed_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="150" min="0" max="600" step="1" id="o_ssed_k" data-layer="o_ssed" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_ssed_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Hard Sediments</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="17" min="0" max="50" step="0.5" id="o_hsed_u" data-layer="o_hsed" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_hsed_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="69" min="0" max="200" step="0.5" id="o_hsed_th" data-layer="o_hsed" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_hsed_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="150" min="0" max="600" step="1" id="o_hsed_k" data-layer="o_hsed" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_hsed_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Upper Crust</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="1" min="0" max="50" step="0.5" id="o_up_u" data-layer="o_up" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_up_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="20" min="0" max="200" step="0.5" id="o_up_th" data-layer="o_up" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_up_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="100" min="0" max="600" step="1" id="o_up_k" data-layer="o_up" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_up_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Middle Crust</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="1" min="0" max="50" step="0.5" id="o_mid_u" data-layer="o_mid" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_mid_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="20" min="0" max="200" step="0.5" id="o_mid_th" data-layer="o_mid" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_mid_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="100" min="0" max="600" step="1" id="o_mid_k" data-layer="o_mid" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_mid_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Lower Crust</h5>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Param</th>
+              <th>Change</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U</td>
+              <td><input value="1" min="0" max="50" step="0.5" id="o_low_u" data-layer="o_low" data-isotope='u238' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_low_u" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>Th</td>
+              <td><input value="20" min="0" max="200" step="0.5" id="o_low_th" data-layer="o_low" data-isotope='th232' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_low_th" data-label-suffix="ng/g" data-label-precision="1"></span></td>
+            </tr>
+            <tr>
+              <td>K</td>
+              <td><input value="100" min="0" max="600" step="1" id="o_low_k" data-layer="o_low" data-isotope='k40' class="range_responsive causes_crust_update has_constraint" type="range"></td>
+              <td><span id="" data-label-for="o_low_k" data-label-suffix="µg/g" data-label-precision="0"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
