@@ -65,6 +65,8 @@ no_menu: true
   </div>
 </div>
 <div class="col-md-5">
+<div id="application">
+</div>
 
   <ul class="nav nav-tabs">
     <li class="active"><a href="#detector" data-toggle="tab">Detector</a></li>
@@ -352,6 +354,7 @@ no_menu: true
 </div>
 
 <script src="/static/vender/leaflet/leaflet.js"></script>
+<script src="/static/js/build/reactors.js"></script>
 <script>
 var map = L.map('map_container').setView([0, 0], 1);
 
