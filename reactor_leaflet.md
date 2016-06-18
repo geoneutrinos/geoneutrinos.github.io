@@ -99,30 +99,6 @@ no_menu: true
         <div class="panel-body">
           <form class="form-horizontal">
             <div class="form-group">
-              <label for="cursor_lat" class="col-sm-2 control-label">Latitude</label>
-              <div class="col-sm-10">
-                <input type="number" class="form-control input-sm" id="cursor_lat" value="44.35">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="cursor_lon" class="col-sm-2 control-label">Longitude</label>
-              <div class="col-sm-10">
-                <input type="number" class="form-control input-sm" id="cursor_lon" value="-103.75">
-              </div>
-            </div>
-
-            <div class="form-group">
-              <div class="col-sm-offset-2 col-sm-10">
-                <div class="checkbox">
-                  <label>
-                    <input id="is_locked" type="checkbox" checked> Follow Cursor On Map
-                  </label>
-                </div>
-                <button onclick="use_nav_pos()" type="button" class="btn btn-primary">Use My Current Position</button>
-              </div>
-            </div>
-
-            <div class="form-group">
               <div class="col-sm-offset-2 col-sm-10">
                 <select id="detector_preset" class="form-control">
                   <!-- value="lat,lon" -->
@@ -354,7 +330,6 @@ no_menu: true
 </div>
 
 <script src="/static/vender/leaflet/leaflet.js"></script>
-<script src="/static/js/build/reactors.js"></script>
 <script>
 var map = L.map('map_container').setView([0, 0], 1);
 
@@ -1132,11 +1107,5 @@ document.getElementById("load_factor").addEventListener("change", function(e){
   power_type = parseInt(this.value);
   update_map();
 });
-function use_nav_pos(){
-  navigator.geolocation.getCurrentPosition(function(pos){
-    document.getElementById("cursor_lat").value = pos.coords.latitude;
-    document.getElementById("cursor_lon").value = pos.coords.longitude;
-    document.getElementById("is_locked").checked = false;
-    update_map();
-  })};
   </script>
+<script src="/static/js/build/reactors.js"></script>
