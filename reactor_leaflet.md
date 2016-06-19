@@ -94,57 +94,6 @@ no_menu: true
           <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
         </div>
       </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">Location</div>
-        <div class="panel-body">
-          <form class="form-horizontal">
-            <div class="form-group">
-              <div class="col-sm-offset-2 col-sm-10">
-                <select id="detector_preset" class="form-control">
-                  <!-- value="lat,lon" -->
-                  <option disabled selected value="none">Location Presets</option>
-                  <optgroup label="Asia">
-                    <option value="35.05,126.70">Guemseong (950 mwe)</option>
-                    <option value="9.95,77.28">INO (3000 mwe)</option>
-                    <option value="22.12,112.51">Jiangmen (2100 mwe)</option>
-                    <option value="28.15,101.71">Jinping (6720 mwe)</option>
-                    <option value="36.42,137.30">Kamioka (2050 mwe)</option>
-                  </optgroup>
-                  <optgroup label="Europe">
-                    <option value="43.24,42.70">Baksan (4900 mwe)</option>
-                    <option value="54.55,-0.82">Boulby (2805 mwe)</option>
-                    <option value="42.77,-0.56">Canfranc (2450 mwe)</option>
-                    <option value="45.14,6.69">Fréjus (4200 mwe)</option>
-                    <option value="42.45,13.58">LNGS (3100 mwe)</option>
-                    <option value="63.66,26.04">Pyhäsalmi (4000 mwe)</option>
-                  </optgroup>
-                  <optgroup label="Mediterranean Sea">
-                    <option value="42.80,6.17">Antares (2500 mwe)</option>
-                    <option value="36.63,21.58">Nestor (4000 mwe)</option>
-                    <option value="37.551,15.384">NEMO Test (2080 mwe)</option>
-                  </optgroup>
-                  <optgroup label="North America">
-                    <option value="41.75,-81.29">IMB (1570 mwe)</option>
-                    <option value="37.38,-80.66">KURF (1400 mwe)</option>
-                    <option value="47.82,-92.24">Soudan (1950 mwe)</option>
-                    <option value="44.36,-103.76">SURF (4300 mwe)</option>
-                    <option value="32.37,-103.79">WIPP (1600 mwe)</option>
-                    <option value="46.47,-81.20">SNOLAB (6010 mwe)</option>
-                  </optgroup>
-                  <optgroup label="Pacific Ocean">
-                    <option value="22.75,-158.00">ACO (4800 mwe)</option>
-                    <option value="36.71,-122.19">MARS (890 mwe)</option>
-                  </optgroup>
-                  <optgroup label="South America">
-                    <option value="-30.25,-69.88">ANDES (4200 mwe)</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-
-          </form>
-        </div>
-      </div>
 
     </div>
     <div class="tab-pane" id="reactor">
@@ -328,19 +277,6 @@ no_menu: true
   </div>
 
 </div>
-
-<script src="/static/vender/leaflet/leaflet.js"></script>
-<script>
-var map = L.map('map_container').setView([0, 0], 1);
-
-L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
-map.on('mousemove', function(e){
-  console.log(e.latlng);
-});
-</script>
 
 <script src="/static/js/spherical_power.js"></script>
 <script src="/static/cache/huang.js"></script>
@@ -784,31 +720,31 @@ var earth_radius = 6371;
 var result;
 
 //document.getElementById("the_map").addEventListener("mousemove", function(e){
-function follow_mouse(e){
-  if (mode == "place_reactor"){
-    return;
-  }
-  var checkbox = document.getElementById("is_locked");
-  if (!checkbox.checked){
-    return;
-  }
-  document.getElementById("detector_preset").value = "none";
-  xy = e.latlng;
-  while (xy.lng > 180){
-    xy.lng = xy.lng - 360;
-  }
-  while (xy.lng < -180){
-    xy.lng = xy.lng + 360;
-  }
-
-  document.getElementById("cursor_lat").value = xy.lat.toFixed(2);
-  document.getElementById("cursor_lon").value = xy.lng.toFixed(2);
-  update_map();
-}
-
-map.on("mousemove", follow_mouse);
-map.on("dragstart", function(e){map.off("mousemove", follow_mouse)});
-map.on("dragend", function(e){map.on("mousemove", follow_mouse)});
+//function follow_mouse(e){
+//  if (mode == "place_reactor"){
+//    return;
+//  }
+//  var checkbox = document.getElementById("is_locked");
+//  if (!checkbox.checked){
+//    return;
+//  }
+//  document.getElementById("detector_preset").value = "none";
+//  xy = e.latlng;
+//  while (xy.lng > 180){
+//    xy.lng = xy.lng - 360;
+//  }
+//  while (xy.lng < -180){
+//    xy.lng = xy.lng + 360;
+//  }
+//
+//  document.getElementById("cursor_lat").value = xy.lat.toFixed(2);
+//  document.getElementById("cursor_lon").value = xy.lng.toFixed(2);
+//  update_map();
+//}
+//
+//map.on("mousemove", follow_mouse);
+//map.on("dragstart", function(e){map.off("mousemove", follow_mouse)});
+//map.on("dragend", function(e){map.on("mousemove", follow_mouse)});
 
 //document.getElementById("the_map").addEventListener("click", function(e){
 //  if (mode == "normal"){
@@ -1094,15 +1030,6 @@ function signal_stats(){
 }
 </script>
   <script>
-document.getElementById("detector_preset").addEventListener("change", function(e){
-  var point = this.value.split(',');
-  var lat = point[0];
-  var lon = point[1];
-  document.getElementById("cursor_lat").value = lat;
-  document.getElementById("cursor_lon").value = lon;
-  document.getElementById("is_locked").checked = false;
-  update_map();
-});
 document.getElementById("load_factor").addEventListener("change", function(e){
   power_type = parseInt(this.value);
   update_map();
