@@ -1,6 +1,8 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+var memoize = require('memoizee');
+
 var L = require('leaflet');
 L.Icon.Default.imagePath = '/static/vender/leaflet/images';
 
@@ -21,30 +23,25 @@ var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
 
 // Map Display
-var map = L.map('map_container').setView([0, 0], 1);
+var southWest = L.latLng(-90, -180),
+    northEast = L.latLng(90, 180),
+    bounds = L.latLngBounds(southWest, northEast);
+var map = L.map('map_container', {"maxBounds":bounds}).setView([0, 0], 1);
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+    bounds: bounds
 }).addTo(map);
 
 
 
 // Global State Variables
 var detectorPosition = {
-  "lat": 0,
-  "lon": 0
+  "lat": 41.75,
+  "lon": -81.29
 };
-var detectorMarker = L.marker(detectorPosition);
-detectorMarker.addTo(map);
-function updateDetectorPosition(lon, lat){
-    detectorPosition.lat = parseFloat(lat);
-    detectorPosition.lon = parseFloat(lon);
-    detectorMarker.setLatLng(detectorPosition);
-    window.dispatchEvent(detectorPositionUpdate);
-    window.dispatchEvent(spectrumUpdate);
-}
 
-
+var followMouse = true;
 
 var detectorPresets = [
 	{
@@ -102,6 +99,82 @@ var detectorPresets = [
   }
 ];
 
+// On Map Detector Marker
+var detectorMarker = L.marker(detectorPosition);
+detectorMarker.addTo(map);
+function updateDetectorPosition(lon, lat){
+    detectorPosition.lat = parseFloat(lat);
+    detectorPosition.lon = parseFloat(lon);
+    detectorMarker.setLatLng(detectorPosition);
+    window.dispatchEvent(detectorPositionUpdate);
+    window.dispatchEvent(spectrumUpdate);
+}
+
+//neutrino calculations
+
+var osc_spec = memoize(function(dist, inverted){
+
+  if (inverted){
+    var dmsq32 = 2.457e-3;
+    var dmsq31 = dmsq32 - dmsq21;
+  } else {
+    var dmsq31 = 2.457e-3;
+    var dmsq32 = dmsq31 - dmsq21;
+  }
+
+  var oscarg21 = 1.27 * dmsq21 * dist * 1000;
+  var oscarg31 = 1.27 * dmsq31 * dist * 1000;
+  var oscarg32 = 1.27 * dmsq32 * dist * 1000;
+
+  var oscspec = new Array(1000);
+
+  for (var i=0; i < oscspec.length; i++){
+    oscspec[i] = 0;
+    if (i >= 179){
+      var enu = (i + 1) * 0.01;
+
+      var supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
+      var supr31 = s22t13 * c2t12 * Math.pow(Math.sin(oscarg31/enu), 2);
+      var supr32 = s22t13 * s2t12 * Math.pow(Math.sin(oscarg32/enu), 2);
+
+      var pee = 1 - supr21 - supr31 - supr32;
+
+      oscspec[i] = pee;
+    }
+  }
+  return oscspec;
+});
+console.log(osc_spec(20));
+/*
+   In javascript, the return value is explictly passed back.
+   So here we would create the array and just give it back to the caller
+   of the function for them to deal with (usually assigned to some var)
+ */
+function nuosc(dist, pwr, spectrum, inverted){
+  var earth_rad_sq = 4.059e7;
+  var flux = pwr * earth_rad_sq / (dist * dist);
+
+  var oscspec = new Array(1000);
+
+  //locks the distance to integer kilometers
+  var dist = Math.round(dist);
+
+  if (inverted){
+    var pee = neutrnio_survival_probability(dist);
+  } else {
+    var pee = inverted_neutrino_survival_probability(dist);
+  }
+
+  for (var i=0; i < oscspec.length; i++){
+    oscspec[i] = 0;
+    if (i >= 179){
+      oscspec[i] = pee[i] * flux * spectrum[i];
+    }
+  }
+  return oscspec;
+}
+
+
 
 function follow_mouse(e){
   var xy = e.latlng;
@@ -119,7 +192,6 @@ map.on("dragstart", function(e){map.off("mousemove", follow_mouse)});
 map.on("dragend", function(e){map.on("mousemove", follow_mouse)});
 
 
-//TODO Use actual react for this rather than manipulating the DOM
 function use_nav_pos(){
   navigator.geolocation.getCurrentPosition(function(pos){
     updateDetectorPosition(pos.coords.longitude, pos.coords.latitude)
@@ -161,8 +233,14 @@ var LocationPanel = React.createClass({
   handlePositionChange: function(){
     this.setState(detectorPosition);
   },
+  changeLat: function(){
+  },
   getInitialState: function(){
-    return detectorPosition;
+    var state = {};
+    state.lat = detectorPosition.lat;
+    state.lon = detectorPosition.lon;
+    state.followMouse = followMouse;
+    return state;
   },
   componentDidMount: function(){
     window.addEventListener("detectorPosition", this.handlePositionChange)
@@ -194,7 +272,7 @@ var LocationPanel = React.createClass({
 
     				<FormGroup>
     				  <Col smOffset={2} sm={10}>
-    				    <Checkbox id="is_locked" checked>Follow Cursor on Map</Checkbox>
+    				    <Checkbox checked={this.state.followMouse}>Follow Cursor on Map</Checkbox>
     				  </Col>
     				</FormGroup>
 

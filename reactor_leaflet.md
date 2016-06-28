@@ -415,66 +415,6 @@ function geo_nu(lat, lon){
   }
 }
 
-function osc_spec(dist, inverted){
-
-  if (inverted){
-    var dmsq32 = 2.457e-3;
-    var dmsq31 = dmsq32 - dmsq21;
-  } else {
-    var dmsq31 = 2.457e-3;
-    var dmsq32 = dmsq31 - dmsq21;
-  }
-
-  var oscarg21 = 1.27 * dmsq21 * dist * 1000;
-  var oscarg31 = 1.27 * dmsq31 * dist * 1000;
-  var oscarg32 = 1.27 * dmsq32 * dist * 1000;
-
-  var oscspec = new Array(1000);
-
-  for (var i=0; i < oscspec.length; i++){
-    oscspec[i] = 0;
-    if (i >= 179){
-      enu = (i + 1) * 0.01;
-
-      supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
-      supr31 = s22t13 * c2t12 * Math.pow(Math.sin(oscarg31/enu), 2);
-      supr32 = s22t13 * s2t12 * Math.pow(Math.sin(oscarg32/enu), 2);
-
-      pee = 1 - supr21 - supr31 - supr32;
-
-      oscspec[i] = pee;
-    }
-  }
-  return oscspec;
-}
-
-var neutrnio_survival_probability = (function(){
-  var cache = {};
-
-  function f(dist){
-    if (dist in cache){
-      return cache[dist];
-    }
-    var oscspec = osc_spec(dist, false);
-    cache[dist] = oscspec;
-    return oscspec;
-  }
-  return f
-})();
-
-var inverted_neutrino_survival_probability = (function(){
-  var cache = {};
-
-  function f(dist){
-    if (dist in cache){
-      return cache[dist];
-    }
-    var oscspec = osc_spec(dist, true);
-    cache[dist] = oscspec;
-    return oscspec;
-  }
-  return f
-})();
 
 /*
    In javascript, the return value is explictly passed back.
