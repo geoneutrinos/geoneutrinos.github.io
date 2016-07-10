@@ -1,8 +1,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
-var memoize = require('memoizee');
-
 var L = require('leaflet');
 L.Icon.Default.imagePath = '/static/vender/leaflet/images';
 
@@ -19,18 +17,18 @@ var FormControl = require('react-bootstrap/lib/FormControl');
 var ControlLabel = require('react-bootstrap/lib/ControlLabel');
 var Checkbox = require('react-bootstrap/lib/Checkbox');
 
+var spectrum = require("./spectrum.js")
+var osc = require("./nuosc.js")
+console.log(osc);
+
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
 
 // Map Display
-var southWest = L.latLng(-90, -180),
-    northEast = L.latLng(90, 180),
-    bounds = L.latLngBounds(southWest, northEast);
-var map = L.map('map_container', {"maxBounds":bounds}).setView([0, 0], 1);
+var map = L.map('map_container').setView([0, 0], 1);
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-    bounds: bounds
 }).addTo(map);
 
 
@@ -99,6 +97,64 @@ var detectorPresets = [
   }
 ];
 
+function distance(p1, p2){
+  var dx = p1.x - p2.x;
+  var dy = p1.y - p2.y;
+  var dz = p1.z - p2.z;
+
+  var dx2 = Math.pow(dx, 2);
+  var dy2 = Math.pow(dy, 2);
+  var dz2 = Math.pow(dz, 2);
+
+  return Math.sqrt(dx2 + dy2 + dz2);
+}
+
+function squish_array(two_d_array){
+  var output = new Array(two_d_array[0].length);
+  for (var i=0; i < output.length; i++){
+    output[i] = 0;
+  }
+
+  for (var i=0; i < two_d_array.length; i++){
+    for (var ii=0; ii < output.length; ii++){
+      output[ii] += two_d_array[i][ii];
+    }
+  }
+  return output;
+}
+
+window.addEventListener("detectorPosition", function(e){
+  // we want to find the smallest element, so start someplace big...
+  var min_dist = 1e10;
+  var min_spec;
+  var lat = detectorPosition.lat * (Math.PI/180);
+  var lon = detectorPosition.lon * (Math.PI/180);
+  var react_spectrum = [];
+  var p1 = {
+    x : earth_radius * Math.cos(lat) * Math.cos(lon),
+    y : earth_radius * Math.cos(lat) * Math.sin(lon),
+    z : earth_radius * Math.sin(lat)
+  };
+  for (var i=0; i<react_data.length; i++){
+
+    var p2 = {
+      x : react_data[i][0],
+      y : react_data[i][1],
+      z : react_data[i][2]
+    };
+
+    var power = react_data[i][power_type];
+    var dist = distance(p1, p2);
+    var spec = osc.nuosc(dist, power, spectrum, mass_invert);
+
+    react_spectrum.push(spec);
+    if ((dist < min_dist) && (d3.sum(spec) > 0)){
+      min_dist = dist;
+      min_spec = spec;
+    }
+  }
+});
+
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
 detectorMarker.addTo(map);
@@ -110,69 +166,6 @@ function updateDetectorPosition(lon, lat){
     window.dispatchEvent(spectrumUpdate);
 }
 
-//neutrino calculations
-
-var osc_spec = memoize(function(dist, inverted){
-
-  if (inverted){
-    var dmsq32 = 2.457e-3;
-    var dmsq31 = dmsq32 - dmsq21;
-  } else {
-    var dmsq31 = 2.457e-3;
-    var dmsq32 = dmsq31 - dmsq21;
-  }
-
-  var oscarg21 = 1.27 * dmsq21 * dist * 1000;
-  var oscarg31 = 1.27 * dmsq31 * dist * 1000;
-  var oscarg32 = 1.27 * dmsq32 * dist * 1000;
-
-  var oscspec = new Array(1000);
-
-  for (var i=0; i < oscspec.length; i++){
-    oscspec[i] = 0;
-    if (i >= 179){
-      var enu = (i + 1) * 0.01;
-
-      var supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
-      var supr31 = s22t13 * c2t12 * Math.pow(Math.sin(oscarg31/enu), 2);
-      var supr32 = s22t13 * s2t12 * Math.pow(Math.sin(oscarg32/enu), 2);
-
-      var pee = 1 - supr21 - supr31 - supr32;
-
-      oscspec[i] = pee;
-    }
-  }
-  return oscspec;
-});
-console.log(osc_spec(20));
-/*
-   In javascript, the return value is explictly passed back.
-   So here we would create the array and just give it back to the caller
-   of the function for them to deal with (usually assigned to some var)
- */
-function nuosc(dist, pwr, spectrum, inverted){
-  var earth_rad_sq = 4.059e7;
-  var flux = pwr * earth_rad_sq / (dist * dist);
-
-  var oscspec = new Array(1000);
-
-  //locks the distance to integer kilometers
-  var dist = Math.round(dist);
-
-  if (inverted){
-    var pee = neutrnio_survival_probability(dist);
-  } else {
-    var pee = inverted_neutrino_survival_probability(dist);
-  }
-
-  for (var i=0; i < oscspec.length; i++){
-    oscspec[i] = 0;
-    if (i >= 179){
-      oscspec[i] = pee[i] * flux * spectrum[i];
-    }
-  }
-  return oscspec;
-}
 
 
 

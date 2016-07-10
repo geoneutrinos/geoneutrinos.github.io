@@ -298,152 +298,9 @@ var power_type = 3;
 
 </script>
 
-<script>
-// this section contains some helpers to convert image coordinates to lat lon and the reverse
-function image_coordinates_to_lon_lat(x, y, width, height){
-  var lat_deg = (90 - (180/height) * y);
-  var lon_deg = (x * (360/width) -180);
-
-  return [lon_deg, lat_deg];
-}
-function lon_lat_to_image_coordinates(lon, lat, width, height){
-  var x = ((90 - lat)/180) * height;
-  var y  = ((180 + lon)/360) * width;
-
-  return [x, y];
-}
-</script>
 
 <script>
 
-/*
-Initalize the array and constants, this is almost
-identical to the fortran except for the syntax.
- */
-var spectrum = new Array(1000);
-var e1 = 0.8;
-var e2 = 1.43;
-var e3 = 3.2;
-var baserate = 0.00808;
-
-// are all uninitialized variables in fortran 0?
-var fluxnorm = 0;
-
-/*
-   In javascript current best way of looping through an array
-   is to make counter variable (by convention i), the second 
-   part of the loop is a test, in this case, that the counter i
-   is not larger than the array is long, the third and final part
-   of the loop is the action to be performed on the counter
-   on each itteration, in this case it is incrimented by on (i++)
-
-   javascript array indexes start at 0 instead of 1. This has the
-   effect of having all the indicie tests be minus one from the
-   fortran.
- */
-for (var i=0; i < spectrum.length; i++){
-  spectrum[i] = 0;
-  if ((i > 178) && (i < 949)){
-    var enu = i/100;
-    // In javascript, to do x^y you need to call Math.pow(x, y)
-    // Lets store the two parts seperately, then call the e^n function
-    var p1 = Math.pow((enu-e2), 2);
-    var p2 = -Math.pow((enu+e1)/e3, 2);
-    spectrum[i] = p1 * Math.exp(p2);
-    if (i > 338){
-      // the += operator works as follows: a += b is identical to a = a + b
-      fluxnorm += spectrum[i];
-    }
-  }
-}
-var scale = baserate/fluxnorm;
-for (var i=0; i < spectrum.length; i++){
-  spectrum[i] = spectrum[i] * scale;
-}
-var dmsq21 = 7.50e-5;
-var ds2t13 = 0.19e-5;
-var s2t13 = 0.0218;
-var ds2t13 = 0.0010;
-var s2t12 = 0.304;
-var ds2t12 = 0.013;
-
-var c4t13 = (1 - s2t13) * (1 - s2t13);
-var s22t12 = 4 * s2t12 * (1 - s2t12);
-
-//added nuosc13
-var s22t13 = 4 * s2t13 * (1-s2t13);
-var c2t12 = 1 - s2t12;
-
-function geo_nu(lat, lon){
-  pee = c4t13*(1.-s22t12*0.5)+s2t13*s2t13;
-  // These "add one" operations are due to differences in how python
-  // and Javascipt treat their "round" operations.
-  if (lat < 0){
-    lat += 1;
-  }
-  if (lon < 0){
-    lon += 1;
-  }
-  var lat = Math.round(lat); 
-  var lon = Math.round(lon);
-  if (document.getElementById("include_crust").checked){
-    var include_crust = 1;
-  } else {
-    var include_crust = 0;
-  }
-  var crust_u = huang[lat][lon]["U"] * 13.2 * pee * include_crust;
-  var crust_th = huang[lat][lon]["Th"] * 4.0 * pee * include_crust;
-  var user_mantle_signal = parseFloat(document.getElementById("mantle_signal").value);
-  var user_mantle_ratio = parseFloat(document.getElementById("thu_ratio").value);
-  var mantle_u = user_mantle_signal/(1 + 0.065*user_mantle_ratio);
-  var mantle_th = user_mantle_signal - mantle_u;
-  var total_u = crust_u + mantle_u;
-  var total_th = crust_th + mantle_th;
-  var u_spectra = new Array(1000);
-  var th_spectra = new Array(1000);
-  for (var i=0; i < geo_nu_spectra.u238.length; i++){
-    u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 1000;
-  }
-  for (var i=0; i < geo_nu_spectra.th232.length; i++){
-    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 1000;
-  }
-  return {
-    "u_tnu": total_u,
-    "th_tnu": total_th,
-    "u_spec": u_spectra,
-    "th_spec": th_spectra
-  }
-}
-
-
-/*
-   In javascript, the return value is explictly passed back.
-   So here we would create the array and just give it back to the caller
-   of the function for them to deal with (usually assigned to some var)
- */
-function nuosc(dist, pwr, spectrum, inverted){
-  var earth_rad_sq = 4.059e7;
-  var flux = pwr * earth_rad_sq / (dist * dist);
-
-  var oscspec = new Array(1000);
-
-  //locks the distance to integer kilometers
-  var dist = Math.round(dist);
-
-  if (inverted){
-    var pee = neutrnio_survival_probability(dist);
-  } else {
-    var pee = inverted_neutrino_survival_probability(dist);
-  }
-
-  for (var i=0; i < oscspec.length; i++){
-    oscspec[i] = 0;
-    if (i >= 179){
-      oscspec[i] = pee[i] * flux * spectrum[i];
-    }
-  }
-  return oscspec;
-}
 
 /*
    Everything after here is making the output print on the webpage
@@ -721,18 +578,18 @@ document.getElementById("place_reactor").addEventListener("click", function(e){
   }
 });
 
-document.getElementById("cursor_lat").addEventListener("input", function(e){
-  update_map();
-});
-document.getElementById("cursor_lon").addEventListener("input", function(e){
-  update_map();
-});
-document.getElementById("react_lat").addEventListener("input", function(e){
-  update_map();
-});
-document.getElementById("react_lon").addEventListener("input", function(e){
-  update_map();
-});
+//document.getElementById("cursor_lat").addEventListener("input", function(e){
+//  update_map();
+//});
+//document.getElementById("cursor_lon").addEventListener("input", function(e){
+//  update_map();
+//});
+//document.getElementById("react_lat").addEventListener("input", function(e){
+//  update_map();
+//});
+//document.getElementById("react_lon").addEventListener("input", function(e){
+//  update_map();
+//});
 document.getElementById("mantle_signal").addEventListener("input", function(e){
   update_map();
 });
@@ -932,7 +789,7 @@ function update_map(){
     .call(xAxis);
   signal_stats();
 }
-update_map();
+//update_map();
 
 function signal_stats(){
   var min_i = parseInt(parseFloat(document.getElementById("min_e").value) * 100);
