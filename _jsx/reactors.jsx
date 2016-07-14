@@ -284,6 +284,41 @@ var LocationPanel = React.createClass({
   }
 });
 
+var OutputText = React.createClass({
+  getInitialState: function(){
+    var state = {
+      textContent: "Empty"
+    };
+    return state;
+  },
+  render: function(){
+    var textareaStyle = {
+      width: "100%"
+    };
+    return (
+        <div>
+        <p>
+        The box below contains the antineutrino energy spectrum and its 
+        components at the selected location. The data, which range from 
+        0 to 10 MeV, are in units of TNU (#/10^32 free protons/year) per 
+        10 keV. Comma-seperated columns of data correspond to: total, 
+        sum of known IAEA reactor cores, closest core, user defined core 
+        (0 if not using a custom reactor), and U and Th geoneutrino 
+        background. There are a total of 1000 rows of data under each 
+        column. The first 180 data rows have value 0 due to the energy 
+        threshold of the electron antineutrino inverse beta decay 
+        interaction on a free proton. For plotting or further analysis, 
+        simply copy and paste the contents of this box into a text file 
+        or spreadsheet program. Please cite this website if using these 
+        data as: Barna, A.M. and Dye, S.T., "Web Application for Modeling 
+        Global Antineutrinos," arXiv:1510.05633 (2015).
+        </p>
+        <textarea readonly={true} rows={8} style={textareaStyle} name={"description"} value={this.state.textContent} />
+        </div>
+        )
+  }
+});
+
 
 var Application = React.createClass({
   render: function(){
@@ -294,7 +329,9 @@ var Application = React.createClass({
         </Tab>
         <Tab eventKey={2} title="Reactors">Tab 2 Content</Tab>
         <Tab eventKey={3} title="GeoNu">Tab 3 content</Tab>
-        <Tab eventKey={4} title="Output & Stats">Tab 4 content</Tab>
+        <Tab eventKey={4} title="Output & Stats">
+          <OutputText />
+        </Tab>
       </Tabs>
     );
   }
