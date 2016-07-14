@@ -23,6 +23,7 @@ console.log(osc);
 
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
+var mouseFollow = new Event("mouseFollow");
 
 // Map Display
 var map = L.map('map_container').setView([0, 0], 1);
@@ -40,6 +41,49 @@ var detectorPosition = {
 };
 
 var followMouse = true;
+
+var loadFactor = 'mean';
+
+var customReactor = {
+  'lat': 0,
+  'lon': 0,
+  'power': 0, //mw
+  'uncertainty': 0, //kms
+  'use': false
+}
+
+var geoneutrinos = {
+  'mantleSignal': 8.2, //TNU
+  'thuRatio': 2.7, //unitless
+  'crustSignal': false
+}
+
+var spectrum = {
+  'total': null,
+  'iaea': null,
+  'closest': null,
+  'custom': null,
+  'geo_u': null,
+  'geo_th': null,
+}
+
+// end Global State
+// Global State Updating Functions (mostly to do event bookkeeping)
+
+function updateDetectorPosition(lon, lat){
+    detectorPosition.lat = parseFloat(lat);
+    detectorPosition.lon = parseFloat(lon);
+    window.dispatchEvent(detectorPositionUpdate);
+}
+
+function updateFollowMouse(state){
+  if (typeof(state) === "boolean"){
+    followMouse = state;
+  } else {
+    followMouse = !followMouse;
+  }
+  window.dispatchEvent(mouseFollow);
+}
 
 var detectorPresets = [
 	{
@@ -158,18 +202,18 @@ window.addEventListener("detectorPosition", function(e){
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
 detectorMarker.addTo(map);
-function updateDetectorPosition(lon, lat){
-    detectorPosition.lat = parseFloat(lat);
-    detectorPosition.lon = parseFloat(lon);
-    detectorMarker.setLatLng(detectorPosition);
-    window.dispatchEvent(detectorPositionUpdate);
-    window.dispatchEvent(spectrumUpdate);
-}
+window.addEventListener("detectorPosition", function(){
+  detectorMarker.setLatLng(detectorPosition);
+});
+
 
 
 
 
 function follow_mouse(e){
+  if (!followMouse){
+    return;
+  }
   var xy = e.latlng;
   while (xy.lng > 180){
     xy.lng = xy.lng - 360;
@@ -181,6 +225,7 @@ function follow_mouse(e){
   updateDetectorPosition(xy.lng.toFixed(2), xy.lat.toFixed(2));
 }
 map.on("mousemove", follow_mouse);
+map.on("click", updateFollowMouse);
 map.on("dragstart", function(e){map.off("mousemove", follow_mouse)});
 map.on("dragend", function(e){map.on("mousemove", follow_mouse)});
 
@@ -194,13 +239,25 @@ var LocationPresets = React.createClass({
   getInitialState:function(){
     return {selectValue:'none'};
     },
+  handleDetectorChange: function(e){
+    // if the detector moves, the preset is not valid anymore
+    this.setState({selectValue:'none'});
+    window.removeEventListener("detectorPosition", this.handleDetectorChange);
+  },
   handleChange:function(e){
     var value = e.target.value;
     var point = value.split(',');
+    if (this.state.selectValue != 'none'){
+      // this is tricky, we don't want to set things to None of the cause of the detector move was
+      // because a different preset was selected, so remove the event handeler if that is the case
+      window.removeEventListener("detectorPosition", this.handleDetectorChange);
+    }
 
     this.setState({selectValue:value});
     updateDetectorPosition(point[1], point[0]);
     map.panTo([point[0], point[1]]);
+    updateFollowMouse(false);
+    window.addEventListener("detectorPosition", this.handleDetectorChange);
     },
   render: function(){
     return (
@@ -226,6 +283,9 @@ var LocationPanel = React.createClass({
   handlePositionChange: function(){
     this.setState(detectorPosition);
   },
+  handleMouseBoxChange: function(){
+    this.setState({"followMouse":followMouse});
+  },
   changeLat: function(){
   },
   getInitialState: function(){
@@ -237,9 +297,11 @@ var LocationPanel = React.createClass({
   },
   componentDidMount: function(){
     window.addEventListener("detectorPosition", this.handlePositionChange)
+    window.addEventListener("mouseFollow", this.handleMouseBoxChange)
   },
   componentWillUnmount: function(){
     window.removeEventListener("detectorPosition", this.handlePositionChange)
+    window.removeEventListener("mouseFollow", this.handleMouseBoxChange)
   },
   render: function(){
     return (
@@ -265,7 +327,7 @@ var LocationPanel = React.createClass({
 
     				<FormGroup>
     				  <Col smOffset={2} sm={10}>
-    				    <Checkbox checked={this.state.followMouse}>Follow Cursor on Map</Checkbox>
+    				    <Checkbox onClick={updateFollowMouse} checked={this.state.followMouse}>Follow Cursor on Map</Checkbox>
     				  </Col>
     				</FormGroup>
 
