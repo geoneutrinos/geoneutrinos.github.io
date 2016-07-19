@@ -1,7 +1,7 @@
 var memoize = require('memoizee');
 
-var huang = require('./huang.js');
-var geo_nu_spectra = require("./geo_nu_spectra.js");
+var huang = require('./huang.js').huang;
+var geo_nu_spectra = require("./geo_nu_spectra.js").geo_nu_spectra;
 
 var dmsq21 = 7.50e-5;
 var ds2t13 = 0.19e-5;
@@ -78,24 +78,27 @@ function nuosc(dist, pwr, spectrum, inverted){
 }
 
 function geo_nu(lat, lon, mantle_signal, mantle_ratio, include_crust=true){
-  pee = c4t13*(1.-s22t12*0.5)+s2t13*s2t13;
+  var pee = c4t13*(1.-s22t12*0.5)+s2t13*s2t13;
   // These "add one" operations are due to differences in how python
   // and Javascipt treat their "round" operations.
+  var lat = Math.round(lat); 
+  var lon = Math.round(lon);
+
+
   if (lat < 0){
     lat += 1;
   }
   if (lon < 0){
     lon += 1;
   }
-  var lat = Math.round(lat); 
-  var lon = Math.round(lon);
   if (include_crust == true){
     var include_crust = 1;
   } else {
     var include_crust = 0;
   }
-  var crust_u = huang[lat][lon]["U"] * 13.2 * pee * include_crust;
-  var crust_th = huang[lat][lon]["Th"] * 4.0 * pee * include_crust;
+
+  var crust_u = huang[lon][lat]["U"] * 13.2 * pee * include_crust;
+  var crust_th = huang[lon][lat]["Th"] * 4.0 * pee * include_crust;
   var user_mantle_signal = mantle_signal;
   var user_mantle_ratio = mantle_ratio;
   var mantle_u = user_mantle_signal/(1 + 0.065*user_mantle_ratio);
@@ -108,7 +111,7 @@ function geo_nu(lat, lon, mantle_signal, mantle_ratio, include_crust=true){
     u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 1000;
   }
   for (var i=0; i < geo_nu_spectra.th232.length; i++){
-    th_spectra[i] = geo_nu_spectra.th233[i] * total_th * 1000;
+    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 1000;
   }
   return {
     "u_tnu": total_u,

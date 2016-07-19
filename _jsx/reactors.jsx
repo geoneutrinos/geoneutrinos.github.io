@@ -4,6 +4,8 @@ var ReactDOM = require('react-dom');
 var L = require('leaflet');
 L.Icon.Default.imagePath = '/static/vender/leaflet/images';
 
+var d3 = require('d3');
+
 var Col = require('react-bootstrap/lib/Col');
 
 var Button = require('react-bootstrap/lib/Button');
@@ -17,9 +19,8 @@ var FormControl = require('react-bootstrap/lib/FormControl');
 var ControlLabel = require('react-bootstrap/lib/ControlLabel');
 var Checkbox = require('react-bootstrap/lib/Checkbox');
 
-var spectrum = require("./spectrum.js")
-var osc = require("./nuosc.js")
-console.log(osc);
+var nu_spectrum = require("./spectrum.js").default;
+var osc = require("./nuosc.js");
 
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
@@ -32,6 +33,8 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
+//
+const EARTH_RADIUS = 6371; // km
 
 
 // Global State Variables
@@ -85,6 +88,11 @@ function updateFollowMouse(state){
   window.dispatchEvent(mouseFollow);
 }
 
+function updateSpectrum(newSpectrum){
+  spectrum = newSpectrum;
+  window.dispatchEvent(spectrumUpdate);
+}
+
 var detectorPresets = [
 	{
 		"optgroup": "Asia",
@@ -124,6 +132,12 @@ var detectorPresets = [
       {value:"44.36,-103.76",label:"SURF (4300 mwe)"},
       {value:"32.37,-103.79",label:"WIPP (1600 mwe)"},
       {value:"46.47,-81.20" ,label:"SNOLAB (6010 mwe)"}
+    ]
+  },
+	{
+		"optgroup": "Oceania",
+    "children": [
+      {value:"-37.07,142.81", label:"SUPL (2700 mwe)"}
     ]
   },
 	{
@@ -167,6 +181,10 @@ function squish_array(two_d_array){
   return output;
 }
 
+function tof11(elm){
+  return (elm/1000).toFixed(11);
+}
+
 window.addEventListener("detectorPosition", function(e){
   // we want to find the smallest element, so start someplace big...
   var min_dist = 1e10;
@@ -175,10 +193,13 @@ window.addEventListener("detectorPosition", function(e){
   var lon = detectorPosition.lon * (Math.PI/180);
   var react_spectrum = [];
   var p1 = {
-    x : earth_radius * Math.cos(lat) * Math.cos(lon),
-    y : earth_radius * Math.cos(lat) * Math.sin(lon),
-    z : earth_radius * Math.sin(lat)
+    x : EARTH_RADIUS * Math.cos(lat) * Math.cos(lon),
+    y : EARTH_RADIUS * Math.cos(lat) * Math.sin(lon),
+    z : EARTH_RADIUS * Math.sin(lat)
   };
+
+  var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
+
   for (var i=0; i<react_data.length; i++){
 
     var p2 = {
@@ -189,7 +210,7 @@ window.addEventListener("detectorPosition", function(e){
 
     var power = react_data[i][power_type];
     var dist = distance(p1, p2);
-    var spec = osc.nuosc(dist, power, spectrum, mass_invert);
+    var spec = osc.nuosc(dist, power, nu_spectrum, mass_invert);
 
     react_spectrum.push(spec);
     if ((dist < min_dist) && (d3.sum(spec) > 0)){
@@ -197,6 +218,28 @@ window.addEventListener("detectorPosition", function(e){
       min_spec = spec;
     }
   }
+  var user_power = 0;
+  if (customReactor.use){
+    user_power = customReactor.power;
+  }
+  var reac_p = {
+    x : earth_radius * Math.cos(customReactor.lat) * Math.cos(customReactor.lon),
+    y : earth_radius * Math.cos(customReactor.lat) * Math.sin(customReactor.lon),
+    z : earth_radius * Math.sin(customReactor.lat)
+  };
+  var user_dist = distance(p1, reac_p);
+  var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, mass_invert);
+
+  var user_spec = squish_array([user_react_spectrum]);
+  var iaea = squish_array([squish_array(react_spectrum), user_spec]);
+  updateSpectrum({
+    closest: min_spec,
+    geo_u: geo_nu_spectra.u_spec,
+    geo_th: geo_nu_spectra.th_spec,
+    iaea: iaea,
+    custom: user_spec,
+    total:  squish_array([squish_array(react_spectrum), user_spec, geo_nu_spectra.u_spec, geo_nu_spectra.th_spec])
+  });
 });
 
 // On Map Detector Marker
@@ -352,6 +395,20 @@ var OutputText = React.createClass({
       textContent: "Empty"
     };
     return state;
+  },
+  dealWithSpectrumUpdate: function(){
+    var text_out = Array(1001);
+    text_out[0] = "total,iaea,close,user,geo_u,geo_th";
+    for (var i=0; i< spectrum.iaea.length; i++){
+      text_out[i+1] = tof11(spectrum.total[i]) + "," + tof11(spectrum.iaea[i])+","+ tof11(spectrum.closest[i]) + "," + tof11(spectrum.custom[i]) + "," + tof11(spectrum.geo_u[i]) + "," + tof11(spectrum.geo_th[i]);
+    }
+    this.setState({textContent: text_out.join("\n")});
+  },
+  componentDidMount: function(){
+    window.addEventListener('spectrumUpdate', this.dealWithSpectrumUpdate);
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener('spectrumUpdate', this.dealWithSpectrumUpdate);
   },
   render: function(){
     var textareaStyle = {
