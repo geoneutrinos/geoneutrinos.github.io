@@ -259,18 +259,6 @@ no_menu: true
           </div>
         </div>
       </div>
-      <div>
-        The box below contains the antineutrino energy spectrum and its components at the selected location. 
-        The data, which range from 0 to 10 MeV, are in units of TNU (#/10^32 free protons/year) per 10 keV. 
-        Comma-seperated columns of data correspond to: total, sum of known IAEA reactor cores, closest core, user defined core (0 if not using a custom reactor), and U and Th geoneutrino background. 
-        There are a total of 1000 rows of data under each column. 
-        The first 180 data rows have value 0 due to the energy threshold of the electron antineutrino inverse beta decay interaction on a free proton. 
-        For plotting or further analysis, simply copy and paste the contents of this box into a text file or spreadsheet program. 
-        Please cite this website if using these data as: Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," arXiv:1510.05633 (2015).
-        <textarea readonly id="osc_out" rows="8" style="width:100%;">
-        </textarea>
-      </div>
-
     </div>
 
 
@@ -278,9 +266,6 @@ no_menu: true
 
 </div>
 
-<script src="/static/js/spherical_power.js"></script>
-<script src="/static/cache/huang.js"></script>
-<script src="/static/cache/geo_nu_spectra.js"></script>
 <script>
 // Enable the tool tips for all elements with them
 $(function () {
@@ -300,218 +285,6 @@ var power_type = 3;
 
 
 <script>
-
-
-/*
-   Everything after here is making the output print on the webpage
-
-   Just ignore unless you want to see how the SVG sausage is made
- */
-function tof11(elm){
-  return (elm/1000).toFixed(11);
-}
-
-</script>
-<script src="/static/js/d3.v3.min.js"></script>
-
-<script>
-d3.select(window).on('resize', resize); 
-
-function resize() {
-  // update width
-  width = parseInt(d3.select('#graph').style('width'), 10);
-  width = width - margin.left - margin.right;
-
-  // reset x range
-  x.range([0, width]);
-
-  // do the actual resize...
-  d3.select(svg.node().parentNode)
-    .style('width', (width + margin.left + margin.right) + 'px');
-
-  svg.selectAll('.x.label')
-    .attr('x', width);
-
-  svg.select(".x.axis")
-    .call(xAxis);
-
-  svg.selectAll('rect.background')
-    .attr('width', width);
-  le.attr("transform", "translate(" + (width - 40) + ",0)");
-
-  update_map();
-}
-
-// Set the dimensions of the graph
-var margin = {top: 30, right: 20, bottom: 40, left: 50},
-    width = parseInt(d3.select('#graph').style('width'), 10) - margin.left - margin.right,
-    height = 270 - margin.top - margin.bottom;
-
-// Set the ranges
-var x = d3.scale.linear().range([0, width]);
-var y = d3.scale.linear().range([height, 0]);
-
-// Define the axes
-var xAxis = d3.svg.axis().scale(x)
-  .orient("bottom").ticks(8).tickFormat(function(d) {return ((d/100)+1).toFixed(0)});
-
-var yAxis = d3.svg.axis().scale(y)
-  .orient("left").ticks(5).tickFormat(function(d) {return (d/1000)});
-
-  // Define the line
-var valueline = d3.svg.line()
-  .x(function(d, i) { return x(i); })
-  .y(function(d) { return y(d); });
-
-  // Adds the svg canvas
-  var svg = d3.select("#graph")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", 
-      "translate(" + margin.left + "," + margin.top + ")");
-
-svg.append("path")
-.attr("class", "total line");
-
-svg.append("path")
-.attr("class", "iaea line");
-
-svg.append("path")
-.attr("class", "c_reac line");
-
-svg.append("path")
-.attr("class", "geo_u line");
-svg.append("path")
-.attr("class", "geo_th line");
-
-svg.append("path")
-.attr("class", "reac line");
-
-
-// Add the X Axis
-svg.append("g")
-.attr("class", "x axis")
-.attr("transform", "translate(0," + height + ")")
-.call(xAxis);
-
-// Add the Y Axis
-svg.append("g")
-.attr("class", "y axis")
-.attr("id", "yaxis")
-.call(yAxis);
-
-// Add the axis labels
-svg.append("text")
-.attr("class", "y label")
-.attr("text-anchor", "end")
-.style("font-size", "15px")
-.attr("y", -50)
-.attr("dy", ".75em")
-.attr("transform", "rotate(-90)")
-.text("Rate (TNU/10 keV)");
-svg.append("text")
-.attr("class", "x label")
-.attr("text-anchor", "end")
-.style("font-size", "15px")
-.attr("x", width)
-.attr("y", height + 33)
-.text("Antineutrino Energy (MeV)");
-
-le = svg.append("g")
-.attr("transform", "translate(" + (width - 0) + ",0)");
-
-
-le.append("text")
-.attr("text-anchor", "end")
-.attr("x", "-2.1em")
-.attr("y", "0.3em")
-.text("Total");
-le.append("text")
-.attr("text-anchor", "end")
-.attr("x", "-2.1em")
-.attr("y", "1.5em")
-.text("Closest Reactor");
-le.append("text")
-.attr("text-anchor", "end")
-.attr("x", "-2.1em")
-.attr("y", "2.5em")
-.text("Reactors");
-le.append("text")
-.attr("text-anchor", "end")
-.attr("x", "-2.1em")
-.attr("y", "3.5em")
-.text("Geoneutrinos");
-le.append("text")
-.attr("text-anchor", "end")
-.attr("x", "-2.1em")
-.attr("y", "4.5em")
-.text("Uranium");
-le.append("text")
-.attr("text-anchor", "end")
-.attr("x", "-2.1em")
-.attr("y", "5.5em")
-.text("Thorium");
-le.append("text")
-.attr("text-anchor", "end")
-.attr("class", "reac")
-.attr("x", "-2.1em")
-.attr("y", "6.6em")
-.style("display", "none")
-.text("User Reactor");
-
-le.append("line")
-.attr("x1", "-1.9em")
-.attr("x2", "0")
-.attr("y1", "0")
-.attr("y2", "0")
-.attr("stroke-width", 2)
-.style("stroke", "#000");
-le.append("line")
-.attr("x1", "-1.9em")
-.attr("x2", "0")
-.attr("y1", "5.2em")
-.attr("y2", "5.2em")
-.attr("stroke-width", 2)
-.style("stroke", "red");
-le.append("line")
-.attr("x1", "-1.9em")
-.attr("x2", "0")
-.attr("y1", "4.2em")
-.attr("y2", "4.2em")
-.attr("stroke-width", 2)
-.style("stroke", "blue");
-
-le.append("rect")
-.attr("width", "1.9em")
-.attr("height", "1em")
-.attr("x", "-1.9em")
-.attr("y", "0.5em")
-.style("fill", "#999");
-le.append("rect")
-.attr("width", "1.9em")
-.attr("height", "1em")
-.attr("x", "-1.9em")
-.attr("y", "1.5em")
-.style("fill", "green");
-le.append("rect")
-.attr("width", "1.9em")
-.attr("height", "1em")
-.attr("x", "-1.9em")
-.attr("y", "2.5em")
-.style("fill", "yellow");
-
-le.append("line")
-.attr("x1", "-1.9em")
-.attr("x2", "0")
-.attr("y1", "6.3em")
-.attr("y2", "6.3em")
-.attr("stroke-width", 2)
-.style("stroke", "#000")
-.style("stroke-dasharray", "2,1")
-.attr("class", "reac")
-.style("display", "none");
 
 var earth_radius = 6371;
 var result;
@@ -628,31 +401,6 @@ document.getElementById("sigma").addEventListener("input", function(e){
   signal_stats();
 });
 
-function distance(p1, p2){
-  var dx = p1.x - p2.x;
-  var dy = p1.y - p2.y;
-  var dz = p1.z - p2.z;
-
-  var dx2 = Math.pow(dx, 2);
-  var dy2 = Math.pow(dy, 2);
-  var dz2 = Math.pow(dz, 2);
-
-  return Math.sqrt(dx2 + dy2 + dz2);
-}
-
-function squish_array(two_d_array){
-  var output = new Array(two_d_array[0].length);
-  for (var i=0; i < output.length; i++){
-    output[i] = 0;
-  }
-
-  for (var i=0; i < two_d_array.length; i++){
-    for (var ii=0; ii < output.length; ii++){
-      output[ii] += two_d_array[i][ii];
-    }
-  }
-  return output;
-}
 
 
 function update_map(){
