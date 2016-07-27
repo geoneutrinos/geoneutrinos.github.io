@@ -77,25 +77,8 @@ no_menu: true
 
   <div class="tab-content">
     <div class="tab-pane active" id="detector">
-      <div class="panel panel-default">
-        <div class="panel-heading">Spectrum</div>
-        <div class="panel-body">
-          <div id="graph"></div>
-          R<sub>Total</sub>: <span id="tnu_output"></span> TNU<br>
-          R<sub>E &lt; 3.275 MeV</sub>: <span id="tnu_output_geo"></span> TNU<br>
-          R<sub>Closest</sub>: <span id="tnu_output_close"></span> TNU (<span id="close_percent"></span>% of total)<br>
-          Distance to Closest Reactor: <span id="closest_dist"></span> km<br>
-          Distance to User Reactor: <span id="user_dist"></span> km
-          <div class="checkbox">
-            <label>
-              <input id="mass_invert" type="checkbox"> Invert Neutrino Mass Hierarchy
-            </label>
-          </div>
-          <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
-        </div>
-      </div>
-
     </div>
+
     <div class="tab-pane" id="reactor">
       <div class="panel panel-default">
         <div class="panel-heading">Reactor Load Factors</div>
