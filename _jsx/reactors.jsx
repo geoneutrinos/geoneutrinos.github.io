@@ -767,6 +767,9 @@ var OutputText = React.createClass({
 
 
 var Application = React.createClass({
+  componentDidMount: function(){
+    window.dispatchEvent(detectorPositionUpdate);
+  },
   render: function(){
     return (
       <Tabs defaultActiveKey={1} animation={false} id="noanim-tab-example">
