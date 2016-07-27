@@ -26,6 +26,7 @@ var react_data = require("./spherical_power.js").react_data;
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
 var mouseFollow = new Event("mouseFollow");
+var invertedMassEvent = new Event("invertedMass");
 
 // Map Display
 var map = L.map('map_container').setView([0, 0], 1);
@@ -47,6 +48,8 @@ var detectorPosition = {
 var followMouse = true;
 
 var loadFactor = 'mean';
+
+var invertedMass = false;
 
 var customReactor = {
   'lat': 0,
@@ -71,6 +74,11 @@ var spectrum = {
   'geo_th': null,
 }
 
+var distances = {
+  'closest': null,
+  'user': null,
+}
+
 // end Global State
 // Global State Updating Functions (mostly to do event bookkeeping)
 
@@ -87,6 +95,15 @@ function updateFollowMouse(state){
     followMouse = !followMouse;
   }
   window.dispatchEvent(mouseFollow);
+}
+
+function updateInvertedMass(state){
+  if (typeof(state) === "boolean"){
+    invertedMass = state;
+  } else {
+    invertedMass = !invertedMass;
+  }
+  window.dispatchEvent(invertedMassEvent);
 }
 
 function updateSpectrum(newSpectrum){
@@ -186,7 +203,7 @@ function tof11(elm){
   return (elm/1000).toFixed(11);
 }
 
-window.addEventListener("detectorPosition", function(e){
+function updateSpectrums(){
   // we want to find the smallest element, so start someplace big...
   var min_dist = 1e10;
   var min_spec;
@@ -211,7 +228,7 @@ window.addEventListener("detectorPosition", function(e){
 
     var power = react_data[i][power_type];
     var dist = distance(p1, p2);
-    var spec = osc.nuosc(dist, power, nu_spectrum, mass_invert);
+    var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
 
     react_spectrum.push(spec);
     if ((dist < min_dist) && (d3.sum(spec) > 0)){
@@ -229,10 +246,12 @@ window.addEventListener("detectorPosition", function(e){
     z : earth_radius * Math.sin(customReactor.lat)
   };
   var user_dist = distance(p1, reac_p);
-  var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, mass_invert);
+  var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, invertedMass);
 
   var user_spec = squish_array([user_react_spectrum]);
   var iaea = squish_array([squish_array(react_spectrum), user_spec]);
+  distances.closest = min_dist;
+  distances.user = user_dist;
   updateSpectrum({
     closest: min_spec,
     geo_u: geo_nu_spectra.u_spec,
@@ -241,7 +260,10 @@ window.addEventListener("detectorPosition", function(e){
     custom: user_spec,
     total:  squish_array([squish_array(react_spectrum), user_spec, geo_nu_spectra.u_spec, geo_nu_spectra.th_spec])
   });
-});
+};
+
+window.addEventListener("detectorPosition", updateSpectrums);
+window.addEventListener("invertedMass", updateSpectrums);
 
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
@@ -562,6 +584,71 @@ var LocationPresets = React.createClass({
   }
 });
 
+var StatsPanel = React.createClass({
+  updateStats: function(){
+    this.setState({
+      total_tnu: d3.sum(spectrum.total)/1000,
+      total_tnu_geo: d3.sum(spectrum.total.slice(0,326))/1000,
+      closest_tnu: d3.sum(spectrum.closest)/1000,
+      closest_distance: distances.closest,
+      custom_distance: distances.user,
+    });
+  },
+  componentDidMount: function(){
+    window.addEventListener("spectrumUpdate", this.updateStats)
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener("spectrumUpdate", this.updateStats)
+  },
+  getInitialState: function(){
+    return {
+      total_tnu: 0,
+      total_tnu_geo: 0,
+      closest_tnu: 0,
+      closest_distance: 0,
+      custom_distance: 0,
+    }
+  },
+  render: function(){
+    return (
+        <div>
+          R<sub>Total</sub>: {this.state.total_tnu.toFixed(1)} TNU<br />
+          R<sub>E &lt; 3.275 MeV</sub>: {this.state.total_tnu_geo.toFixed(1)}TNU<br />
+          R<sub>Closest</sub>: {(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(0)} (% of total)<br />
+          Distance to Closest Reactor: {this.state.closest_distance.toFixed(1)}km<br />
+          Distance to User Reactor: {this.state.custom_distance.toFixed(1)}km<br />
+          <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
+        </div>
+        );
+  }
+});
+
+var SpectrumPanel = React.createClass({
+  handleMassInvert: function(){
+    this.setState({"invertedMass": invertedMass});
+  },
+  componentDidMount: function(){
+    window.addEventListener("invertedMass", this.handleMassInvert)
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener("invertedMass", this.handleMassInvert)
+  },
+  getInitialState: function(){
+    return {
+      invertedMass: false
+    }
+  },
+  render: function(){
+    return (
+        <Panel header="Spectrum">
+          <Plot />
+    			<Checkbox onClick={updateInvertedMass} checked={this.state.invertedMass}>Invert Neutrino Mass Hierarchy</Checkbox>
+          <StatsPanel />
+        </Panel>
+        );
+  }
+});
+
 var LocationPanel = React.createClass({
   handlePositionChange: function(){
     this.setState(detectorPosition);
@@ -684,7 +771,7 @@ var Application = React.createClass({
     return (
       <Tabs defaultActiveKey={1} animation={false} id="noanim-tab-example">
         <Tab eventKey={1} title="Detector">
-          <Plot />
+          <SpectrumPanel />
           <LocationPanel />
         </Tab>
         <Tab eventKey={2} title="Reactors">Tab 2 Content</Tab>
