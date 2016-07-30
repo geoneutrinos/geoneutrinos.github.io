@@ -223,6 +223,10 @@ function updateSpectrums(){
     z : EARTH_RADIUS * Math.sin(lat)
   };
 
+  if (loadFactor == 'mean'){
+    var power_type = 3;
+  }
+
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
 
   for (var i=0; i<react_data.length; i++){
@@ -248,9 +252,9 @@ function updateSpectrums(){
     user_power = customReactor.power;
   }
   var reac_p = {
-    x : earth_radius * Math.cos(customReactor.lat) * Math.cos(customReactor.lon),
-    y : earth_radius * Math.cos(customReactor.lat) * Math.sin(customReactor.lon),
-    z : earth_radius * Math.sin(customReactor.lat)
+    x : EARTH_RADIUS * Math.cos(customReactor.lat) * Math.cos(customReactor.lon),
+    y : EARTH_RADIUS * Math.cos(customReactor.lat) * Math.sin(customReactor.lon),
+    z : EARTH_RADIUS * Math.sin(customReactor.lat)
   };
   var user_dist = distance(p1, reac_p);
   var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, invertedMass);
@@ -850,6 +854,142 @@ var CrustPanel = React.createClass({
   }
 });
 
+var CalculatorPanel = React.createClass({
+  getInitialState: function(){
+    return {
+      signal: "all",
+      solve_for: "exposure",
+      e_min: 0,
+      e_max: 10,
+      time: 0,
+      sigma: 3
+    }
+  },
+  handleUserInput: function(event){
+    var key = event.target.id;
+    var value = parseFloat(event.target.value);
+    if (isNaN(value)){
+      value = event.target.value;
+    }
+    this.solve({[key]: value});
+  },
+  componentDidMount: function(){
+    window.addEventListener("spectrumUpdate", this.solve);
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener("spectrumUpdate", this.solve);
+  },
+  solve: function(stateUpdate={}){
+    var newState = {}
+    Object.assign(newState, this.state, stateUpdate);
+
+    var min_i = parseInt(newState.e_min * 100);
+    var max_i = parseInt(newState.e_max * 100);
+
+    var signal = 0;
+    var background = 0;
+
+    if (newState.signal == "all"){
+      signal = d3.sum(spectrum.iaea.slice(min_i, max_i))/1000 + d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
+      background = d3.sum(spectrum.geo_u.slice(min_i, max_i))/1000 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/1000
+    }
+    if (newState.signal == "closest"){
+      signal = d3.sum(spectrum.closest.slice(min_i, max_i))/1000;
+      background = d3.sum(spectrum.total.slice(min_i, max_i))/1000  - d3.sum(spectrum.closest.slice(min_i, max_i))/1000;
+    }
+    if (newState.signal == "custom"){
+      signal = d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
+      background = d3.sum(spectrum.total.slice(min_i, max_i))/1000 - d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
+    }
+    if (newState.signal == "geoneutrino"){
+      background = d3.sum(spectrum.iaea.slice(min_i, max_i))/1000 + d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
+      signal = d3.sum(spectrum.geo_u.slice(min_i, max_i))/1000 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/1000;
+    }
+
+    if (newState.solve_for == "exposure"){
+      newState.time = ((signal + 2 * background) * (newState.sigma/signal) * (newState.sigma/signal)).toFixed(3);
+    }
+    if (newState.solve_for == "significance"){
+      newState.sigma = signal * Math.sqrt(newState.time)/Math.sqrt(signal + 2 * background);
+    }
+    this.setState(newState);
+  },
+  render: function(){
+    return (
+    <Panel header="Calculator">
+      <Form horizontal>
+
+    	<FormGroup controlId="signal">
+    	  <Col componentClass={ControlLabel} sm={4}>
+          Signal
+    	  </Col>
+    	  <Col sm={8}>
+    	    <FormControl onChange={this.handleUserInput} value={this.state.signal} componentClass="select">
+            <option value="all">All Reactors (geoneutrino background)</option>
+            <option value="closest">Closest Core (geonu + other reactors background)</option>
+            <option value="custom">Custom Reactor (geonu + other reactors background)</option>
+            <option value="geoneutrino">Geoneutrino (reactor background)</option>
+          </FormControl>
+
+    	  </Col>
+    	</FormGroup>
+
+    	<FormGroup controlId="solve_for">
+    	  <Col componentClass={ControlLabel} sm={4}>
+          Solve For
+    	  </Col>
+    	  <Col sm={8}>
+    	    <FormControl onChange={this.handleUserInput} value={this.state.solve_for} componentClass="select">
+            <option value="exposure">Exposure Time</option>
+            <option value="significance">Significance</option>
+          </FormControl>
+    	  </Col>
+    	</FormGroup>
+
+    	<FormGroup controlId="e_min">
+    	  <Col componentClass={ControlLabel} sm={4}>
+          E<sub>min</sub>
+    	  </Col>
+    	  <Col sm={8}>
+    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_min} />
+    	  </Col>
+    	</FormGroup>
+
+    	<FormGroup controlId="e_max">
+    	  <Col componentClass={ControlLabel} sm={4}>
+          E<sub>max</sub>
+    	  </Col>
+    	  <Col sm={8}>
+    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_max} />
+    	  </Col>
+    	</FormGroup>
+
+    	<FormGroup controlId="time">
+    	  <Col componentClass={ControlLabel} sm={4}>
+          Time (years)
+    	  </Col>
+    	  <Col sm={8}>
+    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.time} />
+    	  </Col>
+    	</FormGroup>
+
+    	<FormGroup controlId="sigma">
+    	  <Col componentClass={ControlLabel} sm={4}>
+          Sigma
+    	  </Col>
+    	  <Col sm={8}>
+    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.sigma} />
+    	  </Col>
+    	</FormGroup>
+
+      </Form>
+      <div>Sigma = Signal * sqrt(Time) / sqrt(Signal + 2 * Background)</div>
+    </Panel>
+    )
+  }
+});
+
+
 
 var Application = React.createClass({
   componentDidMount: function(){
@@ -868,6 +1008,7 @@ var Application = React.createClass({
           <CrustPanel />
         </Tab>
         <Tab eventKey={4} title="Output & Stats">
+          <CalculatorPanel />
           <OutputText />
         </Tab>
       </Tabs>
