@@ -18,6 +18,7 @@ var FormGroup = require('react-bootstrap/lib/FormGroup');
 var FormControl = require('react-bootstrap/lib/FormControl');
 var ControlLabel = require('react-bootstrap/lib/ControlLabel');
 var Checkbox = require('react-bootstrap/lib/Checkbox');
+var InputGroup = require('react-bootstrap/lib/InputGroup');
 
 var nu_spectrum = require("./spectrum.js").default;
 var osc = require("./nuosc.js");
@@ -27,6 +28,7 @@ var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
 var mouseFollow = new Event("mouseFollow");
 var invertedMassEvent = new Event("invertedMass");
+var geoneutrinoEvent = new Event("geoneutrinos");
 
 // Map Display
 var map = L.map('map_container').setView([0, 0], 1);
@@ -109,6 +111,11 @@ function updateInvertedMass(state){
 function updateSpectrum(newSpectrum){
   spectrum = newSpectrum;
   window.dispatchEvent(spectrumUpdate);
+}
+
+function updateGeoneutrinos(obj){
+  Object.assign(geoneutrinos, obj);
+  window.dispatchEvent(geoneutrinoEvent);
 }
 
 var detectorPresets = [
@@ -264,6 +271,7 @@ function updateSpectrums(){
 
 window.addEventListener("detectorPosition", updateSpectrums);
 window.addEventListener("invertedMass", updateSpectrums);
+window.addEventListener("geoneutrinos", updateSpectrums);
 
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
@@ -765,6 +773,83 @@ var OutputText = React.createClass({
   }
 });
 
+var MantlePanel = React.createClass({
+  geoneutrinoEvent: function(){
+    this.setState(geoneutrinos);
+  },
+  getInitialState: function(){
+    return geoneutrinos;
+  },
+  handleMantleSignal: function(event){
+    updateGeoneutrinos({"mantleSignal":event.target.value});
+  },
+  handleMantleRatio: function(event){
+    updateGeoneutrinos({"thuRatio":event.target.value});
+  },
+  componentDidMount: function(){
+    window.addEventListener("geoneutrinos", this.geoneutrinoEvent)
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener("geoneutrinos", this.geoneutrinoEvent)
+  },
+  render: function(){
+    return (
+        <Panel header="Mantle">
+        	<Form horizontal>
+    				<FormGroup controlId="mantle_signal">
+    				  <Col componentClass={ControlLabel} sm={4}>
+                Mantle Signal
+    				  </Col>
+    				  <Col sm={8}>
+                <InputGroup>
+    				      <FormControl onChange={this.handleMantleSignal} type="number" value={this.state.mantleSignal} />
+                  <InputGroup.Addon>TNU</InputGroup.Addon>
+                </InputGroup>
+    				  </Col>
+    				</FormGroup>
+    				<FormGroup controlId="mantle_thu">
+    				  <Col componentClass={ControlLabel} sm={4}>
+                Th/U Ratio
+    				  </Col>
+    				  <Col sm={8}>
+    				    <FormControl onChange={this.handleMantleRatio} type="number" value={this.state.thuRatio} />
+    				  </Col>
+    				</FormGroup>
+          </Form>
+        </Panel>
+        )
+  }
+});
+
+var CrustPanel = React.createClass({
+  geoneutrinoEvent: function(){
+    this.setState(geoneutrinos);
+    console.log(geoneutrinos);
+  },
+  getInitialState: function(){
+    return geoneutrinos;
+  },
+  handleCrust: function(event){
+    updateGeoneutrinos({"crustSignal":event.target.checked});
+  },
+  componentDidMount: function(){
+    window.addEventListener("geoneutrinos", this.geoneutrinoEvent)
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener("geoneutrinos", this.geoneutrinoEvent)
+  },
+  render: function(){
+    return (
+        <Panel header="Crust">
+    			<Checkbox onClick={this.handleCrust} checked={this.state.crustSignal}>Include Crust Signal</Checkbox>
+          <div>
+          We use a pre-computed model of the crust flux provided by W.F. McDonough and described in Y. Huang et al., "A reference Earth model for the heat producing elements and associated geoneutrino flux," Geochem., Geophys., Geosyst. 14, 2003 (2013).
+          </div>
+        </Panel>
+        )
+  }
+});
+
 
 var Application = React.createClass({
   componentDidMount: function(){
@@ -778,7 +863,10 @@ var Application = React.createClass({
           <LocationPanel />
         </Tab>
         <Tab eventKey={2} title="Reactors">Tab 2 Content</Tab>
-        <Tab eventKey={3} title="GeoNu">Tab 3 content</Tab>
+        <Tab eventKey={3} title="GeoNu">
+          <MantlePanel />
+          <CrustPanel />
+        </Tab>
         <Tab eventKey={4} title="Output & Stats">
           <OutputText />
         </Tab>

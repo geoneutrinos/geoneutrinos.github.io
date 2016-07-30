@@ -145,42 +145,6 @@ no_menu: true
     </div>
 
     <div class="tab-pane" id="geonu">
-      <div class="panel panel-default">
-        <div class="panel-heading">Mantle</div>
-        <div class="panel-body">
-          <form class="form-horizontal">
-            <div class="form-group">
-              <label for="mantle_signal" class="col-sm-4 control-label">Mantle Signal</label>
-              <div class="col-sm-8">
-                <div class="input-group">
-                  <input type="number" min="0" step="0.1" class="form-control input-sm" id="mantle_signal" value="8.2">
-                  <div class="input-group-addon">TNU</div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="react_lat" class="col-sm-4 control-label">Th/U Ratio</label>
-              <div class="col-sm-8">
-                <input type="number" min="0" class="form-control input-sm" id="thu_ratio" value="2.7" step="0.1">
-              </div>
-            </div>
-          </form>
-
-
-        </div>
-      </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">Crust</div>
-        <div class="panel-body">
-          <div class="checkbox">
-            <label>
-              <input id="include_crust" type="checkbox" checked> Include Crust Signal
-            </label>
-          </div>
-          We use a pre-computed model of the crust flux provided by W.F. McDonough and described in Y. Huang et al., "A reference Earth model for the heat producing elements and associated geoneutrino flux," Geochem., Geophys., Geosyst. 14, 2003 (2013).
-        </div>
-      </div>
-
     </div>
 
     <div class="tab-pane" id="output">
