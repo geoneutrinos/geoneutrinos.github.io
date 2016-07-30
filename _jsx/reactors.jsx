@@ -29,6 +29,7 @@ var spectrumUpdate = new Event("spectrumUpdate");
 var mouseFollow = new Event("mouseFollow");
 var invertedMassEvent = new Event("invertedMass");
 var geoneutrinoEvent = new Event("geoneutrinos");
+var loadFactorEvent = new Event("loadFactor");
 
 // Map Display
 var map = L.map('map_container').setView([0, 0], 1);
@@ -116,6 +117,11 @@ function updateSpectrum(newSpectrum){
 function updateGeoneutrinos(obj){
   Object.assign(geoneutrinos, obj);
   window.dispatchEvent(geoneutrinoEvent);
+}
+
+function updateLoadFactor(newLoadFactor){
+  loadFactor = newLoadFactor;
+  window.dispatchEvent(loadFactorEvent);
 }
 
 var detectorPresets = [
@@ -223,8 +229,12 @@ function updateSpectrums(){
     z : EARTH_RADIUS * Math.sin(lat)
   };
 
+  var power_type = 0;
   if (loadFactor == 'mean'){
-    var power_type = 3;
+    power_type = 3;
+  }
+  if (loadFactor == '2013'){
+    power_type = 4;
   }
 
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
@@ -276,6 +286,7 @@ function updateSpectrums(){
 window.addEventListener("detectorPosition", updateSpectrums);
 window.addEventListener("invertedMass", updateSpectrums);
 window.addEventListener("geoneutrinos", updateSpectrums);
+window.addEventListener("loadFactor", updateSpectrums);
 
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
@@ -990,6 +1001,33 @@ var CalculatorPanel = React.createClass({
 });
 
 
+var ReactorLoadPanel = React.createClass({
+  getInitialState: function(){
+    return {"loadFactor": loadFactor};
+  },
+  handleLFChange: function(event){
+    updateLoadFactor(event.target.value);
+    this.setState({"loadFactor": loadFactor});
+  },
+  render: function() {
+    return (
+    <Panel header="Reactor Load Factors">
+      <Form horizontal>
+    	  <FormGroup controlId="loadFactor">
+    	  <Col sm={12}>
+    	    <FormControl onChange={this.handleLFChange} value={this.state.loadFactor} componentClass="select">
+            <option value="mean">Mean LF</option>
+            <option value="2013">2013 LF</option>
+          </FormControl>
+    	  </Col>
+    	  </FormGroup>
+      </Form>
+    </Panel>
+        )
+  }
+});
+
+
 
 var Application = React.createClass({
   componentDidMount: function(){
@@ -1002,7 +1040,9 @@ var Application = React.createClass({
           <SpectrumPanel />
           <LocationPanel />
         </Tab>
-        <Tab eventKey={2} title="Reactors">Tab 2 Content</Tab>
+        <Tab eventKey={2} title="Reactors">
+          <ReactorLoadPanel />
+        </Tab>
         <Tab eventKey={3} title="GeoNu">
           <MantlePanel />
           <CrustPanel />
