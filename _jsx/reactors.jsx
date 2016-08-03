@@ -31,6 +31,7 @@ var mouseFollow = new Event("mouseFollow");
 var invertedMassEvent = new Event("invertedMass");
 var geoneutrinoEvent = new Event("geoneutrinos");
 var loadFactorEvent = new Event("loadFactor");
+var customReactorEvent = new Event("customReactorEvent");
 
 // Map Display
 var map = L.map('map_container').setView([0, 0], 1);
@@ -66,7 +67,7 @@ var customReactor = {
 var geoneutrinos = {
   'mantleSignal': 8.2, //TNU
   'thuRatio': 2.7, //unitless
-  'crustSignal': false
+  'crustSignal': true
 }
 
 var spectrum = {
@@ -123,6 +124,11 @@ function updateGeoneutrinos(obj){
 function updateLoadFactor(newLoadFactor){
   loadFactor = newLoadFactor;
   window.dispatchEvent(loadFactorEvent);
+}
+
+function updateCustomReactor(obj){
+  Object.assign(customReactor, obj);
+  window.dispatchEvent(customReactorEvent);
 }
 
 var detectorPresets = [
@@ -291,6 +297,7 @@ window.addEventListener("detectorPosition", updateSpectrums);
 window.addEventListener("invertedMass", updateSpectrums);
 window.addEventListener("geoneutrinos", updateSpectrums);
 window.addEventListener("loadFactor", updateSpectrums);
+window.addEventListener("customReactorEvent", updateSpectrums);
 
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
@@ -1032,54 +1039,63 @@ var ReactorLoadPanel = React.createClass({
 });
 
 var CustomReactorPanel = React.createClass({
+  handleUserInput: function(event){
+    var key = event.target.id;
+    var value = event.target.value;
+    if (key == "use"){
+      value = value;
+    } else {
+      value = parseFloat(event.target.value);
+    }
+  },
   render: function(){
     return (
     <Panel header="Custom Reactor">
       <Form horizontal>
-    	  <FormGroup controlId="custom_power">
+    	  <FormGroup controlId="power">
     	    <Col componentClass={ControlLabel} sm={2}>
             Power
     	    </Col>
     	    <Col sm={10}>
             <InputGroup>
-    	        <FormControl type="number" value={0} />
+    	        <FormControl onChange={this.handleUserInput} type="number" value={0} />
               <InputGroup.Addon>MW</InputGroup.Addon>
             </InputGroup>
     	    </Col>
     	  </FormGroup>
-    	  <FormGroup controlId="use_custom">
+    	  <FormGroup controlId="use">
     	    <Col componentClass={ControlLabel} sm={2}>
     	    </Col>
     	    <Col sm={10}>
-    			<Checkbox checked={false}>Use Custom Reactor</Checkbox>
+    			<Checkbox onChange={this.handleUserInput} checked={false}>Use Custom Reactor</Checkbox>
     	    </Col>
     	  </FormGroup>
       </Form>
-      <Panel header="Hello">
+      <Panel header="Location">
         	<Form horizontal>
-    				<FormGroup controlId="custom_lat">
+    				<FormGroup controlId="lat">
     				  <Col componentClass={ControlLabel} sm={4}>
                 Latitude
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl type="number" value={0} />
+    				    <FormControl onChange={this.handleUserInput} type="number" value={0} />
     				  </Col>
     				</FormGroup>
 
-    				<FormGroup controlId="custom_lon">
+    				<FormGroup controlId="lon">
     				  <Col componentClass={ControlLabel} sm={4}>
                 Longitude
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl type="number" value={0} />
+    				    <FormControl onChange={this.handleUserInput} type="number" value={0} />
     				  </Col>
     				</FormGroup>
-    				<FormGroup controlId="custom_uncertainty">
+    				<FormGroup controlId="uncertainty">
     				  <Col componentClass={ControlLabel} sm={4}>
                 Uncertainty
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl type="number" value={0} />
+    				    <FormControl onChange={this.handleUserInput} type="number" value={0} />
     				  </Col>
     				</FormGroup>
             </Form>
