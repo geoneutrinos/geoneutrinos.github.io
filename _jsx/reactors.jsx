@@ -9,6 +9,7 @@ var d3 = require('d3');
 var Col = require('react-bootstrap/lib/Col');
 
 var Button = require('react-bootstrap/lib/Button');
+var ButtonToolbar = require('react-bootstrap/lib/ButtonToolbar');
 var Tabs = require('react-bootstrap/lib/Tabs');
 var Tab = require('react-bootstrap/lib/Tab');
 var Panel = require('react-bootstrap/lib/Panel');
@@ -57,7 +58,7 @@ var invertedMass = false;
 var customReactor = {
   'lat': 0,
   'lon': 0,
-  'power': 0, //mw
+  'power': 300, //mw
   'uncertainty': 0, //kms
   'use': false
 }
@@ -260,6 +261,9 @@ function updateSpectrums(){
   var user_power = 0;
   if (customReactor.use){
     user_power = customReactor.power;
+    d3.selectAll(".reac").style("display", "");
+  } else {
+    d3.selectAll(".reac").style("display", "none");
   }
   var reac_p = {
     x : EARTH_RADIUS * Math.cos(customReactor.lat) * Math.cos(customReactor.lon),
@@ -1027,6 +1031,67 @@ var ReactorLoadPanel = React.createClass({
   }
 });
 
+var CustomReactorPanel = React.createClass({
+  render: function(){
+    return (
+    <Panel header="Custom Reactor">
+      <Form horizontal>
+    	  <FormGroup controlId="custom_power">
+    	    <Col componentClass={ControlLabel} sm={2}>
+            Power
+    	    </Col>
+    	    <Col sm={10}>
+            <InputGroup>
+    	        <FormControl type="number" value={0} />
+              <InputGroup.Addon>MW</InputGroup.Addon>
+            </InputGroup>
+    	    </Col>
+    	  </FormGroup>
+    	  <FormGroup controlId="use_custom">
+    	    <Col componentClass={ControlLabel} sm={2}>
+    	    </Col>
+    	    <Col sm={10}>
+    			<Checkbox checked={false}>Use Custom Reactor</Checkbox>
+    	    </Col>
+    	  </FormGroup>
+      </Form>
+      <Panel header="Hello">
+        	<Form horizontal>
+    				<FormGroup controlId="custom_lat">
+    				  <Col componentClass={ControlLabel} sm={4}>
+                Latitude
+    				  </Col>
+    				  <Col sm={8}>
+    				    <FormControl type="number" value={0} />
+    				  </Col>
+    				</FormGroup>
+
+    				<FormGroup controlId="custom_lon">
+    				  <Col componentClass={ControlLabel} sm={4}>
+                Longitude
+    				  </Col>
+    				  <Col sm={8}>
+    				    <FormControl type="number" value={0} />
+    				  </Col>
+    				</FormGroup>
+    				<FormGroup controlId="custom_uncertainty">
+    				  <Col componentClass={ControlLabel} sm={4}>
+                Uncertainty
+    				  </Col>
+    				  <Col sm={8}>
+    				    <FormControl type="number" value={0} />
+    				  </Col>
+    				</FormGroup>
+            </Form>
+            <ButtonToolbar>
+              <Button bsStyle="success">Randomize</Button>
+            </ButtonToolbar>
+      </Panel>
+    </Panel>
+      );
+  }
+});
+
 
 
 var Application = React.createClass({
@@ -1042,6 +1107,7 @@ var Application = React.createClass({
         </Tab>
         <Tab eventKey={2} title="Reactors">
           <ReactorLoadPanel />
+          <CustomReactorPanel />
         </Tab>
         <Tab eventKey={3} title="GeoNu">
           <MantlePanel />
