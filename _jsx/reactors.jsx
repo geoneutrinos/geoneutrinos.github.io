@@ -43,6 +43,7 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
 
 //
 const EARTH_RADIUS = 6371; // km
+const DEG_TO_RAD = Math.PI / 180;
 
 
 // Global State Variables
@@ -274,10 +275,11 @@ function updateSpectrums(){
   } else {
     d3.selectAll(".reac").style("display", "none");
   }
+  console.log(customReactor);
   var reac_p = {
-    x : EARTH_RADIUS * Math.cos(customReactor.lat) * Math.cos(customReactor.lon),
-    y : EARTH_RADIUS * Math.cos(customReactor.lat) * Math.sin(customReactor.lon),
-    z : EARTH_RADIUS * Math.sin(customReactor.lat)
+    x : EARTH_RADIUS * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
+    y : EARTH_RADIUS * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
+    z : EARTH_RADIUS * Math.sin(customReactor.lat * DEG_TO_RAD)
   };
   var user_dist = distance(p1, reac_p);
   var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, invertedMass);
@@ -1079,6 +1081,15 @@ var CustomReactorPanel = React.createClass({
     this.setState({[key]:value});
     updateCustomReactor({[key]:value});
   },
+  randomizePosition: function(){
+    var newCustomReactor = {
+      lat: Math.random() * 180 - 90,
+      lon: Math.random() * 360 - 180,
+      uncertainty: Math.random() * 600 + 200,
+    }
+    updateCustomReactor(newCustomReactor);
+    this.setState(newCustomReactor);
+  },
   render: function(){
     return (
     <Panel header="Custom Reactor">
@@ -1131,7 +1142,7 @@ var CustomReactorPanel = React.createClass({
     				</FormGroup>
             </Form>
             <ButtonToolbar>
-              <Button bsStyle="success">Randomize</Button>
+              <Button onClick={this.randomizePosition} bsStyle="success">Randomize</Button>
             </ButtonToolbar>
       </Panel>
     </Panel>
