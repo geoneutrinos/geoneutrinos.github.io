@@ -34,11 +34,12 @@ var loadFactorEvent = new Event("loadFactor");
 var customReactorEvent = new Event("customReactorEvent");
 
 // Map Display
-var map = L.map('map_container').setView([0, 0], 1);
+var map = L.map('map_container', {worldCopyJump: true}).setView([0, 0], 1);
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
+
 
 //
 const EARTH_RADIUS = 6371; // km
@@ -83,6 +84,8 @@ var distances = {
   'closest': null,
   'user': null,
 }
+
+var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], customReactor.uncertainty * 1000);
 
 // end Global State
 // Global State Updating Functions (mostly to do event bookkeeping)
@@ -328,6 +331,27 @@ map.on("mousemove", follow_mouse);
 map.on("click", updateFollowMouse);
 map.on("dragstart", function(e){map.off("mousemove", follow_mouse)});
 map.on("dragend", function(e){map.on("mousemove", follow_mouse)});
+
+
+function customReactorMarkerUpdator(){
+  function getRandomOffset(uncertainty){ //kms
+    uncertainty = uncertainty * Math.sqrt(2);
+    return (Math.random() * (2 * uncertainty) - uncertainty) / 200;
+  }
+  if (customReactor.use){
+    var radius = customReactor.uncertainty * 1000;
+    if (radius < 1000){
+      radius = 1000;
+    }
+    customReactorMarker.setRadius(radius);
+    customReactorMarker.setLatLng([customReactor.lat + getRandomOffset(customReactor.uncertainty), customReactor.lon + getRandomOffset(customReactor.uncertainty)]);
+    customReactorMarker.addTo(map);
+  } else {
+    map.removeLayer(customReactorMarker);
+  }
+}
+
+window.addEventListener("customReactorEvent", customReactorMarkerUpdator);
 
 
 function use_nav_pos(){
@@ -1039,14 +1063,21 @@ var ReactorLoadPanel = React.createClass({
 });
 
 var CustomReactorPanel = React.createClass({
+  getInitialState: function(){
+    return customReactor;
+  },
+  handleUseCheckbox: function(event){
+    var value = event.target.checked;
+    this.setState({"use":value});
+    updateCustomReactor({"use":value});
+  },
   handleUserInput: function(event){
     var key = event.target.id;
     var value = event.target.value;
-    if (key == "use"){
-      value = value;
-    } else {
-      value = parseFloat(event.target.value);
-    }
+    value = parseFloat(event.target.value);
+
+    this.setState({[key]:value});
+    updateCustomReactor({[key]:value});
   },
   render: function(){
     return (
@@ -1058,7 +1089,7 @@ var CustomReactorPanel = React.createClass({
     	    </Col>
     	    <Col sm={10}>
             <InputGroup>
-    	        <FormControl onChange={this.handleUserInput} type="number" value={0} />
+    	        <FormControl onChange={this.handleUserInput} type="number" value={this.state.power} />
               <InputGroup.Addon>MW</InputGroup.Addon>
             </InputGroup>
     	    </Col>
@@ -1067,7 +1098,7 @@ var CustomReactorPanel = React.createClass({
     	    <Col componentClass={ControlLabel} sm={2}>
     	    </Col>
     	    <Col sm={10}>
-    			<Checkbox onChange={this.handleUserInput} checked={false}>Use Custom Reactor</Checkbox>
+    			<Checkbox onChange={this.handleUseCheckbox} checked={this.state.use}>Use Custom Reactor</Checkbox>
     	    </Col>
     	  </FormGroup>
       </Form>
@@ -1078,7 +1109,7 @@ var CustomReactorPanel = React.createClass({
                 Latitude
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl onChange={this.handleUserInput} type="number" value={0} />
+    				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.lat} />
     				  </Col>
     				</FormGroup>
 
@@ -1087,7 +1118,7 @@ var CustomReactorPanel = React.createClass({
                 Longitude
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl onChange={this.handleUserInput} type="number" value={0} />
+    				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.lon} />
     				  </Col>
     				</FormGroup>
     				<FormGroup controlId="uncertainty">
@@ -1095,7 +1126,7 @@ var CustomReactorPanel = React.createClass({
                 Uncertainty
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl onChange={this.handleUserInput} type="number" value={0} />
+    				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.uncertainty} />
     				  </Col>
     				</FormGroup>
             </Form>
