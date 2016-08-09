@@ -24,6 +24,7 @@ var InputGroup = require('react-bootstrap/lib/InputGroup');
 var nu_spectrum = require("./spectrum.js").default;
 var osc = require("./nuosc.js");
 var react_data = require("./spherical_power.js").react_data;
+var reactor_locations = require("./reactor_locations.js").reactor_locations;
 
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
@@ -33,17 +34,30 @@ var geoneutrinoEvent = new Event("geoneutrinos");
 var loadFactorEvent = new Event("loadFactor");
 var customReactorEvent = new Event("customReactorEvent");
 
+//
+const EARTH_RADIUS = 6371; // km
+const DEG_TO_RAD = Math.PI / 180;
+
 // Map Display
-var map = L.map('map_container', {worldCopyJump: true}).setView([0, 0], 1);
+var reactorIcon = L.icon({iconUrl:"/static/vender/leaflet/images/marker-icon_red.png",
+    iconSize:    [25, 41],
+    iconAnchor:  [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize:  [41, 41]});
+var reactorMarkers = L.layerGroup(reactor_locations.map(function(data){
+  return L.marker(data, {icon:reactorIcon});
+}));
+
+var map = L.map('map_container').setView([0, 0], 1);
 
 L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
+L.control.layers(null, {"Reactors": reactorMarkers}).addTo(map);
 
-//
-const EARTH_RADIUS = 6371; // km
-const DEG_TO_RAD = Math.PI / 180;
+
+
 
 
 // Global State Variables
@@ -275,7 +289,6 @@ function updateSpectrums(){
   } else {
     d3.selectAll(".reac").style("display", "none");
   }
-  console.log(customReactor);
   var reac_p = {
     x : EARTH_RADIUS * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
     y : EARTH_RADIUS * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
@@ -876,7 +889,6 @@ var MantlePanel = React.createClass({
 var CrustPanel = React.createClass({
   geoneutrinoEvent: function(){
     this.setState(geoneutrinos);
-    console.log(geoneutrinos);
   },
   getInitialState: function(){
     return geoneutrinos;
