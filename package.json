@@ -16,6 +16,7 @@
     "babel-preset-react": "^6.5.0",
     "d3": "^4.1.1",
     "leaflet": "^1.0.0-rc.3",
+    "leaflet.heat": "^0.2.0",
     "memoizee": "^0.3.10",
     "react": "^15.1.0",
     "react-bootstrap": "^0.29.4",

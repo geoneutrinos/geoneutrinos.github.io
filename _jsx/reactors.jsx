@@ -2,6 +2,7 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 var L = require('leaflet');
+var Heat = require('leaflet.heat');
 L.Icon.Default.imagePath = '/static/vender/leaflet/images';
 
 var d3 = require('d3');
@@ -44,9 +45,14 @@ var reactorIcon = L.icon({iconUrl:"/static/vender/leaflet/images/marker-icon_red
     iconAnchor:  [12, 41],
     popupAnchor: [1, -34],
     shadowSize:  [41, 41]});
-var reactorMarkers = L.layerGroup(reactor_locations.map(function(data){
-  return L.marker(data, {icon:reactorIcon});
-}));
+
+var heat_data = reactor_locations.map(function(data){
+  data.push(1);
+  return data;
+});
+heat_data.push([0,0,0]);
+
+var reactorMarkers = L.heatLayer(heat_data, {maxZoom: 8});
 
 var map = L.map('map_container').setView([0, 0], 1);
 
