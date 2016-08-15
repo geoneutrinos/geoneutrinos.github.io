@@ -2,7 +2,6 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 var L = require('leaflet');
-var Heat = require('leaflet.heat');
 L.Icon.Default.imagePath = '/static/vender/leaflet/images';
 
 var d3 = require('d3');
@@ -39,20 +38,11 @@ var customReactorEvent = new Event("customReactorEvent");
 const EARTH_RADIUS = 6371; // km
 const DEG_TO_RAD = Math.PI / 180;
 
-// Map Display
-var reactorIcon = L.icon({iconUrl:"/static/vender/leaflet/images/marker-icon_red.png",
-    iconSize:    [25, 41],
-    iconAnchor:  [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize:  [41, 41]});
 
-var heat_data = reactor_locations.map(function(data){
-  data.push(1);
-  return data;
+var reactorCircles = reactor_locations.map(function(data){
+  return L.circle([data[0], data[1]], {"radius": 250, "color": "#008000"});
 });
-heat_data.push([0,0,0]);
 
-var reactorMarkers = L.heatLayer(heat_data, {maxZoom: 8});
 
 var map = L.map('map_container').setView([0, 0], 1);
 
@@ -60,7 +50,7 @@ L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-L.control.layers(null, {"Reactors": reactorMarkers}).addTo(map);
+L.control.layers(null, {"Reactors": L.layerGroup(reactorCircles)}).addTo(map);
 
 
 
