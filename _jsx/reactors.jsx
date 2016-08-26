@@ -1161,7 +1161,7 @@ var CustomReactorPanel = React.createClass({
 var RatPacPanel = React.createClass({
   getInitialState: function(){
     return {"output": "total",
-      "value": this.makeRatPac("total", spectrum.total)
+      "value": this.makeRatPac("total", [])
     };
   },
   makeRatPac(name, spec){
@@ -1170,8 +1170,9 @@ var RatPacPanel = React.createClass({
       mevs[i] = (i+1)/100;
     }
     mevs = JSON.stringify(mevs);
-    spec = JSON.stringify(spec);
-    return "{\nname: \"SPECTRUM\",\nindex: \""+name+"\",\nvalid_begin: [0, 0],\nvalid_end: [0, 0],\nspec_e: "+mevs+",\nspec_mag: "+spec+",\n}";
+    var pev = spec.slice(179).concat(spec.slice(0,179));
+    console.log(pev.length);
+    return "{\nname: \"SPECTRUM\",\nindex: \""+name+"\",\nvalid_begin: [0, 0],\nvalid_end: [0, 0],\nspec_e: "+mevs+",\nspec_mag: "+pev+",\n}";
   },
   dealWithSpectrumUpdate: function(){
     this.setState({value: this.makeRatPac(this.state.output, spectrum[this.state.output])});
