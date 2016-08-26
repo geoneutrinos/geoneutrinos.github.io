@@ -71,7 +71,7 @@ var invertedMass = false;
 var customReactor = {
   'lat': 0,
   'lon': 0,
-  'power': 300, //mw
+  'power': 0, //mw
   'uncertainty': 0, //kms
   'use': false
 }
@@ -1158,6 +1158,60 @@ var CustomReactorPanel = React.createClass({
   }
 });
 
+var RatPacPanel = React.createClass({
+  getInitialState: function(){
+    return {"output": "total",
+      "value": this.makeRatPac("total", spectrum.total)
+    };
+  },
+  makeRatPac(name, spec){
+    var mevs = new Array(1000);
+    for (var i=0; i < mevs.length; i++){
+      mevs[i] = (i+1)/100;
+    }
+    mevs = JSON.stringify(mevs);
+    spec = JSON.stringify(spec);
+    return "{\nname: \"SPECTRUM\",\nindex: \""+name+"\",\nvalid_begin: [0, 0],\nvalid_end: [0, 0],\nspec_e: "+mevs+",\nspec_mag: "+spec+",\n}";
+  },
+  dealWithSpectrumUpdate: function(){
+    this.setState({value: this.makeRatPac(this.state.output, spectrum[this.state.output])});
+  },
+  componentDidMount: function(){
+    window.addEventListener('spectrumUpdate', this.dealWithSpectrumUpdate);
+  },
+  componentWillUnmount: function(){
+    window.removeEventListener('spectrumUpdate', this.dealWithSpectrumUpdate);
+  },
+  handleChange: function(e){
+    var value = e.target.value;
+    this.setState({"output": value,
+      "value": this.makeRatPac(value, spectrum.total)
+    });
+  },
+  render: function() {
+    var textareaStyle = {
+      width: "100%"
+    };
+    return (
+    <Panel header="RAT-PAC Output">
+      <Form horizontal>
+    	  <FormGroup controlId="ratpackout">
+    	  <Col sm={12}>
+    	    <FormControl onChange={this.handleChange} value={this.state.output} componentClass="select">
+            <option value="total">Total</option>
+            <option value="iaea">IAEA</option>
+            <option value="closest">Closest Reactor</option>
+            <option value="custom">Custom Reactor</option>
+          </FormControl>
+    	  </Col>
+    	  </FormGroup>
+      </Form>
+      <textarea readonly={true} rows={4} style={textareaStyle} name={"ratpac"} value={this.state.value} />
+    </Panel>
+        )
+  }
+});
+
 
 
 var Application = React.createClass({
@@ -1181,6 +1235,7 @@ var Application = React.createClass({
         </Tab>
         <Tab eventKey={4} title="Output & Stats">
           <CalculatorPanel />
+          <RatPacPanel />
           <OutputText />
         </Tab>
       </Tabs>
