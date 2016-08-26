@@ -1170,8 +1170,7 @@ var RatPacPanel = React.createClass({
       mevs[i] = (i+1)/100;
     }
     mevs = JSON.stringify(mevs);
-    var pev = spec.slice(179).concat(spec.slice(0,179));
-    console.log(pev.length);
+    var pev = JSON.stringify(spec.slice(179).concat(spec.slice(0,179)));
     return "{\nname: \"SPECTRUM\",\nindex: \""+name+"\",\nvalid_begin: [0, 0],\nvalid_end: [0, 0],\nspec_e: "+mevs+",\nspec_mag: "+pev+",\n}";
   },
   dealWithSpectrumUpdate: function(){
