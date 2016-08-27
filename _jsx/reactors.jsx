@@ -104,6 +104,19 @@ var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], custo
 function updateDetectorPosition(lon, lat){
     detectorPosition.lat = parseFloat(lat);
     detectorPosition.lon = parseFloat(lon);
+    if (detectorPosition.lat > 90){
+      detectorPosition.lat = 90;
+    }
+    if (detectorPosition.lat < -90){
+      detectorPosition.lat = -90;
+    }
+    if (detectorPosition.lon > 180){
+      detectorPosition.lon = 180;
+    }
+    if (detectorPosition.lon < -180){
+      detectorPosition.lon = -180;
+    }
+
     window.dispatchEvent(detectorPositionUpdate);
 }
 
@@ -132,6 +145,12 @@ function updateSpectrum(newSpectrum){
 
 function updateGeoneutrinos(obj){
   Object.assign(geoneutrinos, obj);
+  if (geoneutrinos.mantleSignal < 0){
+    geoneutrinos.mantleSignal = 0;
+  }
+  if (geoneutrinos.thuRatio < 0){
+    geoneutrinos.thuRatio = 0;
+  }
   window.dispatchEvent(geoneutrinoEvent);
 }
 
@@ -711,7 +730,7 @@ var SpectrumPanel = React.createClass({
     return (
         <Panel header="Spectrum">
           <Plot />
-    			<Checkbox onClick={updateInvertedMass} checked={this.state.invertedMass}>Invert Neutrino Mass Hierarchy</Checkbox>
+    			<Checkbox onClick={updateInvertedMass} checked={this.state.invertedMass}>Inverted Neutrino Mass Hierarchy</Checkbox>
           <StatsPanel />
         </Panel>
         );
@@ -725,7 +744,15 @@ var LocationPanel = React.createClass({
   handleMouseBoxChange: function(){
     this.setState({"followMouse":followMouse});
   },
-  changeLat: function(){
+  changeLat: function(e){
+    var value = e.target.value;
+    console.log(value)
+    updateDetectorPosition(detectorPosition.lon, value);
+  },
+  changeLon: function(e){
+    var value = e.target.value;
+    console.log(value)
+    updateDetectorPosition(value, detectorPosition.lat);
   },
   getInitialState: function(){
     var state = {};
@@ -751,7 +778,7 @@ var LocationPanel = React.createClass({
                 Latitude
     				  </Col>
     				  <Col sm={10}>
-    				    <FormControl type="number" value={this.state.lat} />
+    				    <FormControl onChange={this.changeLat} type="number" value={this.state.lat} />
     				  </Col>
     				</FormGroup>
 
@@ -760,7 +787,7 @@ var LocationPanel = React.createClass({
                 Longitude
     				  </Col>
     				  <Col sm={10}>
-    				    <FormControl type="number" value={this.state.lon} />
+    				    <FormControl onChange={this.changeLon} type="number" value={this.state.lon} />
     				  </Col>
     				</FormGroup>
 
@@ -863,7 +890,7 @@ var MantlePanel = React.createClass({
     				  </Col>
     				  <Col sm={8}>
                 <InputGroup>
-    				      <FormControl onChange={this.handleMantleSignal} type="number" value={this.state.mantleSignal} />
+    				      <FormControl onChange={this.handleMantleSignal} type="number" step="0.1" value={this.state.mantleSignal} />
                   <InputGroup.Addon>TNU</InputGroup.Addon>
                 </InputGroup>
     				  </Col>
@@ -873,7 +900,7 @@ var MantlePanel = React.createClass({
                 Th/U Ratio
     				  </Col>
     				  <Col sm={8}>
-    				    <FormControl onChange={this.handleMantleRatio} type="number" value={this.state.thuRatio} />
+    				    <FormControl onChange={this.handleMantleRatio} type="number" step="0.1" value={this.state.thuRatio} />
     				  </Col>
     				</FormGroup>
           </Form>
