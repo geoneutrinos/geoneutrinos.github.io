@@ -1196,7 +1196,7 @@ var RatPacPanel = React.createClass({
     for (var i=0; i < mevs.length; i++){
       mevs[i] = (i+1)/100;
     }
-    mevs = mevs.map(function(elm){return elm.toFixed(2)}).join(", ");
+    mevs = mevs.map(function(elm){return elm.toFixed(2) + "d"}).join(", ");
     var pev = spec.slice(179).concat(spec.slice(0,179)).map(function(elm){return elm.toFixed(4) + "d"}).join(", ");
     return "{\nname: \"SPECTRUM\",\nindex: \""+name+"\",\nvalid_begin: [0, 0],\nvalid_end: [0, 0],\nspec_e: ["+mevs+"],\nspec_mag: ["+pev+"],\n}";
   },
