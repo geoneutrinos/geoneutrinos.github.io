@@ -966,6 +966,19 @@ var CalculatorPanel = React.createClass({
     var newState = {}
     Object.assign(newState, this.state, stateUpdate);
 
+    if (newState.e_min < 0){
+      newState.e_min = 0;
+    }
+    if (newState.e_max < newState.e_min){
+      newState.e_max = newState.e_min;
+    }
+    if (newState.sigma < 0){
+      newState.sigma = 0;
+    }
+    if (newState.time < 0){
+      newState.time = 0;
+    }
+
     var min_i = parseInt(newState.e_min * 100);
     var max_i = parseInt(newState.e_max * 100);
 
