@@ -629,10 +629,10 @@ function updateThings(){
       heatmap = twodAdd(crust.heat.k, heatmap);
     }
     from_mantle = 0;
-    min = -400;
-    max = 100;
+    min = -100;
+    max = 400;
 
-    heatmap = twodSub(heatmap, crust_heat_flow);
+    heatmap = twodSub(crust_heat_flow, heatmap);
   }
 
   var dx = heatmap[0].length,
@@ -714,7 +714,7 @@ function updateThings(){
   } else if (display_value == "mantle_uncertain"){
     $("#scale_title_placeholder").text("Mantle Signal Fractional Uncertainty");
   } else if (display_value == "moho"){
-    $("#scale_title_placeholder").text("Heat flow into moho (mW/m^2)");
+    $("#scale_title_placeholder").text("Heat flow from moho (mW/m^2)");
   } else {
     $("#scale_title_placeholder").text("Something has gone wrong...");
   }
