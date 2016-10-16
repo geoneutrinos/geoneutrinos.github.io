@@ -78,7 +78,7 @@ var customReactor = {
 
 var geoneutrinos = {
   'mantleSignal': 8.2, //TNU
-  'thuRatio': 2.7, //unitless
+  'thuRatio': 3.9, //unitless
   'crustSignal': true
 }
 
@@ -680,6 +680,9 @@ var StatsPanel = React.createClass({
       closest_tnu: d3.sum(spectrum.closest)/1000,
       closest_distance: distances.closest,
       custom_distance: distances.user,
+      geo_tnu: (d3.sum(spectrum.geo_u) + d3.sum(spectrum.geo_th))/1000,
+      reactors_tnu: (d3.sum(spectrum.iaea) + d3.sum(spectrum.custom))/1000,
+      geo_r: (d3.sum(spectrum.geo_th)/d3.sum(spectrum.geo_u))/0.066,
     });
   },
   componentDidMount: function(){
@@ -695,16 +698,22 @@ var StatsPanel = React.createClass({
       closest_tnu: 0,
       closest_distance: 0,
       custom_distance: 0,
+      geo_tnu: 0,
+      reactors_tnu: 0,
+      geo_r: 0,
     }
   },
   render: function(){
     return (
         <div>
           R<sub>Total</sub>: {this.state.total_tnu.toFixed(1)} TNU<br />
-          R<sub>E &lt; 3.275 MeV</sub>: {this.state.total_tnu_geo.toFixed(1)}TNU<br />
+          R<sub>E &lt; 3.275 MeV</sub>: {this.state.total_tnu_geo.toFixed(1)} TNU<br />
           R<sub>Closest</sub>: {(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(0)} (% of total)<br />
-          Distance to Closest Reactor: {this.state.closest_distance.toFixed(1)}km<br />
-          Distance to User Reactor: {this.state.custom_distance.toFixed(1)}km<br />
+          R<sub>geo</sub>: {this.state.geo_tnu.toFixed(1)} TNU<br />
+          R<sub>reac</sub>: {this.state.reactors_tnu.toFixed(1)} TNU<br />
+          Th/U<sub>geo</sub>: {this.state.geo_r.toFixed(1)}<br />
+          Distance to Closest Reactor: {this.state.closest_distance.toFixed(1)} km<br />
+          Distance to User Reactor: {this.state.custom_distance.toFixed(1)} km<br />
           <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
         </div>
         );
