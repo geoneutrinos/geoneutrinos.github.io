@@ -96,6 +96,7 @@ permalink: /model/
     </div>
   </div>
 </div>
+<script src="/static/js/heat_flow.js"></script>
 <script src="/static/js/d3.v3.min.js"></script>
 <script src="/static/js/d3.geo.projection.v0.min.js" charset="utf-8"></script>
 <script src="/static/js/topojson.v1.min.js"></script>

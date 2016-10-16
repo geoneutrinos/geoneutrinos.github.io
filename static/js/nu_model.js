@@ -296,6 +296,22 @@ function twodAdd(A, B){
   return result;
 }
 
+function twodSub(A, B){
+  var result = new Array();
+  for (i = 0; i < A.length; i++){
+    row = new Array();
+    for (ii = 0; ii < A[i].length; ii++){
+      if (B.length == 0 ){ //first time called
+        row.push(A[i][ii]);
+      } else {
+        row.push(A[i][ii] - B[i][ii]);
+      }
+    }
+    result.push(row);
+  }
+  return result;
+}
+
 function twodSqrtofSquares(A, B){
   var result = new Array();
   for (i = 0; i < A.length; i++){
@@ -601,6 +617,22 @@ function updateThings(){
     from_mantle = 0;
     min = 0;
     max = 3;
+  } else if ($('#plot_display_selector').val() == 'moho') {
+    enable_crust_controls();
+    if (include.indexOf("u") > -1){ //this is the js stupid way of checking for elemnts
+      heatmap = twodAdd(crust.heat.u, heatmap);
+    }
+    if (include.indexOf("th") > -1){
+      heatmap = twodAdd(crust.heat.th, heatmap);
+    }
+    if (include.indexOf("k") > -1){
+      heatmap = twodAdd(crust.heat.k, heatmap);
+    }
+    from_mantle = 0;
+    min = -400;
+    max = 100;
+
+    heatmap = twodSub(heatmap, crust_heat_flow);
   }
 
   var dx = heatmap[0].length,
@@ -681,6 +713,8 @@ function updateThings(){
     $("#scale_title_placeholder").text("Mantle Signal-to-Background Ratio");
   } else if (display_value == "mantle_uncertain"){
     $("#scale_title_placeholder").text("Mantle Signal Fractional Uncertainty");
+  } else if (display_value == "moho"){
+    $("#scale_title_placeholder").text("Heat flow into moho (mW/m^2)");
   } else {
     $("#scale_title_placeholder").text("Something has gone wrong...");
   }
