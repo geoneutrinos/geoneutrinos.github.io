@@ -637,7 +637,7 @@ function updateThings(){
     enable_crust_controls();
     from_mantle = 0;
     min = 0;
-    max = 1000;
+    max = 200;
 
     heatmap = crust_heat_flow;
   }
