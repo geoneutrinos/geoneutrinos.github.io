@@ -1,6 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+
 var L = require('leaflet');
 L.Icon.Default.imagePath = '/static/vender/leaflet/images';
 
@@ -24,7 +25,10 @@ var InputGroup = require('react-bootstrap/lib/InputGroup');
 var nu_spectrum = require("./spectrum.js").default;
 var osc = require("./nuosc.js");
 var react_data = require("./spherical_power.js").react_data;
-var reactor_locations = require("./reactor_locations.js").reactor_locations;
+
+const reactor_db = require("./reactor_db.js");
+console.log(reactor_db);
+const reactor_locations = reactor_db.reactor_locations;
 
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");

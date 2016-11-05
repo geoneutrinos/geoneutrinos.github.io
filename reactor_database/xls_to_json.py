@@ -26,6 +26,7 @@ years = [
         "2012",
         "2013",
         "2014",
+        "2015",
     ]
 
 reactor_data = {}
@@ -60,6 +61,7 @@ for name in all_names:
             reactors[name] = {
                 'lat' : reactor_data[year][name]['lat'],
                 'lon' : reactor_data[year][name]['lon'],
+                'power' : reactor_data[year][name]['power'],
                 }
         except KeyError:
             loads[name].extend(empty)
