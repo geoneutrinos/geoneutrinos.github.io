@@ -66,7 +66,7 @@ var detectorPosition = {
 
 var followMouse = true;
 
-var loadFactor = 'mean';
+var loadFactor = 2015;
 
 var invertedMass = false;
 
@@ -98,7 +98,7 @@ var distances = {
   'user': null,
 }
 
-var reactor_loadfactors = reactor_db.average_lf(2015, null, 2015);
+var reactor_loadfactors = reactor_db.average_lf(2015, undefined, 2015, undefined);
 
 var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], customReactor.uncertainty * 1000);
 
@@ -160,6 +160,7 @@ function updateGeoneutrinos(obj){
 
 function updateLoadFactor(newLoadFactor){
   loadFactor = newLoadFactor;
+  reactor_loadfactors = reactor_db.average_lf(newLoadFactor, undefined, newLoadFactor);
   window.dispatchEvent(loadFactorEvent);
 }
 
@@ -272,14 +273,6 @@ function updateSpectrums(){
     y : EARTH_RADIUS * Math.cos(lat) * Math.sin(lon),
     z : EARTH_RADIUS * Math.sin(lat)
   };
-
-  //var power_type = 0;
-  //if (loadFactor == 'mean'){
-  //  power_type = 3;
-  //}
-  //if (loadFactor == '2013'){
-  //  power_type = 4;
-  //}
 
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
 
@@ -759,12 +752,10 @@ var LocationPanel = React.createClass({
   },
   changeLat: function(e){
     var value = e.target.value;
-    console.log(value)
     updateDetectorPosition(detectorPosition.lon, value);
   },
   changeLon: function(e){
     var value = e.target.value;
-    console.log(value)
     updateDetectorPosition(value, detectorPosition.lat);
   },
   getInitialState: function(){
@@ -1108,14 +1099,17 @@ var ReactorLoadPanel = React.createClass({
     this.setState({"loadFactor": loadFactor});
   },
   render: function() {
+    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
+    const options = years.map(function(year){
+      return <option value={year}>Mean {year} LF</option>
+    });
     return (
     <Panel header="Reactor Load Factors">
       <Form horizontal>
     	  <FormGroup controlId="loadFactor">
     	  <Col sm={12}>
     	    <FormControl onChange={this.handleLFChange} value={this.state.loadFactor} componentClass="select">
-            <option value="mean">Mean LF</option>
-            <option value="2013">2013 LF</option>
+            {options}
           </FormControl>
     	  </Col>
     	  </FormGroup>
