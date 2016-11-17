@@ -24,10 +24,8 @@ var InputGroup = require('react-bootstrap/lib/InputGroup');
 
 var nu_spectrum = require("./spectrum.js").default;
 var osc = require("./nuosc.js");
-var react_data = require("./spherical_power.js").react_data;
 
 const reactor_db = require("./reactor_db.js");
-console.log(reactor_db);
 const reactor_locations = reactor_db.reactor_locations;
 
 var detectorPositionUpdate = new Event("detectorPosition");
@@ -99,6 +97,8 @@ var distances = {
   'closest': null,
   'user': null,
 }
+
+var reactor_loadfactors = reactor_db.average_lf(2015, null, 2015);
 
 var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], customReactor.uncertainty * 1000);
 
@@ -273,25 +273,25 @@ function updateSpectrums(){
     z : EARTH_RADIUS * Math.sin(lat)
   };
 
-  var power_type = 0;
-  if (loadFactor == 'mean'){
-    power_type = 3;
-  }
-  if (loadFactor == '2013'){
-    power_type = 4;
-  }
+  //var power_type = 0;
+  //if (loadFactor == 'mean'){
+  //  power_type = 3;
+  //}
+  //if (loadFactor == '2013'){
+  //  power_type = 4;
+  //}
 
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
 
-  for (var i=0; i<react_data.length; i++){
+  for (var i=0; i<reactor_loadfactors.length; i++){
 
     var p2 = {
-      x : react_data[i][0],
-      y : react_data[i][1],
-      z : react_data[i][2]
+      x : reactor_loadfactors[i][0],
+      y : reactor_loadfactors[i][1],
+      z : reactor_loadfactors[i][2]
     };
 
-    var power = react_data[i][power_type];
+    var power = reactor_loadfactors[i][3];
     var dist = distance(p1, p2);
     var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
 

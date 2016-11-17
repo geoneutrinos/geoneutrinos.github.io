@@ -4,7 +4,9 @@ const reactor_db = require("../reactor_database/reactors.json");
 
 const EARTH_RADIUS = 6371; // km
 
-const ll_to_xyz = memoize(functio(lat, lon){
+const ll_to_xyz = memoize(function(lat, lon){
+  lat = lat * (Math.PI/180);
+  lon = lon * (Math.PI/180);
   return [
     EARTH_RADIUS * Math.cos(lat) * Math.cos(lon),
     EARTH_RADIUS * Math.cos(lat) * Math.sin(lon),
@@ -27,11 +29,14 @@ function average_lf(start_year="2003", start_month="01", end_year="2015", end_mo
 
 
   return Object.getOwnPropertyNames(reactor_db.reactors).map(function(reactor){
-      return [reactor_db.reactors[reactor].lat, reactor_db.reactors[reactor].lon]
+      const load_factors = reactor_db.loads[reactor].slice(start_index, end_index);
+      const load_factor = load_factors.reduce(function(a,b){return a+b}) / load_factors.length;
+      var [x, y, z] = ll_to_xyz(reactor_db.reactors[reactor].lat, reactor_db.reactors[reactor].lon);
+      return [x, y, z, reactor_db.reactors[reactor].power * load_factor/100];
     }
   )
 
 }
 
-export {reactor_db};
+export {reactor_db, average_lf};
 export const reactor_locations = geo_reactor_locations();
