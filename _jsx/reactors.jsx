@@ -3,7 +3,7 @@ var ReactDOM = require('react-dom');
 
 
 var L = require('leaflet');
-L.Icon.Default.imagePath = '/static/vender/leaflet/images';
+L.Icon.Default.imagePath = '/static/vender/leaflet/images/';
 
 var d3 = require('d3');
 
@@ -752,10 +752,18 @@ var LocationPanel = React.createClass({
   },
   changeLat: function(e){
     var value = e.target.value;
+    if (value.endsWith(".") || value.endsWith("0")){
+      this.setState({lat:value});
+      return;
+    }
     updateDetectorPosition(detectorPosition.lon, value);
   },
   changeLon: function(e){
     var value = e.target.value;
+    if (value.endsWith(".") || value.endsWith("0")){
+      this.setState({lon:value});
+      return;
+    }
     updateDetectorPosition(value, detectorPosition.lat);
   },
   getInitialState: function(){
