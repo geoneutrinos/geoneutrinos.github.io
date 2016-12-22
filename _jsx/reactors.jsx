@@ -752,7 +752,7 @@ var LocationPanel = React.createClass({
   },
   changeLat: function(e){
     var value = e.target.value;
-    if (value.endsWith(".") || value.endsWith("0")){
+    if (value.endsWith(".") || (value.match("\\.0*$") != null)){
       this.setState({lat:value});
       return;
     }
@@ -760,7 +760,7 @@ var LocationPanel = React.createClass({
   },
   changeLon: function(e){
     var value = e.target.value;
-    if (value.endsWith(".") || value.endsWith("0")){
+    if (value.endsWith(".") || (value.match("\\.0*$") != null)){
       this.setState({lon:value});
       return;
     }
