@@ -14,6 +14,7 @@ var ButtonToolbar = require('react-bootstrap/lib/ButtonToolbar');
 var Tabs = require('react-bootstrap/lib/Tabs');
 var Tab = require('react-bootstrap/lib/Tab');
 var Panel = require('react-bootstrap/lib/Panel');
+var Table = require('react-bootstrap/lib/Table');
 
 var Form = require('react-bootstrap/lib/Form');
 var FormGroup = require('react-bootstrap/lib/FormGroup');
@@ -42,7 +43,7 @@ const DEG_TO_RAD = Math.PI / 180;
 
 
 var reactorCircles = reactor_locations.map(function(data){
-  return L.circle([data[0], data[1]], {"radius": 250, "color": "#008000"});
+  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#008000"}).bindPopup(data.name);
 });
 
 
@@ -69,6 +70,11 @@ var followMouse = true;
 var loadFactor = 2015;
 
 var invertedMass = false;
+
+var powerOverrides = {
+  min: [],
+  max: []
+};
 
 var customReactor = {
   'lat': 0,
@@ -279,12 +285,12 @@ function updateSpectrums(){
   for (var i=0; i<reactor_loadfactors.length; i++){
 
     var p2 = {
-      x : reactor_loadfactors[i][0],
-      y : reactor_loadfactors[i][1],
-      z : reactor_loadfactors[i][2]
+      x : reactor_loadfactors[i].x,
+      y : reactor_loadfactors[i].y,
+      z : reactor_loadfactors[i].z
     };
 
-    var power = reactor_loadfactors[i][3];
+    var power = reactor_loadfactors[i].power;
     var dist = distance(p1, p2);
     var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
 
@@ -514,6 +520,17 @@ var Plot = React.createClass({
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
     .text("Rate (TNU/10 keV)");
+
+    this._svg.append("text")
+    .attr("class", "x label")
+    .attr("stroke", "none")
+    .attr("fill", "grey")
+    .attr("text-anchor", "end")
+    .style("font-size", "10px")
+    .attr("x", this._width)
+    .attr("y", this._height - 4)
+    .text("geoneutrinos.org");
+
     this._svg.append("text")
     .attr("class", "x label")
     .attr("text-anchor", "end")
@@ -521,6 +538,7 @@ var Plot = React.createClass({
     .attr("x", this._width)
     .attr("y", this._height + 33)
     .text("Antineutrino Energy (MeV)");
+
     
     this._le = this._svg.append("g")
     .attr("transform", "translate(" + (this._width - 0) + ",0)");
@@ -734,8 +752,7 @@ var SpectrumPanel = React.createClass({
   },
   render: function(){
     return (
-        <Panel header="Spectrum">
-          <Plot />
+        <Panel header="Spectrum Stats">
     			<Checkbox onClick={updateInvertedMass} checked={this.state.invertedMass}>Inverted Neutrino Mass Hierarchy</Checkbox>
           <StatsPanel />
         </Panel>
@@ -784,39 +801,39 @@ var LocationPanel = React.createClass({
   render: function(){
     return (
         <Panel header="Location">
-        	<Form horizontal>
-    				<FormGroup controlId="cursor_lat">
-    				  <Col componentClass={ControlLabel} sm={2}>
-                Latitude
-    				  </Col>
-    				  <Col sm={10}>
-    				    <FormControl onChange={this.changeLat} type="number" value={this.state.lat} />
-    				  </Col>
-    				</FormGroup>
+          <Form horizontal>
+           <FormGroup controlId="cursor_lat">
+             <Col componentClass={ControlLabel} sm={2}>
+               Latitude
+             </Col>
+             <Col sm={10}>
+               <FormControl onChange={this.changeLat} type="number" value={this.state.lat} />
+             </Col>
+           </FormGroup>
 
-    				<FormGroup controlId="cursor_lon">
-    				  <Col componentClass={ControlLabel} sm={2}>
-                Longitude
-    				  </Col>
-    				  <Col sm={10}>
-    				    <FormControl onChange={this.changeLon} type="number" value={this.state.lon} />
-    				  </Col>
-    				</FormGroup>
+           <FormGroup controlId="cursor_lon">
+             <Col componentClass={ControlLabel} sm={2}>
+               Longitude
+             </Col>
+             <Col sm={10}>
+               <FormControl onChange={this.changeLon} type="number" value={this.state.lon} />
+             </Col>
+           </FormGroup>
 
-    				<FormGroup>
-    				  <Col smOffset={2} sm={10}>
-    				    <Checkbox onClick={updateFollowMouse} checked={this.state.followMouse}>Follow Cursor on Map</Checkbox>
-    				  </Col>
-    				</FormGroup>
+           <FormGroup>
+             <Col smOffset={2} sm={10}>
+               <Checkbox onClick={updateFollowMouse} checked={this.state.followMouse}>Follow Cursor on Map</Checkbox>
+             </Col>
+           </FormGroup>
 
 
-		        <FormGroup controlId="detector_preset">
-    				  <Col sm={12}>
+          <FormGroup controlId="detector_preset">
+              <Col sm={12}>
                 <LocationPresets groups={detectorPresets} />
               </Col>
             </FormGroup>
 
-					  <Button onClick={use_nav_pos} bsStyle="primary">Use My Current Position</Button>
+            <Button onClick={use_nav_pos} bsStyle="primary">Use My Current Position</Button>
 
         	</Form>
         </Panel>
@@ -895,26 +912,26 @@ var MantlePanel = React.createClass({
   render: function(){
     return (
         <Panel header="Mantle">
-        	<Form horizontal>
-    				<FormGroup controlId="mantle_signal">
-    				  <Col componentClass={ControlLabel} sm={4}>
-                Mantle Signal
-    				  </Col>
-    				  <Col sm={8}>
-                <InputGroup>
-    				      <FormControl onChange={this.handleMantleSignal} type="number" step="0.1" value={this.state.mantleSignal} />
-                  <InputGroup.Addon>TNU</InputGroup.Addon>
-                </InputGroup>
-    				  </Col>
-    				</FormGroup>
-    				<FormGroup controlId="mantle_thu">
-    				  <Col componentClass={ControlLabel} sm={4}>
-                Th/U Ratio
-    				  </Col>
-    				  <Col sm={8}>
-    				    <FormControl onChange={this.handleMantleRatio} type="number" step="0.1" value={this.state.thuRatio} />
-    				  </Col>
-    				</FormGroup>
+          <Form horizontal>
+          <FormGroup controlId="mantle_signal">
+            <Col componentClass={ControlLabel} sm={4}>
+              Mantle Signal
+            </Col>
+            <Col sm={8}>
+              <InputGroup>
+                <FormControl onChange={this.handleMantleSignal} type="number" step="0.1" value={this.state.mantleSignal} />
+                <InputGroup.Addon>TNU</InputGroup.Addon>
+              </InputGroup>
+            </Col>
+          </FormGroup>
+          <FormGroup controlId="mantle_thu">
+            <Col componentClass={ControlLabel} sm={4}>
+              Th/U Ratio
+            </Col>
+            <Col sm={8}>
+              <FormControl onChange={this.handleMantleRatio} type="number" step="0.1" value={this.state.thuRatio} />
+            </Col>
+          </FormGroup>
           </Form>
         </Panel>
         )
@@ -940,7 +957,7 @@ var CrustPanel = React.createClass({
   render: function(){
     return (
         <Panel header="Crust">
-    			<Checkbox onClick={this.handleCrust} checked={this.state.crustSignal}>Include Crust Signal</Checkbox>
+          <Checkbox onClick={this.handleCrust} checked={this.state.crustSignal}>Include Crust Signal</Checkbox>
           <div>
           We use a pre-computed model of the crust flux provided by W.F. McDonough and described in Y. Huang et al., "A reference Earth model for the heat producing elements and associated geoneutrino flux," Geochem., Geophys., Geosyst. 14, 2003 (2013).
           </div>
@@ -1027,72 +1044,117 @@ var CalculatorPanel = React.createClass({
     <Panel header="Calculator">
       <Form horizontal>
 
-    	<FormGroup controlId="signal">
-    	  <Col componentClass={ControlLabel} sm={4}>
+      <FormGroup controlId="signal">
+        <Col componentClass={ControlLabel} sm={4}>
           Signal
-    	  </Col>
-    	  <Col sm={8}>
-    	    <FormControl onChange={this.handleUserInput} value={this.state.signal} componentClass="select">
+        </Col>
+        <Col sm={8}>
+          <FormControl onChange={this.handleUserInput} value={this.state.signal} componentClass="select">
             <option value="all">All Reactors (geoneutrino background)</option>
             <option value="closest">Closest Core (geonu + other reactors background)</option>
             <option value="custom">Custom Reactor (geonu + other reactors background)</option>
             <option value="geoneutrino">Geoneutrino (reactor background)</option>
           </FormControl>
 
-    	  </Col>
-    	</FormGroup>
+      </Col>
+    </FormGroup>
 
-    	<FormGroup controlId="solve_for">
-    	  <Col componentClass={ControlLabel} sm={4}>
+      <FormGroup controlId="solve_for">
+        <Col componentClass={ControlLabel} sm={4}>
           Solve For
-    	  </Col>
-    	  <Col sm={8}>
-    	    <FormControl onChange={this.handleUserInput} value={this.state.solve_for} componentClass="select">
+        </Col>
+        <Col sm={8}>
+          <FormControl onChange={this.handleUserInput} value={this.state.solve_for} componentClass="select">
             <option value="exposure">Exposure Time</option>
             <option value="significance">Significance</option>
           </FormControl>
-    	  </Col>
-    	</FormGroup>
+        </Col>
+      </FormGroup>
 
-    	<FormGroup controlId="e_min">
-    	  <Col componentClass={ControlLabel} sm={4}>
+      <FormGroup controlId="e_min">
+        <Col componentClass={ControlLabel} sm={4}>
           E<sub>min</sub>
-    	  </Col>
-    	  <Col sm={8}>
-    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_min} />
-    	  </Col>
-    	</FormGroup>
+        </Col>
+        <Col sm={8}>
+          <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_min} />
+        </Col>
+      </FormGroup>
 
-    	<FormGroup controlId="e_max">
-    	  <Col componentClass={ControlLabel} sm={4}>
+      <FormGroup controlId="e_max">
+        <Col componentClass={ControlLabel} sm={4}>
           E<sub>max</sub>
-    	  </Col>
-    	  <Col sm={8}>
-    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_max} />
-    	  </Col>
-    	</FormGroup>
+        </Col>
+        <Col sm={8}>
+          <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_max} />
+        </Col>
+      </FormGroup>
 
-    	<FormGroup controlId="time">
-    	  <Col componentClass={ControlLabel} sm={4}>
+      <FormGroup controlId="time">
+        <Col componentClass={ControlLabel} sm={4}>
           Time (years)
-    	  </Col>
-    	  <Col sm={8}>
-    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.time} />
-    	  </Col>
-    	</FormGroup>
+        </Col>
+        <Col sm={8}>
+          <FormControl onChange={this.handleUserInput} type="number" value={this.state.time} />
+        </Col>
+      </FormGroup>
 
-    	<FormGroup controlId="sigma">
-    	  <Col componentClass={ControlLabel} sm={4}>
+      <FormGroup controlId="sigma">
+        <Col componentClass={ControlLabel} sm={4}>
           Sigma
-    	  </Col>
-    	  <Col sm={8}>
-    	    <FormControl onChange={this.handleUserInput} type="number" value={this.state.sigma} />
-    	  </Col>
-    	</FormGroup>
+        </Col>
+        <Col sm={8}>
+          <FormControl onChange={this.handleUserInput} type="number" value={this.state.sigma} />
+        </Col>
+      </FormGroup>
 
       </Form>
       <div>Sigma = Signal * sqrt(Time) / sqrt(Signal + 2 * Background)</div>
     </Panel>
+    )
+  }
+});
+
+var ReactorListPanel = React.createClass({
+  getInitialState(){
+    return {lf: reactor_loadfactors, powerOverrides: powerOverrides};
+  },
+  updateReactorData(){
+    console.log("updated");
+    this.setState({lf: reactor_loadfactors});
+  },
+  componentDidMount(){
+    window.addEventListener("loadFactor", this.updateReactorData);
+  },
+  componentWillUnmount(){
+    window.removeEventListener("loadFactor", this.updateReactorData);
+  },
+  render: function(){
+    var rows = this.state.lf.map(function(reactor){
+      var bsStyle = ""
+      if(reactor.power === 0){
+        bsStyle = "danger"
+      }
+      return (
+        <tr className={bsStyle}>
+          <td>{reactor.name}</td>
+          <td>{reactor.power.toFixed(1)}</td>
+        </tr>
+      )
+    })
+    return (
+      <Panel style={{maxHeight:"40vh", overflowX:"scroll"}} header="Reactor List">
+        <Table fill striped>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Power</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </Table>
+      </Panel>
     )
   }
 });
@@ -1275,6 +1337,8 @@ var Application = React.createClass({
   },
   render: function(){
     return (
+      <div>
+        <Plot />
       <Tabs defaultActiveKey={1} animation={false} id="noanim-tab-example">
         <Tab eventKey={1} title="Detector">
           <SpectrumPanel />
@@ -1282,6 +1346,7 @@ var Application = React.createClass({
         </Tab>
         <Tab eventKey={2} title="Reactors">
           <ReactorLoadPanel />
+          <ReactorListPanel />
           <CustomReactorPanel />
         </Tab>
         <Tab eventKey={3} title="GeoNu">
@@ -1294,6 +1359,7 @@ var Application = React.createClass({
           <OutputText />
         </Tab>
       </Tabs>
+    </div>
     );
   }
 });

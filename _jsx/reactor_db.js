@@ -16,7 +16,11 @@ const ll_to_xyz = memoize(function(lat, lon){
 
 function geo_reactor_locations(){
   return Object.getOwnPropertyNames(reactor_db.reactors).map(function(reactor){
-    return [reactor_db.reactors[reactor].lat, reactor_db.reactors[reactor].lon]
+    return {
+      lat: reactor_db.reactors[reactor].lat, 
+      lon: reactor_db.reactors[reactor].lon,
+      name: reactor,
+    }
   }
   )
 }
@@ -28,11 +32,18 @@ function average_lf(start_year="2003", start_month="01", end_year="2015", end_mo
   const end_index = reactor_db.times.indexOf(last) + 1;
 
 
-  return Object.getOwnPropertyNames(reactor_db.reactors).map(function(reactor){
+  return Object.getOwnPropertyNames(reactor_db.reactors).sort().map(function(reactor){
       const load_factors = reactor_db.loads[reactor].slice(start_index, end_index);
       const load_factor = load_factors.reduce(function(a,b){return a+b}) / load_factors.length;
       var [x, y, z] = ll_to_xyz(reactor_db.reactors[reactor].lat, reactor_db.reactors[reactor].lon);
-      return [x, y, z, reactor_db.reactors[reactor].power * load_factor/100];
+      return {
+        x:x, 
+        y:y, 
+        z:z, 
+        power:reactor_db.reactors[reactor].power * load_factor/100, 
+        name:reactor, 
+        obj:reactor_db.reactors[reactor]
+      };
     }
   )
 
