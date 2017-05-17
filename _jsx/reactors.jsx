@@ -36,6 +36,8 @@ var invertedMassEvent = new Event("invertedMass");
 var geoneutrinoEvent = new Event("geoneutrinos");
 var loadFactorEvent = new Event("loadFactor");
 var customReactorEvent = new Event("customReactorEvent");
+var powerOverrideEvent = new Event("powerOverrideEvent");
+var useMaxPowerEvent = new Event("useMaxPowerEvent");
 
 //
 const EARTH_RADIUS = 6371; // km
@@ -71,6 +73,8 @@ var loadFactor = 2015;
 
 var invertedMass = false;
 
+
+var useMaxPower = false;
 var powerOverrides = {
   min: [],
   max: []
@@ -128,6 +132,18 @@ function updateDetectorPosition(lon, lat){
     }
 
     window.dispatchEvent(detectorPositionUpdate);
+}
+
+function updatePowerOverride(min=[], max=[]){
+  powerOverrides.min = min;
+  powerOverrides.max = max;
+  window.dispatchEvent(powerOverrideEvent);
+  console.log(min, max);
+}
+
+function updateUseMaxPower(val){
+  useMaxPower = val
+  window.dispatchEvent(useMaxPowerEvent);
 }
 
 function updateFollowMouse(state){
@@ -291,6 +307,18 @@ function updateSpectrums(){
     };
 
     var power = reactor_loadfactors[i].power;
+
+    if (useMaxPower && power > 0){
+      power = reactor_loadfactors[i].obj.power;
+    }
+
+    if (powerOverrides.min.includes(reactor_loadfactors[i].name)){
+      power = 0;
+    }
+    if (powerOverrides.max.includes(reactor_loadfactors[i].name)){
+      power = reactor_loadfactors[i].obj.power;
+    }
+    
     var dist = distance(p1, p2);
     var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
 
@@ -334,6 +362,8 @@ window.addEventListener("invertedMass", updateSpectrums);
 window.addEventListener("geoneutrinos", updateSpectrums);
 window.addEventListener("loadFactor", updateSpectrums);
 window.addEventListener("customReactorEvent", updateSpectrums);
+window.addEventListener("powerOverrideEvent", updateSpectrums);
+window.addEventListener("useMaxPowerEvent", updateSpectrums);
 
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
@@ -1124,12 +1154,66 @@ var ReactorListPanel = React.createClass({
   },
   componentDidMount(){
     window.addEventListener("loadFactor", this.updateReactorData);
+    window.addEventListener("useMaxPowerEvent", this.updateReactorData);
   },
   componentWillUnmount(){
     window.removeEventListener("loadFactor", this.updateReactorData);
+    window.removeEventListener("useMaxPowerEvent", this.updateReactorData);
+  },
+  toggleReactorOverride(e){
+    let name = e.target.name;
+    let max = this.state.powerOverrides.max;
+    let min = this.state.powerOverrides.min;
+    if(max.includes(name)){
+      max = max.filter(item => item !== name);
+      min = min.concat([name]);
+    }
+    else if(min.includes(name)){
+      min = min.filter(item => item !== name);
+    }else{
+      max = max.concat([name]);
+    }
+    const powerOverrides = {
+      min: min,
+      max: max,
+    }
+    updatePowerOverride(min, max);
+    this.setState({powerOverrides:powerOverrides});
+
   },
   render: function(){
-    var rows = this.state.lf.map(function(reactor){
+    var rows = this.state.lf.map((reactor) => {
+      const getButton = (name) => {
+        if(this.state.powerOverrides.max.includes(name)){
+          return <button name={name} onClick={this.toggleReactorOverride}>Set 0 Power</button>
+        }
+        if(this.state.powerOverrides.min.includes(name)){
+          return <button name={name} onClick={this.toggleReactorOverride}>Set to default</button>
+        }
+
+        return <button name={name} onClick={this.toggleReactorOverride}>Set to Max Power</button>
+      }
+
+      const getPower = (reactor) => {
+        let name = reactor.name;
+        let max = this.state.powerOverrides.max;
+        let min = this.state.powerOverrides.min;
+        if(max.includes(name)){
+          return reactor.obj.power.toFixed(1);
+        }
+        else if(min.includes(name)){
+          return 0.0.toFixed(1)
+        }else if(useMaxPower){
+          if (reactor.power > 0){
+            return reactor.obj.power.toFixed(1);
+          }else{
+            return 0.0.toFixed(1);
+          }
+        }else{
+          return reactor.power.toFixed(1)
+        }
+      }
+
       var bsStyle = ""
       if(reactor.power === 0){
         bsStyle = "danger"
@@ -1137,7 +1221,8 @@ var ReactorListPanel = React.createClass({
       return (
         <tr className={bsStyle}>
           <td>{reactor.name}</td>
-          <td>{reactor.power.toFixed(1)}</td>
+          <td>{getPower(reactor)}</td>
+          <td>{getButton(reactor.name)}</td>
         </tr>
       )
     })
@@ -1148,6 +1233,7 @@ var ReactorListPanel = React.createClass({
             <tr>
               <th>Name</th>
               <th>Power</th>
+              <th>Override</th>
             </tr>
           </thead>
           <tbody>
@@ -1162,11 +1248,16 @@ var ReactorListPanel = React.createClass({
 
 var ReactorLoadPanel = React.createClass({
   getInitialState: function(){
-    return {"loadFactor": loadFactor};
+    return {"loadFactor": loadFactor, "useMaxPower":useMaxPower};
   },
   handleLFChange: function(event){
     updateLoadFactor(event.target.value);
     this.setState({"loadFactor": loadFactor});
+  },
+  handleUseCheckbox: function(event){
+    let newUseMaxPower = !(this.state.useMaxPower);
+    this.setState({useMaxPower:newUseMaxPower});
+    updateUseMaxPower(newUseMaxPower);
   },
   render: function() {
     const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
@@ -1181,6 +1272,7 @@ var ReactorLoadPanel = React.createClass({
     	    <FormControl onChange={this.handleLFChange} value={this.state.loadFactor} componentClass="select">
             {options}
           </FormControl>
+          <Checkbox onChange={this.handleUseCheckbox} checked={this.state.useMaxPower}>Use Max Power for Operating Cores (in the year above)</Checkbox>
     	  </Col>
     	  </FormGroup>
       </Form>
