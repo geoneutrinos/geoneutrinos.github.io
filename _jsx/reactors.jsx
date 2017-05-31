@@ -52,7 +52,12 @@ var detectorPosition = {
 
 var followMouse = true;
 
-var loadFactor = 2015;
+var loadFactor = {
+  ystart: "2015",
+  yend: "2015",
+  mstart: "01",
+  mend: "12",
+};
 
 var invertedMass = false;
 
@@ -91,7 +96,7 @@ var distances = {
   'user': null,
 }
 
-var reactor_loadfactors = reactor_db.average_lf(2015, undefined, 2015, undefined);
+var reactor_loadfactors = reactor_db.average_lf(loadFactor.ystart, loadFactor.mstart, loadFactor.yend, loadFactor.mend);
 
 var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], customReactor.uncertainty * 1000);
 
@@ -163,8 +168,8 @@ function updateGeoneutrinos(obj){
 }
 
 function updateLoadFactor(newLoadFactor){
-  loadFactor = newLoadFactor;
-  reactor_loadfactors = reactor_db.average_lf(newLoadFactor, undefined, newLoadFactor);
+  loadFactor = Object.assign(loadFactor, newLoadFactor);
+  reactor_loadfactors = reactor_db.average_lf(loadFactor.ystart, loadFactor.mstart, loadFactor.yend, loadFactor.mend);
   window.dispatchEvent(loadFactorEvent);
 }
 
@@ -303,6 +308,7 @@ function tof11(elm){
 }
 
 function updateSpectrums(){
+  console.log(reactor_loadfactors[0].power);
   // we want to find the smallest element, so start someplace big...
   var min_dist = 1e10;
   var min_spec;
@@ -1266,12 +1272,45 @@ var ReactorListPanel = React.createClass({
 
 var ReactorLoadPanel = React.createClass({
   getInitialState: function(){
-    return {"loadFactor": loadFactor, "useMaxPower":useMaxPower};
+    return Object.assign({},
+      loadFactor,
+      {"useMaxPower":useMaxPower}
+    )
   },
-  handleLFChange: function(event){
-    updateLoadFactor(event.target.value);
-    this.setState({"loadFactor": loadFactor});
+
+  handleYStartChange: function(event){
+    var value = event.target.value;
+    if((this.state.yend + this.state.mend) < (value + this.state.mstart)){
+      value = this.state.yend;
+    }
+    updateLoadFactor({ystart: value});
+    this.setState({"ystart": value});
   },
+  handleMStartChange: function(event){
+    var value = event.target.value;
+    if((this.state.yend + this.state.mend) < (this.state.ystart + value)){
+      value = this.state.mend;
+    }
+    updateLoadFactor({mstart: value});
+    this.setState({"mstart": value});
+  },
+  handleYEndChange: function(event){
+    var value = event.target.value;
+    if((value + this.state.mend) < (this.state.ystart + this.state.mstart)){
+      value = this.state.ystart;
+    }
+    updateLoadFactor({yend: value});
+    this.setState({"yend": value});
+  },
+  handleMEndChange: function(event){
+    var value = event.target.value;
+    if((this.state.yend + value) < (this.state.ystart + this.state.mstart)){
+      value = this.state.mstart;
+    }
+    updateLoadFactor({mend: value});
+    this.setState({"mend": value});
+  },
+
   handleUseCheckbox: function(event){
     let newUseMaxPower = !(this.state.useMaxPower);
     this.setState({useMaxPower:newUseMaxPower});
@@ -1279,21 +1318,41 @@ var ReactorLoadPanel = React.createClass({
   },
   render: function() {
     const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
-    const options = years.map(function(year){
-      return <option value={year}>Mean {year} LF</option>
+    const months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+    const yearOptions = years.map(function(year){
+      return <option value={year}>{year}</option>
+    });
+    const monthOptions = months.map(function(month){
+      return <option value={month}>{month}</option>
     });
     return (
     <Panel header="Reactor Load Factors">
-      <Form horizontal>
+      <Form inline>
     	  <FormGroup controlId="loadFactor">
-    	  <Col sm={12}>
-    	    <FormControl onChange={this.handleLFChange} value={this.state.loadFactor} componentClass="select">
-            {options}
+    	    <FormControl onChange={this.handleYStartChange} value={this.state.ystart} componentClass="select">
+            {yearOptions}
           </FormControl>
-          <Checkbox onChange={this.handleUseCheckbox} checked={this.state.useMaxPower}>Use Max Power for Operating Cores (in the year above)</Checkbox>
-    	  </Col>
+    	  </FormGroup>
+        -
+    	  <FormGroup controlId="loadFactor">
+    	    <FormControl onChange={this.handleMStartChange} value={this.state.mstart} componentClass="select">
+            {monthOptions}
+          </FormControl>
+    	  </FormGroup>
+        TO
+    	  <FormGroup controlId="loadFactor">
+    	    <FormControl onChange={this.handleYEndChange} value={this.state.yend} componentClass="select">
+            {yearOptions}
+          </FormControl>
+    	  </FormGroup>
+        -
+    	  <FormGroup controlId="loadFactor">
+    	    <FormControl onChange={this.handleMEndChange} value={this.state.mend} componentClass="select">
+            {monthOptions}
+          </FormControl>
     	  </FormGroup>
       </Form>
+      <Checkbox onChange={this.handleUseCheckbox} checked={this.state.useMaxPower}>Use Max Power for Operating Cores (in the period above)</Checkbox>
     </Panel>
         )
   }
