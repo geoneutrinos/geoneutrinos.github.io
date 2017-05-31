@@ -44,23 +44,6 @@ const EARTH_RADIUS = 6371; // km
 const DEG_TO_RAD = Math.PI / 180;
 
 
-var reactorCircles = reactor_locations.map(function(data){
-  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#008000"}).bindPopup(data.name);
-});
-
-
-var map = L.map('map_container').setView([0, 0], 1);
-
-L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-}).addTo(map);
-
-L.control.layers(null, {"Reactors": L.layerGroup(reactorCircles)}).addTo(map);
-
-
-
-
-
 // Global State Variables
 var detectorPosition = {
   "lat": 41.75,
@@ -251,6 +234,43 @@ var detectorPresets = [
     ]
   }
 ];
+
+// Just map things
+
+var reactorCircles = reactor_locations.map(function(data){
+  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#008000"}).bindPopup(data.name);
+});
+
+var detectorLocations = []
+
+detectorPresets.forEach(function(item){
+  item.children.forEach(function(detector){
+    detectorLocations.push({
+      lat: parseFloat(detector.value.split(',')[0]),
+      lon: parseFloat(detector.value.split(',')[1]),
+      name: detector.label
+    })
+  });
+});
+
+const detectorCircles = detectorLocations.map(function(data){
+  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#000080"}).bindPopup(data.name);
+});
+
+
+var map = L.map('map_container').setView([0, 0], 1);
+
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+}).addTo(map);
+
+L.control.layers(null, {
+  "Reactors": L.layerGroup(reactorCircles),
+  "Detectors": L.layerGroup(detectorCircles),
+}).addTo(map);
+
+
+
 
 function distance(p1, p2){
   var dx = p1.x - p2.x;
