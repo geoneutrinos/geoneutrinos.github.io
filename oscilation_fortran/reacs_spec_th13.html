@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+path { 
+  stroke: steelblue;
+  stroke-width: 2;
+  fill: none;
+}
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: grey;
+      stroke-width: 1;
+      shape-rendering: crispEdges;
+    }
+  </style>
+</head>
+<body>
+<p>spectrum scaling <span id="fluxnorm1"></span> <span id="scale"></span></p>
+<p>baserate events <span id="fluxnorm2"></span></p>
+
+<img id="the_map" src="eq_map.png" width="50%" height="50%">
+
+<p>The osc output</p>
+<div id='graph'></div>
+<p><label>Detector Distance: <input value=60 id="dist" type="range" min="10" max="1000" step="1" /></label></p>
+<textarea readonly id="osc_out" rows=8>
+</textarea>
+<script src="spherical_power.js"></script>
+<script>
+</script>
+
+<script>
+
+/*
+   Initalize the array and constants, this is almost
+   identical to the fortran except for the syntax.
+   */
+var spectrum = new Array(1000);
+var e1 = 0.8;
+var e2 = 1.43;
+var e3 = 3.2;
+var baserate = 0.00808;
+
+// are all uninitialized variables in fortran 0?
+var fluxnorm = 0;
+
+/*
+  In javascript current best way of looping through an array
+  is to make counter variable (by convention i), the second 
+  part of the loop is a test, in this case, that the counter i
+  is not larger than the array is long, the third and final part
+  of the loop is the action to be performed on the counter
+  on each itteration, in this case it is incrimented by on (i++)
+
+  javascript array indexes start at 0 instead of 1. This has the
+  effect of having all the indicie tests be minus one from the
+  fortran.
+  */
+for (var i=0; i < spectrum.length; i++){
+  spectrum[i] = 0;
+  if ((i > 178) && (i < 949)){
+    var enu = i/100;
+    // In javascript, to do x^y you need to call Math.pow(x, y)
+    // Lets store the two parts seperately, then call the e^n function
+    var p1 = Math.pow((enu-e2), 2);
+    var p2 = -Math.pow((enu+e1)/e3, 2);
+    spectrum[i] = p1 * Math.exp(p2);
+    if (i > 338){
+      // the += operator works as follows: a += b is identical to a = a + b
+      fluxnorm += spectrum[i];
+    }
+  }
+}
+var scale = baserate/fluxnorm;
+// this next part just displays on the page these data, ignore this
+document.getElementById("fluxnorm1").textContent = fluxnorm;
+document.getElementById("scale").textContent = scale.toExponential();
+// stop ignoring
+
+// because we have declared the variable above, we don't need to put a
+// "var" in front of this, simply reset to 0;
+fluxnorm = 0;
+for (var i=0; i < spectrum.length; i++){
+  spectrum[i] = spectrum[i] * scale;
+  fluxnorm += spectrum[i];
+}
+
+/*
+   In javascript, the return value is explictly passed back.
+   So here we would create the array and just give it back to the caller
+   of the function for them to deal with (usually assigned to some var)
+   */
+function nuosc(dist, pwr){
+  var earth_rad_sq = 4.059e7;
+  var dmsq21 = 7.50e-5;
+  var ds2t13 = 0.19e-5;
+  var s2t13 = 0.0218;
+  var ds2t13 = 0.0010;
+  var s2t12 = 0.304;
+  var ds2t12 = 0.013;
+
+  var c4t13 = (1 - s2t13) * (1 - s2t13);
+  var s22t12 = 4 * s2t12 * (1 - s2t12);
+
+  //added nuosc13
+  var s22t13 = 4 * s2t13 * (1-s2t13);
+  var c22t12 = 1 - s22t12;
+
+  var dmsq31 = 2.457e-3;
+  var dmsq32 = dmsq31 - dmsq21;
+
+  var oscarg21 = 1.27 * dmsq21 * dist * 1000;
+  var oscarg31 = 1.27 * dmsq31 * dist * 1000;
+  var oscarg32 = 1.27 * dmsq32 * dist * 1000;
+
+  var flux = pwr * earth_rad_sq / (dist * dist);
+
+  var oscspec = new Array(1000);
+  
+  for (var i=0; i < oscspec.length; i++){
+    oscspec[i] = 0;
+    if (i >= 179){
+      // I don't know what the 0.01 is doing here.
+      enu = (i + 1) * 0.01;
+      
+      supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
+      supr31 = s22t13 * c22t12 * Math.pow(Math.sin(oscarg31/enu), 2);
+      supr32 = s22t13 * s22t12 * Math.pow(Math.sin(oscarg32/enu), 2);
+
+      pee = 1 - supr21 - supr31 - supr32;
+
+      //pee = c4t13 * (1 - s22t12 * Math.pow(Math.sin(oscarg/enu), 2)) + s2t13 * s2t13;
+      oscspec[i] = pee * flux;
+    }
+  }
+  return oscspec;
+}
+
+var osc = nuosc(60, 3.2);
+for (var i=0; i < osc.length; i++){
+  osc[i] = osc[i] * spectrum[i];
+}
+
+/*
+   Everything after here is making the output print on the webpage
+
+   Just ignore unless you want to see how the SVG sausage is made
+   */
+document.getElementById("fluxnorm2").textContent = fluxnorm.toExponential();
+function tof11(elm){
+  return elm.toFixed(11);
+}
+
+document.getElementById("osc_out").value = osc.map(tof11).join('\n');
+</script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+
+var user_dist = document.getElementById("dist").value;
+var data = nuosc(user_dist, 3.2);
+for (var i=0; i < osc.length; i++){
+  data[i] = [i, data[i] * spectrum[i]];
+}
+
+// Set the dimensions of the canvas / graph
+var margin = {top: 30, right: 20, bottom: 30, left: 50},
+    width = 600 - margin.left - margin.right,
+    height = 270 - margin.top - margin.bottom;
+
+// Parse the date / time
+
+// Set the ranges
+var x = d3.scale.linear().range([0, width]);
+var y = d3.scale.linear().range([height, 0]);
+
+// Define the axes
+var xAxis = d3.svg.axis().scale(x)
+    .orient("bottom").ticks(5);
+
+var yAxis = d3.svg.axis().scale(y)
+    .orient("left").ticks(5);
+
+// Define the line
+var valueline = d3.svg.line()
+    .x(function(d) { return x(d[0]); })
+    .y(function(d) { return y(d[1]); });
+    
+// Adds the svg canvas
+var svg = d3.select("#graph")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform", 
+              "translate(" + margin.left + "," + margin.top + ")");
+    x.domain([0, d3.max(data, function(d) { return d[0]; })]);
+    y.domain([0, d3.max(data, function(d) { return d[1]; })]);
+
+    // Add the valueline path.
+    svg.append("path")
+        .attr("class", "line")
+        .attr("d", valueline(data));
+
+    // Add the X Axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    // Add the Y Axis
+    svg.append("g")
+        .attr("class", "y axis")
+        .attr("id", "yaxis")
+        .call(yAxis);
+
+var earth_radius = 6371;
+document.getElementById("the_map").addEventListener("mousemove", function(e){
+  var output = new Array(1000);
+  for (var i=0; i < output.length; i++){
+    output[i] = [i, 0];
+  }
+
+  clx = e.offsetX;
+  cly = e.offsetY;
+  lat = (90 - (180/this.height) * cly) * (Math.PI/180);
+  lon = (clx * (360/this.width) -180) * (Math.PI/180);
+  console.log(lat, lon)
+
+  x1 = earth_radius * Math.cos(lat) * Math.cos(lon);
+  y1 = earth_radius * Math.cos(lat) * Math.sin(lon);
+  z1 = earth_radius * Math.sin(lat);
+
+  for (var i=0; i<react_data.length; i++){
+    x2 = react_data[i][0];
+    y2 = react_data[i][1];
+    z2 = react_data[i][2];
+    power = react_data[i][3];
+    distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2,  2) + Math.pow(z1 - z2, 2));
+    console.log(distance)
+    data = nuosc(distance, power);
+    for (var ii=0; ii < data.length; ii++){
+      output[ii][1] = output[ii][1] + data[ii] * spectrum[ii];
+    }
+  }
+    x.domain([0, d3.max(output, function(d) { return d[0]; })]);
+    y.domain([0, d3.max(output, function(d) { return d[1]; })]);
+    svg.select(".line")
+        .attr("d", valueline(output));
+    svg.select("#yaxis")
+      .call(yAxis);
+});
+</script>
+</body>
+</html>
