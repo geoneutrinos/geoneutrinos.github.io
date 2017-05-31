@@ -138,7 +138,6 @@ function updatePowerOverride(min=[], max=[]){
   powerOverrides.min = min;
   powerOverrides.max = max;
   window.dispatchEvent(powerOverrideEvent);
-  console.log(min, max);
 }
 
 function updateUseMaxPower(val){
@@ -1149,7 +1148,6 @@ var ReactorListPanel = React.createClass({
     return {lf: reactor_loadfactors, powerOverrides: powerOverrides};
   },
   updateReactorData(){
-    console.log("updated");
     this.setState({lf: reactor_loadfactors});
   },
   componentDidMount(){
