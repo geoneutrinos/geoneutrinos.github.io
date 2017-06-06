@@ -265,7 +265,7 @@ const detectorCircles = detectorLocations.map(function(data){
 
 var map = L.map('map_container').setView([0, 0], 1);
 
-L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
@@ -1326,33 +1326,39 @@ var ReactorLoadPanel = React.createClass({
       return <option value={month}>{month}</option>
     });
     return (
-    <Panel header="Reactor Load Factors">
+    <Panel header="Reactor Load">
+      <Form inline>
+    	  <FormGroup controlId="loadFactor">
+    	    <FormControl onChange={this.handleUseCheckbox} value={this.state.useMaxPower} componentClass="select">
+            <option value={false}>Mean</option>
+            <option value={true}>Max</option>
+          </FormControl>
+    	  </FormGroup>
+        &nbsp;data from start to end of the following year-month pairs:
+      </Form>
       <Form inline>
     	  <FormGroup controlId="loadFactor">
     	    <FormControl onChange={this.handleYStartChange} value={this.state.ystart} componentClass="select">
             {yearOptions}
           </FormControl>
     	  </FormGroup>
-        -
     	  <FormGroup controlId="loadFactor">
     	    <FormControl onChange={this.handleMStartChange} value={this.state.mstart} componentClass="select">
             {monthOptions}
           </FormControl>
     	  </FormGroup>
-        TO
+        &nbsp;–&nbsp;
     	  <FormGroup controlId="loadFactor">
     	    <FormControl onChange={this.handleYEndChange} value={this.state.yend} componentClass="select">
             {yearOptions}
           </FormControl>
     	  </FormGroup>
-        -
     	  <FormGroup controlId="loadFactor">
     	    <FormControl onChange={this.handleMEndChange} value={this.state.mend} componentClass="select">
             {monthOptions}
           </FormControl>
     	  </FormGroup>
       </Form>
-      <Checkbox onChange={this.handleUseCheckbox} checked={this.state.useMaxPower}>Use Max Power for Operating Cores (in the period above)</Checkbox>
     </Panel>
         )
   }
