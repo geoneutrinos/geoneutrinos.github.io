@@ -576,7 +576,7 @@ var Plot = React.createClass({
     .attr("y", -50)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("Rate 𝖽𝘙/𝖽𝘛 (TNU/10 keV)");
+    .text("Rate 𝖽𝘙/𝖽𝘌 (TNU/10 keV)");
 
     this._svg.append("text")
     .attr("class", "x label")
@@ -611,12 +611,12 @@ var Plot = React.createClass({
     le.append("text")
     .attr("text-anchor", "end")
     .attr("x", "-2.1em")
-    .attr("y", "1.5em")
+    .attr("y", "2.5em")
     .text("Closest Reactor");
     le.append("text")
     .attr("text-anchor", "end")
     .attr("x", "-2.1em")
-    .attr("y", "2.5em")
+    .attr("y", "1.5em")
     .text("Reactors");
     le.append("text")
     .attr("text-anchor", "end")
@@ -668,13 +668,13 @@ var Plot = React.createClass({
     .attr("height", "1em")
     .attr("x", "-1.9em")
     .attr("y", "0.5em")
-    .style("fill", "#999");
+    .style("fill", "green");
     le.append("rect")
     .attr("width", "1.9em")
     .attr("height", "1em")
     .attr("x", "-1.9em")
     .attr("y", "1.5em")
-    .style("fill", "green");
+    .style("fill", "#999");
     le.append("rect")
     .attr("width", "1.9em")
     .attr("height", "1em")
@@ -780,10 +780,10 @@ var StatsPanel = React.createClass({
         <div>
           <i>R</i><sub>total</sub> = {this.state.total_tnu.toFixed(1)} TNU<br />
           <i>R</i><sub>reac</sub> = {this.state.reactors_tnu.toFixed(1)} TNU<br />
-          <i>R</i><sub>closest</sub> = {this.state.closest_tnu.toFixed(1)} TNU ({(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(0)} % of total)<br />
-          <i>D</i> to Closest Reactor = {this.state.closest_distance.toFixed(1)} km<br />
-          <i>D</i> to User Reactor = {this.state.custom_distance.toFixed(1)} km<br />
-          <i>R</i><sub>e &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
+          <i>R</i><sub>closest</sub> = {this.state.closest_tnu.toFixed(1)} TNU ({(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(1)} % of total)<br />
+          <i>D</i><sub>closest</sub> = {this.state.closest_distance.toFixed(1)} km<br />
+          <i>D</i><sub>user</sub> = {this.state.custom_distance.toFixed(1)} km<br />
+          <i>R</i><sub>𝘌 &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
           <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU<br />
           <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
           <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
