@@ -308,7 +308,6 @@ function tof11(elm){
 }
 
 function updateSpectrums(){
-  console.log(reactor_loadfactors[0].power);
   // we want to find the smallest element, so start someplace big...
   var min_dist = 1e10;
   var min_spec;
@@ -470,6 +469,9 @@ var Plot = React.createClass({
       .attr('width', width);
     this._le.attr("transform", "translate(" + (width - 40) + ",0)");
 
+    // redraw the spectrum so it is accurate
+    this.updateLines();
+
   },
   updateLines: function(){
     function for_plot(arr){
@@ -574,7 +576,7 @@ var Plot = React.createClass({
     .attr("y", -50)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("Rate (TNU/10 keV)");
+    .text("Rate 𝖽𝘙/𝖽𝘛 (TNU/10 keV)");
 
     this._svg.append("text")
     .attr("class", "x label")
@@ -592,7 +594,7 @@ var Plot = React.createClass({
     .style("font-size", "15px")
     .attr("x", this._width)
     .attr("y", this._height + 33)
-    .text("Antineutrino Energy (MeV)");
+    .text("Antineutrino Energy 𝘌 (MeV)");
 
     
     this._le = this._svg.append("g")
@@ -776,14 +778,14 @@ var StatsPanel = React.createClass({
   render: function(){
     return (
         <div>
-          R<sub>Total</sub>: {this.state.total_tnu.toFixed(1)} TNU<br />
-          R<sub>E &lt; 3.275 MeV</sub>: {this.state.total_tnu_geo.toFixed(1)} TNU<br />
-          R<sub>Closest</sub>: {(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(0)} (% of total)<br />
-          R<sub>geo</sub>: {this.state.geo_tnu.toFixed(1)} TNU<br />
-          R<sub>reac</sub>: {this.state.reactors_tnu.toFixed(1)} TNU<br />
-          Th/U<sub>geo</sub>: {this.state.geo_r.toFixed(1)}<br />
-          Distance to Closest Reactor: {this.state.closest_distance.toFixed(1)} km<br />
-          Distance to User Reactor: {this.state.custom_distance.toFixed(1)} km<br />
+          <i>R</i><sub>total</sub> = {this.state.total_tnu.toFixed(1)} TNU<br />
+          <i>R</i><sub>reac</sub> = {this.state.reactors_tnu.toFixed(1)} TNU<br />
+          <i>R</i><sub>closest</sub> = {this.state.closest_tnu.toFixed(1)} TNU ({(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(0)} % of total)<br />
+          <i>D</i> to Closest Reactor = {this.state.closest_distance.toFixed(1)} km<br />
+          <i>D</i> to User Reactor = {this.state.custom_distance.toFixed(1)} km<br />
+          <i>R</i><sub>e &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
+          <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU<br />
+          <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
           <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
         </div>
         );
@@ -808,7 +810,7 @@ var SpectrumPanel = React.createClass({
   render: function(){
     return (
         <Panel header="Spectrum Stats">
-    			<Checkbox onClick={updateInvertedMass} checked={this.state.invertedMass}>Inverted Neutrino Mass Hierarchy</Checkbox>
+    			<Checkbox onClick={updateInvertedMass} checked={this.state.invertedMass}>Inverted Neutrino Mass Ordering</Checkbox>
           <StatsPanel />
         </Panel>
         );
@@ -1326,7 +1328,7 @@ var ReactorLoadPanel = React.createClass({
       return <option value={month}>{month}</option>
     });
     return (
-    <Panel header="Reactor Load">
+    <Panel header="Thermal Powers">
       <Form inline>
     	  <FormGroup controlId="loadFactor">
     	    <FormControl onChange={this.handleUseCheckbox} value={this.state.useMaxPower} componentClass="select">
@@ -1334,7 +1336,7 @@ var ReactorLoadPanel = React.createClass({
             <option value={true}>Max</option>
           </FormControl>
     	  </FormGroup>
-        &nbsp;data from start to end of the following year-month pairs:
+        &nbsp;default data from start to end of the following year-month pairs:
       </Form>
       <Form inline>
     	  <FormGroup controlId="loadFactor">
