@@ -53,8 +53,8 @@ var detectorPosition = {
 var followMouse = true;
 
 var loadFactor = {
-  ystart: "2015",
-  yend: "2015",
+  ystart: "2016",
+  yend: "2016",
   mstart: "01",
   mend: "12",
 };
@@ -1319,7 +1319,7 @@ var ReactorLoadPanel = React.createClass({
     updateUseMaxPower(newUseMaxPower);
   },
   render: function() {
-    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015];
+    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016];
     const months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
     const yearOptions = years.map(function(year){
       return <option value={year}>{year}</option>
