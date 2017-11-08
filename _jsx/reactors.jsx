@@ -46,8 +46,8 @@ const DEG_TO_RAD = Math.PI / 180;
 
 // Global State Variables
 var detectorPosition = {
-  "lat": 41.75,
-  "lon": -81.29
+  "lat": 54.55,
+  "lon": -0.82
 };
 
 var followMouse = true;
@@ -186,7 +186,8 @@ var detectorPresets = [
         {value:"9.95,77.28",  label:"INO (3000 mwe)"},
         {value:"22.12,112.51",label:"Jiangmen (2100 mwe)"},
         {value:"28.15,101.71",label:"Jinping (6720 mwe)"},
-        {value:"36.42,137.30",label:"Kamioka (2050 mwe)"}
+        {value:"36.42,137.30",label:"Kamioka (2050 mwe)"},
+        {value:"51.771,104.398",label:"Lake Baikal (1100 mwe)"}
     ]
 	},
 	{
