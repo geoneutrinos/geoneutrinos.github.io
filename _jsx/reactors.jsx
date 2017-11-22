@@ -27,7 +27,6 @@ var nu_spectrum = require("./spectrum.js").default;
 var osc = require("./nuosc.js");
 
 const reactor_db = require("./reactor_db.js");
-const reactor_locations = reactor_db.reactor_locations;
 
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
@@ -42,6 +41,21 @@ var useMaxPowerEvent = new Event("useMaxPowerEvent");
 //
 const EARTH_RADIUS = 6371; // km
 const DEG_TO_RAD = Math.PI / 180;
+
+import { λ, σ } from './antineutrinos';
+import { corelist } from './reactor_db';
+
+function mevRange(count = 1000, start = 0, stop = 10){
+  // TODO figure out how to deal with a start not a zero
+  const binSize = (stop - start) / count;
+  var bins = [...Array(count).keys()];
+
+  bins = bins.map((bin) => bin + 1);
+  bins = bins.map((bin) => bin * (stop/count));
+  bins = bins.map((bin) => bin - (binSize/2));
+  return bins;
+}
+
 
 
 // Global State Variables
@@ -243,8 +257,13 @@ var detectorPresets = [
 
 // Just map things
 
-var reactorCircles = reactor_locations.map(function(data){
-  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#008000"}).bindPopup(data.name);
+var reactorCircles = corelist.map(function(core){
+  return L.circle([core.lat, core.lon], 
+    {"radius": 250, "color": "#008000"}
+  ).bindPopup(
+    `<b>Core Name:</b> ${core.name}<br />
+    <b>Design Power:</b> ${core.power} MW`
+  );
 });
 
 var detectorLocations = []
@@ -577,7 +596,7 @@ var Plot = React.createClass({
     .attr("y", -50)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("Rate 𝖽𝘙/𝖽𝘌 (TNU/10 keV)");
+    .text("Rate dR/dE (TNU/10 keV)");
 
     this._svg.append("text")
     .attr("class", "x label")
@@ -595,7 +614,7 @@ var Plot = React.createClass({
     .style("font-size", "15px")
     .attr("x", this._width)
     .attr("y", this._height + 33)
-    .text("Antineutrino Energy 𝘌 (MeV)");
+    .text("Antineutrino Energy E (MeV)");
 
     
     this._le = this._svg.append("g")
@@ -784,7 +803,7 @@ var StatsPanel = React.createClass({
           <i>R</i><sub>closest</sub> = {this.state.closest_tnu.toFixed(1)} TNU ({(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(1)} % of total)<br />
           <i>D</i><sub>closest</sub> = {this.state.closest_distance.toFixed(1)} km<br />
           <i>D</i><sub>user</sub> = {this.state.custom_distance.toFixed(1)} km<br />
-          <i>R</i><sub>𝘌 &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
+          <i>R</i><sub>E &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
           <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU<br />
           <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
           <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>

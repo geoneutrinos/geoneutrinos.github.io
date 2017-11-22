@@ -1,3 +1,5 @@
+import { nuosc } from './nuosc';
+
 const memoize = require('memoizee');
 
 const reactor_db = require("../reactor_database/reactors.json");
@@ -62,17 +64,6 @@ var corelist = Object.getOwnPropertyNames(reactor_db.reactors).map(function(reac
     )
   });
 
-function geo_reactor_locations(){
-  return Object.getOwnPropertyNames(reactor_db.reactors).map(function(reactor){
-    return {
-      lat: reactor_db.reactors[reactor].lat, 
-      lon: reactor_db.reactors[reactor].lon,
-      name: reactor,
-    }
-  }
-  )
-}
-
 function average_lf(start_year="2003", start_month="01", end_year="2015", end_month="12"){
   const first = start_year + "-" + start_month;
   const last = end_year + "-" + end_month;
@@ -102,5 +93,4 @@ function average_lf(start_year="2003", start_month="01", end_year="2015", end_mo
 
 }
 
-export {reactor_db, average_lf};
-export const reactor_locations = geo_reactor_locations();
+export {reactor_db, average_lf, corelist};
