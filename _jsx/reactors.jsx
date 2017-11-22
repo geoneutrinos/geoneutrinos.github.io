@@ -26,8 +26,6 @@ var InputGroup = require('react-bootstrap/lib/InputGroup');
 var nu_spectrum = require("./spectrum.js").default;
 var osc = require("./nuosc.js");
 
-const reactor_db = require("./reactor_db.js");
-
 var detectorPositionUpdate = new Event("detectorPosition");
 var spectrumUpdate = new Event("spectrumUpdate");
 var mouseFollow = new Event("mouseFollow");
@@ -110,7 +108,9 @@ var distances = {
   'user': null,
 }
 
-var reactor_loadfactors = reactor_db.average_lf(loadFactor.ystart, loadFactor.mstart, loadFactor.yend, loadFactor.mend);
+
+// call once to initialize the current operating powers
+updateLoadFactor(loadFactor);
 
 var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], customReactor.uncertainty * 1000);
 
@@ -183,7 +183,11 @@ function updateGeoneutrinos(obj){
 
 function updateLoadFactor(newLoadFactor){
   loadFactor = Object.assign(loadFactor, newLoadFactor);
-  reactor_loadfactors = reactor_db.average_lf(loadFactor.ystart, loadFactor.mstart, loadFactor.yend, loadFactor.mend);
+  const dtstart = new Date(`${loadFactor.ystart}-${loadFactor.mstart}`);
+  const dtend = new Date(`${loadFactor.yend}-${loadFactor.mend}`);
+  corelist.forEach((core) => {
+    core.operatingPower = core.power * core.loadFactor(dtstart, dtend);
+  });
   window.dispatchEvent(loadFactorEvent);
 }
 
@@ -342,36 +346,30 @@ function updateSpectrums(){
 
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
 
-  for (var i=0; i<reactor_loadfactors.length; i++){
-
-    var p2 = {
-      x : reactor_loadfactors[i].x,
-      y : reactor_loadfactors[i].y,
-      z : reactor_loadfactors[i].z
-    };
-
-    var power = reactor_loadfactors[i].power;
+  corelist.forEach((core) => {
+    var power = core.operatingPower;
+    const dist = distance(p1, core);
 
     if (useMaxPower && power > 0){
-      power = reactor_loadfactors[i].obj.power;
+      power = core.power;
     }
 
-    if (powerOverrides.min.includes(reactor_loadfactors[i].name)){
+    if (powerOverrides.min.includes(core.name)){
       power = 0;
     }
-    if (powerOverrides.max.includes(reactor_loadfactors[i].name)){
-      power = reactor_loadfactors[i].obj.power;
+    if (powerOverrides.max.includes(core.name)){
+      power = core.power;
     }
-    
-    var dist = distance(p1, p2);
-    var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
 
+    var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
     react_spectrum.push(spec);
     if ((dist < min_dist) && (d3.sum(spec) > 0)){
       min_dist = dist;
       min_spec = spec;
     }
-  }
+
+  });
+
   var user_power = 0;
   if (customReactor.use){
     user_power = customReactor.power;
@@ -1193,10 +1191,10 @@ var CalculatorPanel = React.createClass({
 
 var ReactorListPanel = React.createClass({
   getInitialState(){
-    return {lf: reactor_loadfactors, powerOverrides: powerOverrides};
+    return {lf: corelist, powerOverrides: powerOverrides};
   },
   updateReactorData(){
-    this.setState({lf: reactor_loadfactors});
+    this.setState({lf: corelist});
   },
   componentDidMount(){
     window.addEventListener("loadFactor", this.updateReactorData);
@@ -1245,18 +1243,18 @@ var ReactorListPanel = React.createClass({
         let max = this.state.powerOverrides.max;
         let min = this.state.powerOverrides.min;
         if(max.includes(name)){
-          return reactor.obj.power.toFixed(1);
+          return reactor.power.toFixed(1);
         }
         else if(min.includes(name)){
           return 0.0.toFixed(1)
         }else if(useMaxPower){
           if (reactor.power > 0){
-            return reactor.obj.power.toFixed(1);
+            return reactor.power.toFixed(1);
           }else{
             return 0.0.toFixed(1);
           }
         }else{
-          return reactor.power.toFixed(1)
+          return reactor.operatingPower.toFixed(1)
         }
       }
 
