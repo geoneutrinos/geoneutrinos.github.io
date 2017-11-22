@@ -63,6 +63,8 @@ for name in all_names:
                 'lat' : reactor_data[year][name]['lat'],
                 'lon' : reactor_data[year][name]['lon'],
                 'power' : reactor_data[year][name]['power'],
+                'type' : reactor_data[year][name]['type'].strip(),
+                'mox' : reactor_data[year][name]['mox'],
                 }
         except KeyError:
             loads[name].extend(empty)
