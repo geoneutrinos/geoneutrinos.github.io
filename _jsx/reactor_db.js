@@ -1,18 +1,18 @@
 import { nuosc } from './nuosc';
 
+import { EARTH_RADIUS_KM } from './config';
+
 const memoize = require('memoizee');
 
 const reactor_db = require("../reactor_database/reactors.json");
-
-const EARTH_RADIUS = 6371; // km
 
 const ll_to_xyz = memoize(function(lat, lon){
   lat = lat * (Math.PI/180);
   lon = lon * (Math.PI/180);
   return [
-    EARTH_RADIUS * Math.cos(lat) * Math.cos(lon),
-    EARTH_RADIUS * Math.cos(lat) * Math.sin(lon),
-    EARTH_RADIUS * Math.sin(lat)
+    EARTH_RADIUS_KM * Math.cos(lat) * Math.cos(lon),
+    EARTH_RADIUS_KM * Math.cos(lat) * Math.sin(lon),
+    EARTH_RADIUS_KM * Math.sin(lat)
   ]
 });
 

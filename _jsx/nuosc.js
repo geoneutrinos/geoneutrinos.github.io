@@ -1,37 +1,45 @@
+import {
+  dmsq21,
+  s2t13,
+  ds2t13,
+  s2t12,
+  ds2t12,
+  
+  c4t13,
+  s22t12,
+  
+  s22t13,
+  c2t12,
+
+  dmsq32_inverted,
+  dmsq31_inverted,
+  dmsq31,
+  dmsq32,
+
+  EARTH_RADIUS_KM
+
+} from './config';
+
 var memoize = require('memoizee');
 
 var huang = require('./huang.js').huang;
 var geo_nu_spectra = require("./geo_nu_spectra.js").geo_nu_spectra;
-
-var dmsq21 = 7.50e-5;
-var ds2t13 = 0.19e-5;
-var s2t13 = 0.0218;
-var ds2t13 = 0.0010;
-var s2t12 = 0.304;
-var ds2t12 = 0.013;
-
-var c4t13 = (1 - s2t13) * (1 - s2t13);
-var s22t12 = 4 * s2t12 * (1 - s2t12);
-
-//added nuosc13
-var s22t13 = 4 * s2t13 * (1-s2t13);
-var c2t12 = 1 - s2t12;
 
 //neutrino calculations
 
 var osc_spec = memoize(function(dist, inverted){
 
   if (inverted){
-    var dmsq32 = 2.457e-3;
-    var dmsq31 = dmsq32 - dmsq21;
+    var dmsq32_use = dmsq32_inverted;
+    var dmsq31_use = dmsq31_inverted;
   } else {
-    var dmsq31 = 2.457e-3;
-    var dmsq32 = dmsq31 - dmsq21;
+    var dmsq31_use = dmsq31;
+    var dmsq32_use = dmsq32;
   }
 
   var oscarg21 = 1.27 * dmsq21 * dist * 1000;
-  var oscarg31 = 1.27 * dmsq31 * dist * 1000;
-  var oscarg32 = 1.27 * dmsq32 * dist * 1000;
+  var oscarg31 = 1.27 * dmsq31_use * dist * 1000;
+  var oscarg32 = 1.27 * dmsq32_use * dist * 1000;
 
   var oscspec = new Array(1000);
 
@@ -58,7 +66,7 @@ var osc_spec = memoize(function(dist, inverted){
    of the function for them to deal with (usually assigned to some var)
  */
 function nuosc(dist, pwr, spectrum, inverted){
-  var earth_rad_sq = 4.059e7;
+  var earth_rad_sq = EARTH_RADIUS_KM * EARTH_RADIUS_KM;
   var flux = pwr * earth_rad_sq / (dist * dist);
 
   var oscspec = new Array(1000);

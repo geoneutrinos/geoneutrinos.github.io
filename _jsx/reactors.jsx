@@ -36,9 +36,12 @@ var customReactorEvent = new Event("customReactorEvent");
 var powerOverrideEvent = new Event("powerOverrideEvent");
 var useMaxPowerEvent = new Event("useMaxPowerEvent");
 
-//
-const EARTH_RADIUS = 6371; // km
-const DEG_TO_RAD = Math.PI / 180;
+import {
+  EARTH_RADIUS_KM,
+  DEG_TO_RAD
+} from './config';
+
+import * as Constants from './config';
 
 import { λ, σ } from './antineutrinos';
 import { corelist } from './reactor_db';
@@ -339,9 +342,9 @@ function updateSpectrums(){
   var lon = detectorPosition.lon * (Math.PI/180);
   var react_spectrum = [];
   var p1 = {
-    x : EARTH_RADIUS * Math.cos(lat) * Math.cos(lon),
-    y : EARTH_RADIUS * Math.cos(lat) * Math.sin(lon),
-    z : EARTH_RADIUS * Math.sin(lat)
+    x : EARTH_RADIUS_KM * Math.cos(lat) * Math.cos(lon),
+    y : EARTH_RADIUS_KM * Math.cos(lat) * Math.sin(lon),
+    z : EARTH_RADIUS_KM * Math.sin(lat)
   };
 
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
@@ -378,9 +381,9 @@ function updateSpectrums(){
     d3.selectAll(".reac").style("display", "none");
   }
   var reac_p = {
-    x : EARTH_RADIUS * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
-    y : EARTH_RADIUS * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
-    z : EARTH_RADIUS * Math.sin(customReactor.lat * DEG_TO_RAD)
+    x : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
+    y : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
+    z : EARTH_RADIUS_KM * Math.sin(customReactor.lat * DEG_TO_RAD)
   };
   var user_dist = distance(p1, reac_p);
   var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, invertedMass);
@@ -1524,6 +1527,18 @@ var RatPacPanel = React.createClass({
   }
 });
 
+var ConfigPanel = React.createClass({
+  render: function() {
+    return (
+      <Panel header="Input Parameters">
+        <pre>
+        {JSON.stringify(Constants, null, 1)}
+      </pre>
+      </Panel>
+    )
+  }
+});
+
 
 
 var Application = React.createClass({
@@ -1548,10 +1563,13 @@ var Application = React.createClass({
           <MantlePanel />
           <CrustPanel />
         </Tab>
-        <Tab eventKey={4} title="Output & Stats">
+        <Tab eventKey={4} title="Output">
           <CalculatorPanel />
           <RatPacPanel />
           <OutputText />
+        </Tab>
+        <Tab eventKey={5} title="Inputs">
+          <ConfigPanel />
         </Tab>
       </Tabs>
     </div>
