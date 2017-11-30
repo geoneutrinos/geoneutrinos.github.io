@@ -11,8 +11,6 @@ import {
   s22t13,
   c2t12,
 
-  dmsq32_inverted,
-  dmsq31_inverted,
   dmsq31,
   dmsq32,
 
@@ -30,8 +28,8 @@ var geo_nu_spectra = require("./geo_nu_spectra.js").geo_nu_spectra;
 var osc_spec = memoize(function(dist, inverted){
 
   if (inverted){
-    var dmsq32_use = dmsq32_inverted;
-    var dmsq31_use = dmsq31_inverted;
+    var dmsq32_use = dmsq31;
+    var dmsq31_use = dmsq32;
   } else {
     var dmsq31_use = dmsq31;
     var dmsq32_use = dmsq32;

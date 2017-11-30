@@ -36,8 +36,6 @@ export const s22t12 = 4 * s2t12 * (1 - s2t12);
 export const s22t13 = 4 * s2t13 * (1-s2t13);
 export const c2t12 = 1 - s2t12;
 
-export const dmsq32_inverted = 2.457e-3;
-export const dmsq31_inverted = dmsq32_inverted - dmsq21;
 export const dmsq31 = 2.457e-3;
 export const dmsq32 = dmsq31 - dmsq21;
 

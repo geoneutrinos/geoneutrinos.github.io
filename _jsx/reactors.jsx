@@ -1531,6 +1531,9 @@ var ConfigPanel = React.createClass({
   render: function() {
     return (
       <Panel header="Input Parameters">
+        This is a <a href="https://en.wikipedia.org/wiki/JSON">JSON</a> representation of the
+        actual config variables used in the calculations. The <a href="https://github.com/DocOtak/geoneutrinos/blob/gh-pages/_jsx/config.js">source file</a> is available.
+        Any calculation performed using any of these variables will import the value from that config file and use it.
         <pre>
         {JSON.stringify(Constants, null, 1)}
       </pre>
