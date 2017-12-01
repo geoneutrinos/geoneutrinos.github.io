@@ -63,7 +63,7 @@ var osc_spec = memoize(function(dist, inverted){
    So here we would create the array and just give it back to the caller
    of the function for them to deal with (usually assigned to some var)
  */
-function nuosc(dist, pwr, spectrum, inverted){
+function nuosc(dist, pwr, spectrum, inverted, better=false){
   var earth_rad_sq = EARTH_RADIUS_KM * EARTH_RADIUS_KM;
   var flux = pwr * earth_rad_sq / (dist * dist);
 
@@ -73,6 +73,14 @@ function nuosc(dist, pwr, spectrum, inverted){
   var dist = Math.round(dist);
 
   var pee = osc_spec(dist, inverted);
+
+  if (better == true){
+    var dist2 = dist * dist;
+    for (var i=0; i < oscspec.length; i++){
+      oscspec[i] = pee[i] * pwr * spectrum[i] / dist2;
+    }
+    return oscspec;
+  }
 
   for (var i=0; i < oscspec.length; i++){
     oscspec[i] = 0;

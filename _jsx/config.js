@@ -42,3 +42,31 @@ export const dmsq32 = dmsq31 - dmsq21;
 
 export const EARTH_RADIUS_KM = 6371; // km
 export const DEG_TO_RAD = Math.PI / 180;
+
+export const FISSION_ENERGIES = { //MeV?
+  "U235":  201.912,
+  "U238":  204.997, 
+  "PU239": 210.927,
+  "PU241": 213.416
+};
+
+export const FUEL_FRACTIONS = {
+  "LEU": {
+    "U235":  0.56,
+    "U238":  0.08, 
+    "PU239": 0.30,
+    "PU241": 0.06
+  },
+  "SEU": {
+    "U235":  0.52,
+    "U238":  0.05, 
+    "PU239": 0.42,
+    "PU241": 0.01
+  },
+  "LEU_MOX": {
+    "U235":  0.39,
+    "U238":  0.08, 
+    "PU239": 0.42,
+    "PU241": 0.11
+  }
+}

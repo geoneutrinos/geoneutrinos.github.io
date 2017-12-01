@@ -43,19 +43,8 @@ import {
 
 import * as Constants from './config';
 
-import { λ, σ } from './antineutrinos';
 import { corelist } from './reactor_db';
 
-function mevRange(count = 1000, start = 0, stop = 10){
-  // TODO figure out how to deal with a start not a zero
-  const binSize = (stop - start) / count;
-  var bins = [...Array(count).keys()];
-
-  bins = bins.map((bin) => bin + 1);
-  bins = bins.map((bin) => bin * (stop/count));
-  bins = bins.map((bin) => bin - (binSize/2));
-  return bins;
-}
 
 
 
@@ -364,7 +353,7 @@ function updateSpectrums(){
       power = core.power;
     }
 
-    var spec = osc.nuosc(dist, power, nu_spectrum, invertedMass);
+    var spec = osc.nuosc(dist, power, core.spectrum, invertedMass, true);
     react_spectrum.push(spec);
     if ((dist < min_dist) && (d3.sum(spec) > 0)){
       min_dist = dist;
