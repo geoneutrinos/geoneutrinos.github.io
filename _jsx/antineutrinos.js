@@ -15,13 +15,10 @@ function λ(Ev, ...c){
 }
 
 function σ(Ev){ // Neutrino energy in MeV
-  if (Ev < IBD_THRESHOLD){
-    return 0
-  }
 
-  const Ee = Math.max(0, Ev - (NEUTRON_REST_MASS - PROTON_REST_MASS))
+  const Ee = Math.max(ELECTRON_REST_MASS, Ev - (NEUTRON_REST_MASS - PROTON_REST_MASS))
 
-  return 9.62e-44 * Math.sqrt((Ee * Ee) + (ELECTRON_REST_MASS * ELECTRON_REST_MASS)) * Ee;
+  return 9.62e-44 * Math.sqrt((Ee * Ee) - (ELECTRON_REST_MASS * ELECTRON_REST_MASS)) * Ee;
 }
 
 function R(Ev, Qi, ...c){
