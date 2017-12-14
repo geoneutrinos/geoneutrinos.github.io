@@ -43,7 +43,7 @@ var osc_spec = memoize(function(dist, inverted){
 
   for (var i=0; i < oscspec.length; i++){
     oscspec[i] = 0;
-    if (i >= 179){
+    if (i >= 0){
       var enu = (i + 1) * 0.01;
 
       var supr21 = c4t13 * s22t12 * Math.pow(Math.sin(oscarg21/enu), 2);
@@ -122,10 +122,10 @@ function geo_nu(lat, lon, mantle_signal, mantle_ratio, include_crust=true){
   var u_spectra = new Array(1000);
   var th_spectra = new Array(1000);
   for (var i=0; i < geo_nu_spectra.u238.length; i++){
-    u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 1000;
+    u_spectra[i] = geo_nu_spectra.u238[i] * total_u * 100;
   }
   for (var i=0; i < geo_nu_spectra.th232.length; i++){
-    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 1000;
+    th_spectra[i] = geo_nu_spectra.th232[i] * total_th * 100;
   }
   return {
     "u_tnu": total_u,
