@@ -43,8 +43,7 @@ import {
 
 import * as Constants from './config';
 
-import { corelist } from './reactor_db';
-
+import { corelist, ReactorCore } from './reactor_db';
 
 
 
@@ -254,11 +253,27 @@ var detectorPresets = [
 // Just map things
 
 var reactorCircles = corelist.map(function(core){
+  let style = {"radius": 250, "color": "#009000"};
+  if (core.spectrumType == 'SEU'){
+    style = {
+        "radius": 250, 
+        "color": "#ff0000",
+      }
+  }
+  if (core.spectrumType == 'LEU_MOX'){
+    style = {
+        "radius": 250, 
+        "color": "#00f",
+      }
+  }
   return L.circle([core.lat, core.lon], 
-    {"radius": 250, "color": "#008000"}
+    style
   ).bindPopup(
     `<b>Core Name:</b> ${core.name}<br />
-    <b>Design Power:</b> ${core.power} MW`
+    <b>Design Power:</b> ${core.power} MW<br />
+    <b>Type:</b> ${core.type}<br />
+    <b>Mox:</b> ${core.mox}<br />
+    `
   );
 });
 
@@ -275,7 +290,7 @@ detectorPresets.forEach(function(item){
 });
 
 const detectorCircles = detectorLocations.map(function(data){
-  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#000080"}).bindPopup(data.name);
+  return L.circle([data.lat, data.lon], {"radius": 250, "color": "#9d00ff"}).bindPopup(data.name);
 });
 
 
@@ -369,16 +384,17 @@ function updateSpectrums(){
   } else {
     d3.selectAll(".reac").style("display", "none");
   }
-  var reac_p = {
-    x : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
-    y : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
-    z : EARTH_RADIUS_KM * Math.sin(customReactor.lat * DEG_TO_RAD)
-  };
-  var user_dist = distance(p1, reac_p);
-  var user_react_spectrum = osc.nuosc(user_dist, user_power, nu_spectrum, invertedMass);
+  var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, "PWR", 0, user_power)
+  //var reac_p = {
+  //  x : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
+  //  y : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
+  //  z : EARTH_RADIUS_KM * Math.sin(customReactor.lat * DEG_TO_RAD)
+  //};
+  var user_dist = distance(p1, userReactor);
+  var user_react_spectrum = osc.nuosc(user_dist, userReactor.power, userReactor.spectrum, invertedMass, true);
 
   var user_spec = squish_array([user_react_spectrum]);
-  var iaea = squish_array([squish_array(react_spectrum), user_spec]);
+  var iaea = squish_array([squish_array(react_spectrum)]);
   distances.closest = min_dist;
   distances.user = user_dist;
   updateSpectrum({
@@ -503,7 +519,7 @@ var Plot = React.createClass({
     this._svg.select(".total")
       .attr("d", this._valueline(for_plot(spectrum.total)));
     this._svg.select(".iaea")
-      .attr("d", this._valueline(for_plot(spectrum.iaea)));
+      .attr("d", this._valueline(for_plot(squish_array([spectrum.iaea, spectrum.custom]))));
     this._svg.select("#yaxis")
       .call(this._yAxis);
     this._svg.select(".x.axis")
@@ -530,7 +546,7 @@ var Plot = React.createClass({
       .ticks(8).tickFormat(function(d) {return ((d/100)+1).toFixed(0)});
     
     this._yAxis = d3.axisLeft(this._y)
-      .ticks(5).tickFormat(function(d) {return (d/1000)});
+      .ticks(5).tickFormat(function(d) {return (d)});
     
       // Define the line
     var x = this._x;
@@ -586,7 +602,7 @@ var Plot = React.createClass({
     .attr("y", -50)
     .attr("dy", ".75em")
     .attr("transform", "rotate(-90)")
-    .text("Rate dR/dE (TNU/10 keV)");
+    .text("Rate dR/dE (TNU/MeV)");
 
     this._svg.append("text")
     .attr("class", "x label")
@@ -757,13 +773,13 @@ var LocationPresets = React.createClass({
 var StatsPanel = React.createClass({
   updateStats: function(){
     this.setState({
-      total_tnu: d3.sum(spectrum.total)/1000,
-      total_tnu_geo: d3.sum(spectrum.total.slice(0,326))/1000,
-      closest_tnu: d3.sum(spectrum.closest)/1000,
+      total_tnu: d3.sum(spectrum.total) * 0.01,
+      total_tnu_geo: d3.sum(spectrum.total.slice(0,326)) * 0.01,
+      closest_tnu: d3.sum(spectrum.closest) * 0.01,
       closest_distance: distances.closest,
       custom_distance: distances.user,
-      geo_tnu: (d3.sum(spectrum.geo_u) + d3.sum(spectrum.geo_th))/1000,
-      reactors_tnu: (d3.sum(spectrum.iaea) + d3.sum(spectrum.custom))/1000,
+      geo_tnu: (d3.sum(spectrum.geo_u) + d3.sum(spectrum.geo_th)) * 0.01,
+      reactors_tnu: (d3.sum(spectrum.iaea) + d3.sum(spectrum.custom)) * 0.01,
       geo_r: (d3.sum(spectrum.geo_th)/d3.sum(spectrum.geo_u))/0.066,
     });
   },
@@ -792,7 +808,7 @@ var StatsPanel = React.createClass({
           <i>R</i><sub>reac</sub> = {this.state.reactors_tnu.toFixed(1)} TNU<br />
           <i>R</i><sub>closest</sub> = {this.state.closest_tnu.toFixed(1)} TNU ({(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(1)} % of total)<br />
           <i>D</i><sub>closest</sub> = {this.state.closest_distance.toFixed(1)} km<br />
-          <i>D</i><sub>user</sub> = {this.state.custom_distance.toFixed(1)} km<br />
+          <i>D</i><sub>user</sub> = {this.state.custom_distance.toFixed(3)} km<br />
           <i>R</i><sub>E &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
           <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU<br />
           <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
@@ -919,7 +935,10 @@ var OutputText = React.createClass({
     var text_out = Array(1001);
     text_out[0] = "total,iaea,close,user,geo_u,geo_th";
     for (var i=0; i< spectrum.iaea.length; i++){
-      text_out[i+1] = tof11(spectrum.total[i]) + "," + tof11(spectrum.iaea[i])+","+ tof11(spectrum.closest[i]) + "," + tof11(spectrum.custom[i]) + "," + tof11(spectrum.geo_u[i]) + "," + tof11(spectrum.geo_th[i]);
+      if (i < 180){
+        continue
+      }
+      text_out[i-180+1] = tof11(spectrum.total[i]) + "," + tof11(spectrum.iaea[i])+","+ tof11(spectrum.closest[i]) + "," + tof11(spectrum.custom[i]) + "," + tof11(spectrum.geo_u[i]) + "," + tof11(spectrum.geo_th[i]);
     }
     this.setState({textContent: text_out.join("\n")});
   },
@@ -939,11 +958,11 @@ var OutputText = React.createClass({
         The box below contains the antineutrino energy spectrum and its 
         components at the selected location. The data, which range from 
         0 to 10 MeV, are in units of TNU (#/10^32 free protons/year) per 
-        10 keV. Comma-seperated columns of data correspond to: total, 
+        MeV. Comma-seperated columns of data correspond to: total, 
         sum of known IAEA reactor cores, closest core, user defined core 
         (0 if not using a custom reactor), and U and Th geoneutrino 
-        background. There are a total of 1000 rows of data under each 
-        column. The first 180 data rows have value 0 due to the energy 
+        background. There are a total of ~820 rows of data under each 
+        column. The first row starts at ~1.8 MeV due to the energy 
         threshold of the electron antineutrino inverse beta decay 
         interaction on a free proton. For plotting or further analysis, 
         simply copy and paste the contents of this box into a text file 
@@ -1257,7 +1276,8 @@ var ReactorListPanel = React.createClass({
       return (
         <tr className={bsStyle}>
           <td>{reactor.name}</td>
-          <td>{getPower(reactor)}</td>
+          <td>{getPower(reactor)} MW</td>
+          <td>{reactor.type}</td>
           <td>{getButton(reactor.name)}</td>
         </tr>
       )
@@ -1269,6 +1289,7 @@ var ReactorListPanel = React.createClass({
             <tr>
               <th>Name</th>
               <th>Power</th>
+              <th>Type</th>
               <th>Override</th>
             </tr>
           </thead>
@@ -1557,7 +1578,6 @@ var Application = React.createClass({
         </Tab>
         <Tab eventKey={4} title="Output">
           <CalculatorPanel />
-          <RatPacPanel />
           <OutputText />
         </Tab>
         <Tab eventKey={5} title="Inputs">
