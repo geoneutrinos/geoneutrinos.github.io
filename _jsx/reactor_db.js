@@ -60,10 +60,14 @@ class ReactorCore {
     this.loads = loads;
     [this.x, this.y, this.z] = ll_to_xyz(lat, lon);
     this.custom = custom;
+    this.spectrumType = undefined;
     this.spectrum = this.neutrinoSpectrum();
   }
 
   loadFactor(start = new Date("2003-01"), stop = new Date("2016-12")){
+    if (this.custom == true){
+      return 1;
+    }
     const loads = this.loads.filter((load) => (load.date >= start) && (load.date <= stop));
     const totalDays = loads.reduce((a,b) => a + b.days, 0);
     const weightedLoads = loads.map((load) => load.load * (load.days/totalDays));
@@ -71,24 +75,23 @@ class ReactorCore {
   }
 
   neutrinoSpectrum(){
-    let spectrumType;
     if ((["PWR", "BWR", "GCR", "LWGR"].includes(this.type)) && (!this.mox)){
-      spectrumType = "LEU";
+      this.spectrumType = "LEU";
     }
     if ((["PWR", "BWR", "GCR", "LWGR"].includes(this.type)) && (this.mox)){
-      spectrumType = "LEU_MOX";
+      this.spectrumType = "LEU_MOX";
     }
     if ((["PHWR"].includes(this.type)) && (!this.mox)){
-      spectrumType = "SEU";
+      this.spectrumType = "SEU";
     }
 
-    if (spectrumType === undefined){
+    if (this.spectrumType === undefined){
       console.log("undefined", this.type, this.mox)
       console.log(this);
       return defaultSpectrum;
     }
 
-    const fuelFractions = FUEL_FRACTIONS[spectrumType]
+    const fuelFractions = FUEL_FRACTIONS[this.spectrumType]
 
 
     const spectrum = bins.map((Ev) => {
@@ -96,14 +99,13 @@ class ReactorCore {
             let fuelFraction = fuelFractions[isotope];
             let fissionEnergy = FISSION_ENERGIES[isotope];
             let vFitParams = V_FIT_PARAMS[isotope];
-            return 10 * A * fuelFraction * R(Ev, fissionEnergy, ...vFitParams);
+        
+            return A * fuelFraction * R(Ev, fissionEnergy, ...vFitParams);
           }
         ).reduce((c,n) => c+n, 0);
       });
 
     return spectrum;
-
-    return defaultSpectrum;
 
   }
 }
@@ -124,5 +126,18 @@ var corelist = Object.getOwnPropertyNames(reactor_db.reactors).map(function(reac
       false, // not a custom reactor
     )
   });
+corelist.sort(function(a, b) {
+    var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+    var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    if (nameA < nameB) {
+          return -1;
+        }
+    if (nameA > nameB) {
+          return 1;
+        }
 
-export {corelist};
+    // names must be equal
+   return 0;
+ });
+
+export {corelist, ReactorCore};
