@@ -1,7 +1,5 @@
 export const SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60; //seconds
 export const ELEMENTARY_CHARGE = 1.6021766208e-19; //Coulombs
-/* 1e22 is a bunch of meters to km stuff */
-export const A = (SECONDS_PER_YEAR/ELEMENTARY_CHARGE) * 1e22 // km^2/MW/year
 export const ELECTRON_REST_MASS = 0.5109989461 // MeV
 export const NEUTRON_REST_MASS = 939.56563 // MeV
 export const PROTON_REST_MASS = 938.2720813 //MeV
@@ -10,7 +8,7 @@ export const PROTON_REST_MASS = 938.2720813 //MeV
  * while most of this is due to the mass difference between
  * the neutron (product) and proton (reactant)
  */
-export const IBD_THRESHOLD = 1.806 // MeV
+//export const IBD_THRESHOLD = 1.806 // MeV
 
 export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
   "U235":  [1.740, -0.7976, 0.05122, -0.009664],
@@ -23,11 +21,11 @@ export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
 // Neutrino Oscilation Parameters
 
 export const dmsq21 = 7.50e-5;
-export const ddmsq21 = 0.19e-5;
+//export const ddmsq21 = 0.19e-5;
 export const s2t13 = 0.0218;
-export const ds2t13 = 0.0010;
+//export const ds2t13 = 0.0010;
 export const s2t12 = 0.304;
-export const ds2t12 = 0.013;
+//export const ds2t12 = 0.013;
 
 export const c4t13 = (1 - s2t13) * (1 - s2t13);
 export const s22t12 = 4 * s2t12 * (1 - s2t12);

@@ -2,7 +2,6 @@ import {
   NEUTRON_REST_MASS,
   PROTON_REST_MASS,
   ELECTRON_REST_MASS,
-  IBD_THRESHOLD,
 } from './config'
 
 

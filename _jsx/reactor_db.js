@@ -5,7 +5,8 @@ import {
   V_FIT_PARAMS,
   FISSION_ENERGIES,
   FUEL_FRACTIONS,
-  A
+  SECONDS_PER_YEAR,
+  ELEMENTARY_CHARGE,
 } from './config';
 
 import defaultSpectrum from './spectrum';
@@ -100,7 +101,7 @@ class ReactorCore {
             let fissionEnergy = FISSION_ENERGIES[isotope];
             let vFitParams = V_FIT_PARAMS[isotope];
         
-            return A * fuelFraction * R(Ev, fissionEnergy, ...vFitParams);
+            return (SECONDS_PER_YEAR/ELEMENTARY_CHARGE) * 1e22 * fuelFraction * R(Ev, fissionEnergy, ...vFitParams);
           }
         ).reduce((c,n) => c+n, 0);
       });
