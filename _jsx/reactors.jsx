@@ -1259,7 +1259,7 @@ var ReactorListPanel = React.createClass({
         else if(min.includes(name)){
           return 0.0.toFixed(1)
         }else if(useMaxPower){
-          if (reactor.power > 0){
+          if (reactor.operatingPower > 0){
             return reactor.power.toFixed(1);
           }else{
             return 0.0.toFixed(1);
