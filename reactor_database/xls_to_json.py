@@ -54,6 +54,8 @@ for year in years:
     all_names.update(names)
 
 for name in all_names:
+    if name == "":
+        continue
     empty = [0] * 12
     loads[name] = []
     for year in years:
