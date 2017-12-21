@@ -1,8 +1,10 @@
 export const SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60; //seconds
 export const ELEMENTARY_CHARGE = 1.6021766208e-19; //Coulombs
 export const ELECTRON_REST_MASS = 0.5109989461 // MeV
-export const NEUTRON_REST_MASS = 939.56563 // MeV
+export const NEUTRON_REST_MASS = 939.565413 // MeV
 export const PROTON_REST_MASS = 938.2720813 //MeV
+export const EARTH_RADIUS_KM = 6371; // km
+export const DEG_TO_RAD = Math.PI / 180;
 
 /* Inverse Beta Decay Threshold
  * while most of this is due to the mass difference between
@@ -19,27 +21,17 @@ export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
 
 
 // Neutrino Oscilation Parameters
+//
+export const OSCILLATION_PARAMETERS = {
+  "s2t12" : 0.321,
+  "dmsq21" : 7.56e-5,
+  "s2t13Normal" : 0.02155,
+  "s2t13Inverted" : 0.02140,
 
-export const dmsq21 = 7.50e-5;
-//export const ddmsq21 = 0.19e-5;
-export const s2t13 = 0.0218;
-//export const ds2t13 = 0.0010;
-export const s2t12 = 0.304;
-//export const ds2t12 = 0.013;
+  "dmsq31Normal" : 2.55e-3,
+  "dmsq31Inverted" : 2.49e-3,
+};
 
-export const c4t13 = (1 - s2t13) * (1 - s2t13);
-export const s22t12 = 4 * s2t12 * (1 - s2t12);
-
-//added nuosc13
-export const s22t13 = 4 * s2t13 * (1-s2t13);
-export const c2t12 = 1 - s2t12;
-
-export const dmsq31 = 2.457e-3;
-export const dmsq32 = dmsq31 - dmsq21;
-
-
-export const EARTH_RADIUS_KM = 6371; // km
-export const DEG_TO_RAD = Math.PI / 180;
 
 export const FISSION_ENERGIES = { //MeV?
   "U235":  201.912,

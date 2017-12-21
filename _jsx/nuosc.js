@@ -1,21 +1,6 @@
 import {
-  dmsq21,
-  s2t13,
-  ds2t13,
-  s2t12,
-  ds2t12,
-  
-  c4t13,
-  s22t12,
-  
-  s22t13,
-  c2t12,
-
-  dmsq31,
-  dmsq32,
-
+  OSCILLATION_PARAMETERS,
   EARTH_RADIUS_KM
-
 } from './config';
 
 var memoize = require('memoizee');
@@ -25,14 +10,39 @@ var geo_nu_spectra = require("./geo_nu_spectra.js").geo_nu_spectra;
 
 //neutrino calculations
 
+var {
+  s2t12, 
+  dmsq21, 
+  s2t13Normal, 
+  s2t13Inverted, 
+  dmsq31Normal, 
+  dmsq31Inverted
+} = OSCILLATION_PARAMETERS;
+
+const c4t13Normal = (1 - s2t13Normal) * (1 - s2t13Normal);
+const c4t13Inverted = (1 - s2t13Inverted) * (1 - s2t13Inverted);
+
+const dmsq32Normal = dmsq31Normal - dmsq21;
+const dmsq32Inverted = 0 - dmsq31Inverted + dmsq21;
+
+const s22t12 = 4 * s2t12 * (1 - s2t12);
+const c2t12 = 1 - s2t12;
+
+const s22t13Normal = 4 * s2t13Normal * (1-s2t13Normal);
+const s22t13Inverted = 4 * s2t13Inverted * (1-s2t13Inverted);
+
 var osc_spec = memoize(function(dist, inverted){
 
   if (inverted){
-    var dmsq32_use = dmsq31;
-    var dmsq31_use = dmsq32;
+    var dmsq32_use = dmsq31Inverted;
+    var dmsq31_use = dmsq32Inverted;
+    var c4t13 = c4t13Inverted;
+    var s22t13 = s22t13Inverted;
   } else {
-    var dmsq31_use = dmsq31;
-    var dmsq32_use = dmsq32;
+    var dmsq31_use = dmsq31Normal;
+    var dmsq32_use = dmsq32Normal;
+    var c4t13 = c4t13Normal;
+    var s22t13 = s22t13Normal;
   }
 
   var oscarg21 = 1.27 * dmsq21 * dist * 1000;
@@ -91,8 +101,12 @@ function nuosc(dist, pwr, spectrum, inverted, better=false){
   return oscspec;
 }
 
-function geo_nu(lat, lon, mantle_signal, mantle_ratio, include_crust=true){
-  var pee = c4t13*(1.-s22t12*0.5)+s2t13*s2t13;
+function geo_nu(lat, lon, mantle_signal, mantle_ratio, inverted, include_crust=true){
+  if (inverted){
+    var pee = c4t13Inverted*(1.-s22t12*0.5)+s2t13Inverted*s2t13Inverted;
+  } else {
+    var pee = c4t13Normal*(1.-s22t12*0.5)+s2t13Normal*s2t13Normal;
+  }
   // These "add one" operations are due to differences in how python
   // and Javascipt treat their "round" operations.
   var lat = Math.round(lat); 

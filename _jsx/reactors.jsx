@@ -351,7 +351,7 @@ function updateSpectrums(){
     z : EARTH_RADIUS_KM * Math.sin(lat)
   };
 
-  var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, geoneutrinos.crustSignal);
+  var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, invertedMass, geoneutrinos.crustSignal);
 
   corelist.forEach((core) => {
     var power = core.operatingPower;
