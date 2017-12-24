@@ -80,7 +80,9 @@ function nuosc(dist, pwr, spectrum, inverted, better=false){
   var oscspec = new Array(1000);
 
   //locks the distance to integer kilometers
-  var dist = Math.round(dist);
+  if (dist > 100) {
+    dist = Math.round(dist);
+  }
 
   var pee = osc_spec(dist, inverted);
 
