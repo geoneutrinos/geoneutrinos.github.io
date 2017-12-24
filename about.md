@@ -12,9 +12,14 @@ Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," 
 ### References
 The geoneutrino model makes use of the following:
 
-**Bassin, C., G. Laske, and G. Masters (2000)**, *The current limits of
-    resolution for surface wave tomography in North America*, Eos Trans. AGU, 81(48), Fall Meet. Suppl., Abstract F897.
+**Baldoncini, M. et al. (2015)**, *Reference worldwide model for antineutrinos from reactors*, Phys. Rev. D91, 065002.
+
+**Baldoncini, M. et al.**, *Reactor antineutrinos all over the world*, http://www.fe.infn.it/antineutrino/.
+
+**Bassin, C., G. Laske, and G. Masters (2000)**, *The current limits of resolution for surface wave tomography in North America*, Eos Trans. AGU, 81(48), Fall Meet. Suppl., Abstract F897.
 
 **Dye, S.T. (2012)**, *Geo-neutrinos and the Radioactive Power of the Earth*, Rev. Geophys., 50, RG3007.
 
 **Huang, Y. et al. (2013)**, *A reference Earth model for the heat-producing elements and associated geoneutrino flux*, Geochem. Geophys. Geosyst., 14, 2003-2029.
+
+**de Salas, P.F. et al. (2017)**, *Status of neutrino oscillations 2017*, arXiv:1708.01186.
