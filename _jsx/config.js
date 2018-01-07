@@ -23,13 +23,13 @@ export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
 // Neutrino Oscilation Parameters
 //
 export const OSCILLATION_PARAMETERS = {
-  "s2t12" : 0.321,
-  "dmsq21" : 7.56e-5,
-  "s2t13Normal" : 0.02155,
-  "s2t13Inverted" : 0.02140,
+  "s2t12" : 0.297,
+  "dmsq21" : 7.37e-5,
+  "s2t13Normal" : 0.0215,
+  "s2t13Inverted" : 0.0216,
 
-  "dmsq31Normal" : 2.55e-3,
-  "dmsq31Inverted" : 2.49e-3,
+  "dmsq31Normal" : 2.56e-3,
+  "dmsq31Inverted" : 2.4663e-3,
 };
 
 

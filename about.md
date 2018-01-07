@@ -5,13 +5,11 @@ permalink: /about/
 ---
 
 ### Citation
-Please cite use of this website in your works as:
+Please cite use of this website as:
 
 Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," arXiv:1510.05633 (2015).
 
 ### References
-The geoneutrino model makes use of the following:
-
 **Baldoncini, M. et al. (2015)**, *Reference worldwide model for antineutrinos from reactors*, Phys. Rev. D91, 065002.
 
 **Baldoncini, M. et al.**, *Reactor antineutrinos all over the world*, http://www.fe.infn.it/antineutrino/.
@@ -22,4 +20,5 @@ The geoneutrino model makes use of the following:
 
 **Huang, Y. et al. (2013)**, *A reference Earth model for the heat-producing elements and associated geoneutrino flux*, Geochem. Geophys. Geosyst., 14, 2003-2029.
 
-**de Salas, P.F. et al. (2017)**, *Status of neutrino oscillations 2017*, arXiv:1708.01186.
+**Patrignani, C. et al. (2016)**, *2017 Review of Particle Physics*, Chin. Phys. C, 40, 100001.
+

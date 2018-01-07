@@ -23,7 +23,7 @@ const c4t13Normal = (1 - s2t13Normal) * (1 - s2t13Normal);
 const c4t13Inverted = (1 - s2t13Inverted) * (1 - s2t13Inverted);
 
 const dmsq32Normal = dmsq31Normal - dmsq21;
-const dmsq32Inverted = 0 - dmsq31Inverted + dmsq21;
+const dmsq32Inverted = dmsq31Inverted + dmsq21;
 
 const s22t12 = 4 * s2t12 * (1 - s2t12);
 const c2t12 = 1 - s2t12;
