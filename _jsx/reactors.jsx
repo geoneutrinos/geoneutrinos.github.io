@@ -1101,20 +1101,20 @@ var CalculatorPanel = React.createClass({
     var background = 0;
 
     if (newState.signal == "all"){
-      signal = d3.sum(spectrum.iaea.slice(min_i, max_i))/1000 + d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
-      background = d3.sum(spectrum.geo_u.slice(min_i, max_i))/1000 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/1000
+      signal = d3.sum(spectrum.iaea.slice(min_i, max_i))/100 + d3.sum(spectrum.custom.slice(min_i, max_i))/100;
+      background = d3.sum(spectrum.geo_u.slice(min_i, max_i))/100 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/100
     }
     if (newState.signal == "closest"){
-      signal = d3.sum(spectrum.closest.slice(min_i, max_i))/1000;
-      background = d3.sum(spectrum.total.slice(min_i, max_i))/1000  - d3.sum(spectrum.closest.slice(min_i, max_i))/1000;
+      signal = d3.sum(spectrum.closest.slice(min_i, max_i))/100;
+      background = d3.sum(spectrum.total.slice(min_i, max_i))/100  - d3.sum(spectrum.closest.slice(min_i, max_i))/100;
     }
     if (newState.signal == "custom"){
-      signal = d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
-      background = d3.sum(spectrum.total.slice(min_i, max_i))/1000 - d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
+      signal = d3.sum(spectrum.custom.slice(min_i, max_i))/100;
+      background = d3.sum(spectrum.total.slice(min_i, max_i))/100 - d3.sum(spectrum.custom.slice(min_i, max_i))/100;
     }
     if (newState.signal == "geoneutrino"){
-      background = d3.sum(spectrum.iaea.slice(min_i, max_i))/1000 + d3.sum(spectrum.custom.slice(min_i, max_i))/1000;
-      signal = d3.sum(spectrum.geo_u.slice(min_i, max_i))/1000 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/1000;
+      background = d3.sum(spectrum.iaea.slice(min_i, max_i))/100 + d3.sum(spectrum.custom.slice(min_i, max_i))/100;
+      signal = d3.sum(spectrum.geo_u.slice(min_i, max_i))/100 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/100;
     }
 
     if (newState.solve_for == "exposure"){
