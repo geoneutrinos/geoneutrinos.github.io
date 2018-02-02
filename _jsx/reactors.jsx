@@ -779,6 +779,8 @@ var StatsPanel = React.createClass({
       closest_distance: distances.closest,
       custom_distance: distances.user,
       geo_tnu: (d3.sum(spectrum.geo_u) + d3.sum(spectrum.geo_th)) * 0.01,
+      geo_u_tnu: d3.sum(spectrum.geo_u) * 0.01,
+      geo_th_tnu: d3.sum(spectrum.geo_th) * 0.01,
       reactors_tnu: (d3.sum(spectrum.iaea) + d3.sum(spectrum.custom)) * 0.01,
       geo_r: (d3.sum(spectrum.geo_th)/d3.sum(spectrum.geo_u))/0.066,
     });
@@ -797,6 +799,8 @@ var StatsPanel = React.createClass({
       closest_distance: 0,
       custom_distance: 0,
       geo_tnu: 0,
+      geo_u_tnu: 0,
+      geo_th_tnu: 0,
       reactors_tnu: 0,
       geo_r: 0,
     }
@@ -810,9 +814,10 @@ var StatsPanel = React.createClass({
           <i>D</i><sub>closest</sub> = {this.state.closest_distance.toFixed(2)} km<br />
           <i>D</i><sub>user</sub> = {this.state.custom_distance.toFixed(3)} km<br />
           <i>R</i><sub>E &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
-          <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU<br />
+      <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU (U ={this.state.geo_u_tnu.toFixed(1)}, Th = {this.state.geo_th_tnu.toFixed(1)})<br />
           <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
-          <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small>
+      <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small><br />
+          <small>1 kT H<sub>2</sub>O contains 0.668559x10<sup>32</sup> free protons</small>
         </div>
         );
   }
@@ -890,7 +895,10 @@ var LocationPanel = React.createClass({
                Latitude
              </Col>
              <Col sm={10}>
+              <InputGroup>
                <FormControl onChange={this.changeLat} type="number" value={this.state.lat} />
+                <InputGroup.Addon>deg N</InputGroup.Addon>
+              </InputGroup>
              </Col>
            </FormGroup>
 
@@ -899,7 +907,10 @@ var LocationPanel = React.createClass({
                Longitude
              </Col>
              <Col sm={10}>
+              <InputGroup>
                <FormControl onChange={this.changeLon} type="number" value={this.state.lon} />
+                <InputGroup.Addon>deg E</InputGroup.Addon>
+              </InputGroup>
              </Col>
            </FormGroup>
 
@@ -953,25 +964,20 @@ var OutputText = React.createClass({
       width: "100%"
     };
     return (
+        <Panel header="Output Data">
         <div>
         <p>
-        The box below contains the antineutrino energy spectrum and its 
-        components at the selected location. The data, which range from 
-        0 to 10 MeV, are in units of TNU (#/10^32 free protons/year) per 
-        MeV. Comma-seperated columns of data correspond to: total, 
-        sum of known IAEA reactor cores, closest core, user defined core 
-        (0 if not using a custom reactor), and U and Th geoneutrino 
-        background. There are a total of ~820 rows of data under each 
-        column. The first row starts at ~1.8 MeV due to the energy 
-        threshold of the electron antineutrino inverse beta decay 
-        interaction on a free proton. For plotting or further analysis, 
-        simply copy and paste the contents of this box into a text file 
-        or spreadsheet program. Please cite this website if using these 
-        data as: Barna, A.M. and Dye, S.T., "Web Application for Modeling 
-        Global Antineutrinos," arXiv:1510.05633 (2015).
+          The box below contains the energy spectrum of the antineutrino interaction rate and its components at the selected location. 
+          The data, with bin centers ranging from 1.805 to 9.995 MeV, are in units of TNU (#/10^32 free protons/year) per MeV.
+          Comma-seperated columns of data correspond to the components: total, sum of reactor cores, closest core, user-defined core (0 if not using a custom reactor), and U and Th geo-neutrinos.
+          There are 820 rows of data in each column.
+          The first row of data corresponds to the energy bin from 1.80 to 1.81 MeV, which includes the energy threshold of the electron antineutrino inverse beta decay interaction on a free proton.
+          For plotting or further analysis, simply copy and paste the contents of this box into a text file or spreadsheet program.
+          When using these data, cite: Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," arXiv:1510.05633 (2015).
         </p>
         <textarea readonly={true} rows={8} style={textareaStyle} name={"description"} value={this.state.textContent} />
         </div>
+      </Panel>
         )
   }
 });
@@ -1116,6 +1122,14 @@ var CalculatorPanel = React.createClass({
       background = d3.sum(spectrum.iaea.slice(min_i, max_i))/100 + d3.sum(spectrum.custom.slice(min_i, max_i))/100;
       signal = d3.sum(spectrum.geo_u.slice(min_i, max_i))/100 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/100;
     }
+    if (newState.signal == "geo_u"){
+      background = d3.sum(spectrum.iaea.slice(min_i, max_i))/100 + d3.sum(spectrum.custom.slice(min_i, max_i))/100 + d3.sum(spectrum.geo_th.slice(min_i, max_i))/100;
+      signal = d3.sum(spectrum.geo_u.slice(min_i, max_i))/100 
+    }
+    if (newState.signal == "geo_th"){
+      background = d3.sum(spectrum.iaea.slice(min_i, max_i))/100 + d3.sum(spectrum.custom.slice(min_i, max_i))/100 + d3.sum(spectrum.geo_u.slice(min_i, max_i))/100;
+      signal =  d3.sum(spectrum.geo_th.slice(min_i, max_i))/100;
+    }
 
     if (newState.solve_for == "exposure"){
       newState.time = ((signal + 2 * background) * (newState.sigma/signal) * (newState.sigma/signal)).toFixed(3);
@@ -1140,6 +1154,8 @@ var CalculatorPanel = React.createClass({
             <option value="closest">Closest Core (geonu + other reactors background)</option>
             <option value="custom">Custom Reactor (geonu + other reactors background)</option>
             <option value="geoneutrino">Geoneutrino (reactor background)</option>
+            <option value="geo_u">Geoneutrino U (reactor + geo Th background)</option>
+            <option value="geo_th">Geoneutrino Th (reactor + geo U background)</option>
           </FormControl>
 
       </Col>
@@ -1162,7 +1178,10 @@ var CalculatorPanel = React.createClass({
           E<sub>min</sub>
         </Col>
         <Col sm={8}>
-          <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_min} />
+              <InputGroup>
+          <FormControl onChange={this.handleUserInput} step="0.1" type="number" value={this.state.e_min} />
+                <InputGroup.Addon>MeV</InputGroup.Addon>
+              </InputGroup>
         </Col>
       </FormGroup>
 
@@ -1171,22 +1190,28 @@ var CalculatorPanel = React.createClass({
           E<sub>max</sub>
         </Col>
         <Col sm={8}>
-          <FormControl onChange={this.handleUserInput} type="number" value={this.state.e_max} />
+              <InputGroup>
+          <FormControl onChange={this.handleUserInput} step="0.1" type="number" value={this.state.e_max} />
+                <InputGroup.Addon>MeV</InputGroup.Addon>
+              </InputGroup>
         </Col>
       </FormGroup>
 
       <FormGroup controlId="time">
         <Col componentClass={ControlLabel} sm={4}>
-          Time (years)
+          Time
         </Col>
         <Col sm={8}>
+              <InputGroup>
           <FormControl onChange={this.handleUserInput} type="number" value={this.state.time} />
+                <InputGroup.Addon>years</InputGroup.Addon>
+              </InputGroup>
         </Col>
       </FormGroup>
 
       <FormGroup controlId="sigma">
         <Col componentClass={ControlLabel} sm={4}>
-          Sigma
+          N<sub>σ</sub>
         </Col>
         <Col sm={8}>
           <FormControl onChange={this.handleUserInput} type="number" value={this.state.sigma} />
@@ -1240,13 +1265,13 @@ var ReactorListPanel = React.createClass({
     var rows = this.state.lf.map((reactor) => {
       const getButton = (name) => {
         if(this.state.powerOverrides.max.includes(name)){
-          return <button name={name} onClick={this.toggleReactorOverride}>Set 0 Power</button>
+          return <button name={name} onClick={this.toggleReactorOverride}>Set 0</button>
         }
         if(this.state.powerOverrides.min.includes(name)){
-          return <button name={name} onClick={this.toggleReactorOverride}>Set to default</button>
+          return <button name={name} onClick={this.toggleReactorOverride}>Set Default</button>
         }
 
-        return <button name={name} onClick={this.toggleReactorOverride}>Set to Max Power</button>
+        return <button name={name} onClick={this.toggleReactorOverride}>Set Max</button>
       }
 
       const getPower = (reactor) => {
@@ -1276,27 +1301,29 @@ var ReactorListPanel = React.createClass({
       return (
         <tr className={bsStyle}>
           <td>{reactor.name}</td>
-          <td>{getPower(reactor)} MW</td>
+          <td>{getPower(reactor)}</td>
           <td>{reactor.type}</td>
           <td>{getButton(reactor.name)}</td>
         </tr>
       )
     })
     return (
-      <Panel style={{maxHeight:"40vh", overflowX:"scroll"}} header="Reactor List">
-        <Table fill striped>
+      <Panel  header="Reactor List (Name, Power[MW], Type, Override)">
+        <div style={{width: "100%", maxHeight:"40vh", overflowX:"scroll"}}>
+        <Table fill condensed striped>
           <thead>
             <tr>
               <th>Name</th>
-              <th>Power</th>
+              <th>Power&nbsp;(MW)</th>
               <th>Type</th>
-              <th>Override</th>
+              <th>Power&nbsp;Override</th>
             </tr>
           </thead>
           <tbody>
             {rows}
           </tbody>
         </Table>
+      </div>
       </Panel>
     )
   }
@@ -1453,7 +1480,10 @@ var CustomReactorPanel = React.createClass({
                 Latitude
     				  </Col>
     				  <Col sm={8}>
+              <InputGroup>
     				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.lat} />
+                <InputGroup.Addon>deg N</InputGroup.Addon>
+              </InputGroup>
     				  </Col>
     				</FormGroup>
 
@@ -1462,7 +1492,10 @@ var CustomReactorPanel = React.createClass({
                 Longitude
     				  </Col>
     				  <Col sm={8}>
+              <InputGroup>
     				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.lon} />
+                <InputGroup.Addon>deg E</InputGroup.Addon>
+              </InputGroup>
     				  </Col>
     				</FormGroup>
     				<FormGroup controlId="uncertainty">
@@ -1470,7 +1503,10 @@ var CustomReactorPanel = React.createClass({
                 Uncertainty
     				  </Col>
     				  <Col sm={8}>
+              <InputGroup>
     				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.uncertainty} />
+                <InputGroup.Addon>km</InputGroup.Addon>
+              </InputGroup>
     				  </Col>
     				</FormGroup>
             </Form>
