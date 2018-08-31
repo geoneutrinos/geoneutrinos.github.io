@@ -71,6 +71,8 @@ for name in all_names:
         except KeyError:
             loads[name].extend(empty)
 
+    loads[name] = list(map(lambda x: max(x, 0), loads[name]))
+
 for year in years:
     times.extend(["{0}-{1:0>2}".format(year,m) for m in range(1,13)])
 
