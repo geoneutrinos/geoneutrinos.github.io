@@ -15,16 +15,12 @@ import { R } from './antineutrinos';
 
 const memoize = require('memoizee');
 
+import projector from 'ecef-projector';
+
 const reactor_db = require("../reactor_database/reactors.json");
 
 const ll_to_xyz = memoize(function(lat, lon){
-  lat = lat * (Math.PI/180);
-  lon = lon * (Math.PI/180);
-  return [
-    EARTH_RADIUS_KM * Math.cos(lat) * Math.cos(lon),
-    EARTH_RADIUS_KM * Math.cos(lat) * Math.sin(lon),
-    EARTH_RADIUS_KM * Math.sin(lat)
-  ]
+  return projector.project(lat, lon, 0).map((n) => n/1000);
 });
 
 function mevRange(count = 1000, start = 0, stop = 10){

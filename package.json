@@ -11,10 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-core": "^6.26.3",
     "babel-loader": "^6.2.10",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "d3": "^4.4.0",
+    "ecef-projector": "^1.0.1",
     "json-loader": "^0.5.4",
     "leaflet": "^1.0.2",
     "memoizee": "^0.3.10",

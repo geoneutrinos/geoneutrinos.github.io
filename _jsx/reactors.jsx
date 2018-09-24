@@ -45,6 +45,8 @@ import * as Constants from './config';
 
 import { corelist, ReactorCore } from './reactor_db';
 
+import projector from 'ecef-projector';
+
 
 
 // Global State Variables
@@ -342,14 +344,13 @@ function updateSpectrums(){
   // we want to find the smallest element, so start someplace big...
   var min_dist = 1e10;
   var min_spec;
-  var lat = detectorPosition.lat * (Math.PI/180);
-  var lon = detectorPosition.lon * (Math.PI/180);
   var react_spectrum = [];
-  var p1 = {
-    x : EARTH_RADIUS_KM * Math.cos(lat) * Math.cos(lon),
-    y : EARTH_RADIUS_KM * Math.cos(lat) * Math.sin(lon),
-    z : EARTH_RADIUS_KM * Math.sin(lat)
-  };
+  var p1 = projector.project(detectorPosition.lat, detectorPosition.lon, 0).map((n) => n /1000);
+  p1 = {
+    x: p1[0],
+    y: p1[1],
+    z: p1[2],
+  }
 
   var geo_nu_spectra = osc.geo_nu(detectorPosition.lat, detectorPosition.lon, geoneutrinos.mantleSignal, geoneutrinos.thuRatio, invertedMass, geoneutrinos.crustSignal);
 
