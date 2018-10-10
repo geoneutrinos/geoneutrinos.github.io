@@ -2,6 +2,9 @@ import json
 
 import pyexcel
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 columns = [
         "country",
         "name",
@@ -28,6 +31,7 @@ years = [
         "2014",
         "2015",
         "2016",
+        "2017",
     ]
 
 reactor_data = {}
@@ -51,6 +55,7 @@ for year in years:
     reactor_data[year] = year_data
 
     names = {d[1].strip().upper() for d in data}
+    logging.info(names - all_names)
     all_names.update(names)
 
 for name in all_names:

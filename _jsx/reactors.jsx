@@ -58,8 +58,8 @@ var detectorPosition = {
 var followMouse = false;
 
 var loadFactor = {
-  ystart: "2016",
-  yend: "2016",
+  ystart: "2017",
+  yend: "2017",
   mstart: "01",
   mend: "12",
 };
@@ -386,11 +386,6 @@ function updateSpectrums(){
     d3.selectAll(".reac").style("display", "none");
   }
   var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, "PWR", 0, user_power)
-  //var reac_p = {
-  //  x : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.cos(customReactor.lon * DEG_TO_RAD),
-  //  y : EARTH_RADIUS_KM * Math.cos(customReactor.lat * DEG_TO_RAD) * Math.sin(customReactor.lon * DEG_TO_RAD),
-  //  z : EARTH_RADIUS_KM * Math.sin(customReactor.lat * DEG_TO_RAD)
-  //};
   var user_dist = distance(p1, userReactor);
   var user_react_spectrum = osc.nuosc(user_dist, userReactor.power, userReactor.spectrum, invertedMass, true);
 
@@ -1385,7 +1380,7 @@ var ReactorLoadPanel = React.createClass({
     updateUseMaxPower(newUseMaxPower);
   },
   render: function() {
-    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016];
+    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017];
     const months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
     const yearOptions = years.map(function(year){
       return <option value={year}>{year}</option>
