@@ -37,7 +37,6 @@ var powerOverrideEvent = new Event("powerOverrideEvent");
 var useMaxPowerEvent = new Event("useMaxPowerEvent");
 
 import {
-  EARTH_RADIUS_KM,
   DEG_TO_RAD
 } from './config';
 

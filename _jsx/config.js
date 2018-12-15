@@ -1,9 +1,8 @@
 export const SECONDS_PER_YEAR = 365.25 * 24 * 60 * 60; //seconds
-export const ELEMENTARY_CHARGE = 1.6021766208e-19; //Coulombs
+export const ELEMENTARY_CHARGE = 1.602176634e-19; //Coulombs (exact as of 20 May 2019)
 export const ELECTRON_REST_MASS = 0.5109989461 // MeV
 export const NEUTRON_REST_MASS = 939.565413 // MeV
 export const PROTON_REST_MASS = 938.2720813 //MeV
-export const EARTH_RADIUS_KM = 6371; // km
 export const DEG_TO_RAD = Math.PI / 180;
 
 /* Inverse Beta Decay Threshold
@@ -12,11 +11,13 @@ export const DEG_TO_RAD = Math.PI / 180;
  */
 //export const IBD_THRESHOLD = 1.806 // MeV
 
+// Hyber 2011 -> DOI: 10.1103/PhysRevC.84.024617
+// Mueller 2011 -> 10.1103/PhysRevC.83.054615
 export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
-  "U235":  [1.740, -0.7976, 0.05122, -0.009664],
-  "U238":  [0.8651, -0.08484, -0.08347, -0.0006647],
-  "PU239": [1.399, -0.6211, -0.01117, -0.005785],
-  "PU241": [1.160, -0.3722, -0.04199, -0.004548],
+  "U235":  [4.367, -4.577, 2.100, -5.294e-1, 6.186e-2, -2.777e-3], // Huber 2011 (phys rev c) table 3
+  "U238":  [4.833e-1, 1.927e-1, -1.283e-1, -6.762e-3, 2.233e-3, -1.536e-4], // Mueller 2011 table 6
+  "PU239": [4.757, -5.392, 2.563, -6.596e-1, 7.820e-2, -3.536e-3], // Huber 2011 (phys rev c) table 3
+  "PU241": [2.990, -2.882, 1.278, -3.343e-1, 3.905e-2, -1.754e-3] // Huber 2011 (phys rev c) table 3
 }
 
 

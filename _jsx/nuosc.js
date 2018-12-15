@@ -1,6 +1,5 @@
 import {
   OSCILLATION_PARAMETERS,
-  EARTH_RADIUS_KM
 } from './config';
 
 var memoize = require('memoizee');
@@ -74,9 +73,6 @@ var osc_spec = memoize(function(dist, inverted){
    of the function for them to deal with (usually assigned to some var)
  */
 function nuosc(dist, pwr, spectrum, inverted, better=false){
-  var earth_rad_sq = EARTH_RADIUS_KM * EARTH_RADIUS_KM;
-  var flux = pwr * earth_rad_sq / (dist * dist);
-
   var oscspec = new Array(1000);
 
   //locks the distance to integer kilometers
@@ -86,21 +82,12 @@ function nuosc(dist, pwr, spectrum, inverted, better=false){
 
   var pee = osc_spec(dist, inverted);
 
-  if (better == true){
     var dist2 = dist * dist;
     for (var i=0; i < oscspec.length; i++){
       oscspec[i] = pee[i] * pwr * spectrum[i] / dist2;
     }
     return oscspec;
-  }
 
-  for (var i=0; i < oscspec.length; i++){
-    oscspec[i] = 0;
-    if (i >= 179){
-      oscspec[i] = pee[i] * flux * spectrum[i];
-    }
-  }
-  return oscspec;
 }
 
 function geo_nu(lat, lon, mantle_signal, mantle_ratio, inverted, include_crust=true){

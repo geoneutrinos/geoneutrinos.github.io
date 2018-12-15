@@ -1,7 +1,6 @@
 import { nuosc } from './nuosc';
 
 import { 
-  EARTH_RADIUS_KM,
   V_FIT_PARAMS,
   FISSION_ENERGIES,
   FUEL_FRACTIONS,
