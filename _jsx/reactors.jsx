@@ -1453,15 +1453,6 @@ var CustomReactorPanel = React.createClass({
     this.setState({[key]:value});
     updateCustomReactor({[key]:value});
   },
-  randomizePosition: function(){
-    var newCustomReactor = {
-      lat: Math.random() * 180 - 90,
-      lon: Math.random() * 360 - 180,
-      uncertainty: Math.random() * 600 + 200,
-    }
-    updateCustomReactor(newCustomReactor);
-    this.setState(newCustomReactor);
-  },
   render: function(){
     return (
     <Panel header="Custom Reactor">
@@ -1522,9 +1513,6 @@ var CustomReactorPanel = React.createClass({
     				  </Col>
     				</FormGroup>
             </Form>
-            <ButtonToolbar>
-              <Button onClick={this.randomizePosition} bsStyle="success">Randomize</Button>
-            </ButtonToolbar>
       </Panel>
     </Panel>
       );
