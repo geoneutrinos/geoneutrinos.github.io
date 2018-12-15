@@ -11,9 +11,9 @@ export const DEG_TO_RAD = Math.PI / 180;
  */
 //export const IBD_THRESHOLD = 1.806 // MeV
 
-// Hyber 2011 -> DOI: 10.1103/PhysRevC.84.024617
+// Huber 2011 -> DOI: 10.1103/PhysRevC.84.024617
 // Mueller 2011 -> 10.1103/PhysRevC.83.054615
-export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
+export const V_FIT_PARAMS = {
   "U235":  [4.367, -4.577, 2.100, -5.294e-1, 6.186e-2, -2.777e-3], // Huber 2011 (phys rev c) table 3
   "U238":  [4.833e-1, 1.927e-1, -1.283e-1, -6.762e-3, 2.233e-3, -1.536e-4], // Mueller 2011 table 6
   "PU239": [4.757, -5.392, 2.563, -6.596e-1, 7.820e-2, -3.536e-3], // Huber 2011 (phys rev c) table 3
@@ -23,6 +23,7 @@ export const V_FIT_PARAMS = { // TABLE I in the paper, probably just defaults
 
 // Neutrino Oscilation Parameters
 //
+// Table 14.1 REVIEW OF PARTICLE PHYSICS DOI: 10.1103/PhysRevD.98.030001
 export const OSCILLATION_PARAMETERS = {
   "s2t12" : 0.297,
   "dmsq21" : 7.37e-5,
@@ -34,7 +35,7 @@ export const OSCILLATION_PARAMETERS = {
 };
 
 
-export const FISSION_ENERGIES = { //MeV?
+export const FISSION_ENERGIES = { //MeV
   "U235":  201.912,
   "U238":  204.997, 
   "PU239": 210.927,
