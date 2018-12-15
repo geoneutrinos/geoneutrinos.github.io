@@ -45,7 +45,7 @@ import * as Constants from './config';
 import { corelist, ReactorCore } from './reactor_db';
 
 import projector from 'ecef-projector';
-
+import download from 'downloadjs';
 
 
 // Global State Variables
@@ -255,10 +255,16 @@ var detectorPresets = [
 
 var reactorCircles = corelist.map(function(core){
   let style = {"radius": 250, "color": "#009000"};
-  if (core.spectrumType == 'SEU'){
+  if (core.spectrumType == 'PHWR'){
     style = {
         "radius": 250, 
         "color": "#ff0000",
+      }
+  }
+  if (core.spectrumType == 'GCR'){
+    style = {
+        "radius": 250, 
+        "color": "#D69537",
       }
   }
   if (core.spectrumType == 'LEU_MOX'){
@@ -272,7 +278,7 @@ var reactorCircles = corelist.map(function(core){
   ).bindPopup(
     `<b>Core Name:</b> ${core.name}<br />
     <b>Design Power:</b> ${core.power} MW<br />
-    <b>Type:</b> ${core.type}<br />
+    <b>Type:</b> ${core.type}
     <b>Mox:</b> ${core.mox}<br />
     `
   );
@@ -356,6 +362,7 @@ function updateSpectrums(){
   corelist.forEach((core) => {
     var power = core.operatingPower;
     const dist = distance(p1, core);
+    core.dist = dist;
 
     if (useMaxPower && power > 0){
       power = core.power;
@@ -773,6 +780,7 @@ var StatsPanel = React.createClass({
       closest_tnu: d3.sum(spectrum.closest) * 0.01,
       closest_distance: distances.closest,
       custom_distance: distances.user,
+      custom_tnu: d3.sum(spectrum.custom) * 0.01,
       geo_tnu: (d3.sum(spectrum.geo_u) + d3.sum(spectrum.geo_th)) * 0.01,
       geo_u_tnu: d3.sum(spectrum.geo_u) * 0.01,
       geo_th_tnu: d3.sum(spectrum.geo_th) * 0.01,
@@ -793,6 +801,7 @@ var StatsPanel = React.createClass({
       closest_tnu: 0,
       closest_distance: 0,
       custom_distance: 0,
+      custom_tnu: 0,
       geo_tnu: 0,
       geo_u_tnu: 0,
       geo_th_tnu: 0,
@@ -815,6 +824,7 @@ var StatsPanel = React.createClass({
           <i>R</i><sub>closest</sub> = {this.state.closest_tnu.toFixed(1)} TNU ({(this.state.closest_tnu/this.state.total_tnu * 100).toFixed(1)} % of total)<br />
           <i>D</i><sub>closest</sub> = {this.state.closest_distance.toFixed(2)} km<br />
       <span style={{"display": userDisplay(customReactor.use)}}><i>D</i><sub>user</sub> = {this.state.custom_distance.toFixed(3)} km<br /></span>
+      <span style={{"display": userDisplay(customReactor.use)}}><i>R</i><sub>user</sub> = {this.state.custom_tnu.toFixed(1)} TNU<br /></span>
           <i>R</i><sub>E &lt; 3.275 MeV</sub> = {this.state.total_tnu_geo.toFixed(1)} TNU<br />
       <i>R</i><sub>geo</sub> = {this.state.geo_tnu.toFixed(1)} TNU (U = {this.state.geo_u_tnu.toFixed(1)}, Th = {this.state.geo_th_tnu.toFixed(1)})<br />
           <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
@@ -969,15 +979,15 @@ var OutputText = React.createClass({
         <Panel header="Output Data">
         <div>
         <p>
-          The box below contains the energy spectrum of the antineutrino interaction rate and its components at the selected location. 
-          The data, with bin centers ranging from 1.805 to 9.995 MeV, are in units of TNU (#/10^32 free protons/year) per MeV.
+          Click the "Download Output" button below for a csv of the energy spectrum of the antineutrino interaction rate and its components at the selected location. 
+          The data, with bin centers ranging from 1.805 to 9.995 MeV, are in units of TNU (#/10^32 free protons/year) per keV.
           Comma-seperated columns of data correspond to the components: total, sum of reactor cores, closest core, user-defined core (0 if not using a custom reactor), and U and Th geo-neutrinos.
           There are 820 rows of data in each column.
           The first row of data corresponds to the energy bin from 1.80 to 1.81 MeV, which includes the energy threshold of the electron antineutrino inverse beta decay interaction on a free proton.
           For plotting or further analysis, simply copy and paste the contents of this box into a text file or spreadsheet program.
           When using these data, cite: Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," arXiv:1510.05633 (2015).
         </p>
-        <textarea readonly={true} rows={8} style={textareaStyle} name={"description"} value={this.state.textContent} />
+        <Button onClick={() => download(this.state.textContent, 'output.csv', 'text/csv')} bsStyle="success">Download Output</Button>
         </div>
       </Panel>
         )
