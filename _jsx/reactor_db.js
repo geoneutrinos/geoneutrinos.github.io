@@ -71,10 +71,13 @@ class ReactorCore {
   }
 
   neutrinoSpectrum(){
-    if ((["PWR", "BWR", "LWGR"].includes(this.type)) && (!this.mox)){
+    if ((["LEU", "PWR", "BWR", "LWGR"].includes(this.type)) && (!this.mox)){
       this.spectrumType = "LEU";
     }
     if ((["PWR", "BWR", "LWGR"].includes(this.type)) && (this.mox)){
+      this.spectrumType = "LEU_MOX";
+    }
+    if (["LEU_MOX"].includes(this.type)){
       this.spectrumType = "LEU_MOX";
     }
     if ((["PHWR"].includes(this.type)) && (!this.mox)){
@@ -82,6 +85,9 @@ class ReactorCore {
     }
     if ((["GCR"].includes(this.type)) && (!this.mox)){
       this.spectrumType = "GCR";
+    }
+    if ((["HEU"].includes(this.type)) && (!this.mox)){
+      this.spectrumType = "HEU";
     }
 
     if (this.spectrumType === undefined){

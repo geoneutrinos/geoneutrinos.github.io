@@ -77,7 +77,8 @@ var customReactor = {
   'lon': 0,
   'power': 0, //mw
   'uncertainty': 0, //kms
-  'use': false
+  'use': false,
+  'type': "LEU"
 }
 
 var geoneutrinos = {
@@ -391,7 +392,7 @@ function updateSpectrums(){
   } else {
     d3.selectAll(".reac").style("display", "none");
   }
-  var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, "PWR", 0, user_power)
+  var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, customReactor.type, 0, user_power)
   var user_dist = distance(p1, userReactor);
   var user_react_spectrum = osc.nuosc(user_dist, userReactor.power, userReactor.spectrum, invertedMass, true);
 
@@ -1440,6 +1441,11 @@ var CustomReactorPanel = React.createClass({
   getInitialState: function(){
     return customReactor;
   },
+  handleTypeChange: function(event){
+    var value = event.target.value;
+    this.setState({"type":value});
+    updateCustomReactor({"type":value});
+  },
   handleUseCheckbox: function(event){
     var value = event.target.checked;
     this.setState({"use":value});
@@ -1448,12 +1454,16 @@ var CustomReactorPanel = React.createClass({
   handleUserInput: function(event){
     var key = event.target.id;
     var value = event.target.value;
-    value = parseFloat(event.target.value);
-
     this.setState({[key]:value});
-    updateCustomReactor({[key]:value});
+    value = parseFloat(event.target.value);
+    if (!Number.isNaN(value)){
+      updateCustomReactor({[key]:value});
+    }
   },
   render: function(){
+    const types = Object.keys(Constants.FUEL_FRACTIONS).map(function(type){
+      return <option value={type}>{type}</option>
+    });
     return (
     <Panel header="Custom Reactor">
       <Form horizontal>
@@ -1467,6 +1477,16 @@ var CustomReactorPanel = React.createClass({
               <InputGroup.Addon>MW</InputGroup.Addon>
             </InputGroup>
     	    </Col>
+    	  </FormGroup>
+    	  <FormGroup controlId="type">
+    	    <Col componentClass={ControlLabel} sm={2}>
+            Type
+    	    </Col>
+    	    <Col sm={10}>
+    	    <FormControl onChange={this.handleTypeChange} value={this.state.type} componentClass="select">
+            {types}
+          </FormControl>
+          </Col>
     	  </FormGroup>
     	  <FormGroup controlId="use">
     	    <Col componentClass={ControlLabel} sm={2}>
@@ -1498,17 +1518,6 @@ var CustomReactorPanel = React.createClass({
               <InputGroup>
     				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.lon} />
                 <InputGroup.Addon>deg E</InputGroup.Addon>
-              </InputGroup>
-    				  </Col>
-    				</FormGroup>
-    				<FormGroup controlId="uncertainty">
-    				  <Col componentClass={ControlLabel} sm={4}>
-                Uncertainty
-    				  </Col>
-    				  <Col sm={8}>
-              <InputGroup>
-    				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.uncertainty} />
-                <InputGroup.Addon>km</InputGroup.Addon>
               </InputGroup>
     				  </Col>
     				</FormGroup>
