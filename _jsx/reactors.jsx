@@ -50,8 +50,9 @@ import download from 'downloadjs';
 
 // Global State Variables
 var detectorPosition = {
-  "lat": 54.55,
-  "lon": -0.82
+  "lat": 54.555129,
+  "lon": -0.800890,
+  "elevation": -1000,
 };
 
 var followMouse = false;
@@ -110,9 +111,10 @@ var customReactorMarker = L.circle([customReactor.lat, customReactor.lon], custo
 // end Global State
 // Global State Updating Functions (mostly to do event bookkeeping)
 
-function updateDetectorPosition(lon, lat){
+function updateDetectorPosition(lon, lat, elevation){
     detectorPosition.lat = parseFloat(lat);
     detectorPosition.lon = parseFloat(lon);
+    detectorPosition.elevation = parseFloat(elevation);
     if (detectorPosition.lat > 90){
       detectorPosition.lat = 90;
     }
@@ -125,7 +127,10 @@ function updateDetectorPosition(lon, lat){
     if (detectorPosition.lon < -180){
       detectorPosition.lon = -180;
     }
-
+  if (isNaN(detectorPosition.elevation)){
+    detectorPosition.elevation = 0;
+  }
+  console.log(detectorPosition)
     window.dispatchEvent(detectorPositionUpdate);
 }
 
@@ -205,7 +210,7 @@ var detectorPresets = [
 		"optgroup": "Europe",
     "children": [
       {value:"43.24,42.70",label:"Baksan (4900 mwe)"},
-      {value:"54.55,-0.82",label:"Boulby (2805 mwe)"},
+      {value:"54.555129,-0.80089",label:"Boulby (2805 mwe)"},
       {value:"42.77,-0.56",label:"Canfranc (2450 mwe)"},
       {value:"45.14,6.69" ,label:"Fréjus (4200 mwe)"},
       {value:"42.45,13.58",label:"LNGS (3100 mwe)"},
@@ -351,7 +356,7 @@ function updateSpectrums(){
   var min_dist = 1e10;
   var min_spec;
   var react_spectrum = [];
-  var p1 = projector.project(detectorPosition.lat, detectorPosition.lon, 0).map((n) => n /1000);
+  var p1 = projector.project(detectorPosition.lat, detectorPosition.lon, detectorPosition.elevation).map((n) => n /1000);
   p1 = {
     x: p1[0],
     y: p1[1],
@@ -748,7 +753,7 @@ var LocationPresets = React.createClass({
     }
 
     this.setState({selectValue:value});
-    updateDetectorPosition(point[1], point[0]);
+    updateDetectorPosition(point[1], point[0], 0);
     map.panTo([point[0], point[1]]);
     updateFollowMouse(false);
     window.addEventListener("detectorPosition", this.handleDetectorChange);
@@ -884,10 +889,19 @@ var LocationPanel = React.createClass({
     }
     updateDetectorPosition(value, detectorPosition.lat);
   },
+  changeElevation: function(e){
+    var value = e.target.value;
+    if (isNaN(parseFloat(value))){
+      this.setState({elevation:value});
+      return;
+    }
+    updateDetectorPosition(detectorPosition.lon, detectorPosition.lat, value);
+  },
   getInitialState: function(){
     var state = {};
     state.lat = detectorPosition.lat;
     state.lon = detectorPosition.lon;
+    state.elevation = detectorPosition.elevation;
     state.followMouse = followMouse;
     return state;
   },
@@ -923,6 +937,18 @@ var LocationPanel = React.createClass({
               <InputGroup>
                <FormControl onChange={this.changeLon} type="number" value={this.state.lon} />
                 <InputGroup.Addon>deg E</InputGroup.Addon>
+              </InputGroup>
+             </Col>
+           </FormGroup>
+
+           <FormGroup controlId="detector_elevation">
+             <Col componentClass={ControlLabel} sm={2}>
+               Elevation
+             </Col>
+             <Col sm={10}>
+              <InputGroup>
+               <FormControl onChange={this.changeElevation} type="number" value={this.state.elevation} />
+                <InputGroup.Addon>meters</InputGroup.Addon>
               </InputGroup>
              </Col>
            </FormGroup>
