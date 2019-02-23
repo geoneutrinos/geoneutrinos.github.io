@@ -18,8 +18,8 @@ import projector from 'ecef-projector';
 
 const reactor_db = require("../reactor_database/reactors.json");
 
-const ll_to_xyz = memoize(function(lat, lon){
-  return projector.project(lat, lon, 0).map((n) => n/1000);
+const ll_to_xyz = memoize(function(lat, lon, elevation = 0){
+  return projector.project(lat, lon, elevation).map((n) => n/1000);
 });
 
 function mevRange(count = 1000, start = 0, stop = 10){
@@ -45,16 +45,17 @@ class LoadFactor {
 
 
 class ReactorCore {
-  constructor(name, country, lat, lon, type, mox, power, loads, custom = true){
+  constructor(name, country, lat, lon, type, mox, power, loads, custom = true, elevation=0){
     this.name = name;
     this.country = country;
     this.lat = lat;
     this.lon = lon;
+    this.elevation = elevation;
     this.type = type;
     this.mox = Boolean(mox);
     this.power = power;
     this.loads = loads;
-    [this.x, this.y, this.z] = ll_to_xyz(lat, lon);
+    [this.x, this.y, this.z] = ll_to_xyz(lat, lon, elevation);
     this.custom = custom;
     this.spectrumType = undefined;
     this.spectrum = this.neutrinoSpectrum();
@@ -77,7 +78,7 @@ class ReactorCore {
     if ((["PWR", "BWR", "LWGR"].includes(this.type)) && (this.mox)){
       this.spectrumType = "LEU_MOX";
     }
-    if (["LEU_MOX"].includes(this.type)){
+    if (["LEU_MOX", "HWLWR"].includes(this.type)){
       this.spectrumType = "LEU_MOX";
     }
     if ((["PHWR"].includes(this.type)) && (!this.mox)){
@@ -88,6 +89,12 @@ class ReactorCore {
     }
     if ((["HEU"].includes(this.type)) && (!this.mox)){
       this.spectrumType = "HEU";
+    }
+    if ((["FBR"].includes(this.type)) && (!this.mox)){
+      this.spectrumType = "FBR";
+    }
+    if ((["FBR"].includes(this.type)) && (this.mox)){
+      this.spectrumType = "FBR_MOX";
     }
 
     if (this.spectrumType === undefined){
@@ -115,6 +122,11 @@ class ReactorCore {
   }
 }
 
+const elevations = {
+  "HARTLEPOOL A-1": 54.3,
+  "HARTLEPOOL A-2": 54.3
+}
+
 var corelist = Object.getOwnPropertyNames(reactor_db.reactors).map(function(reactor){
   const core_info = reactor_db.reactors[reactor];
   const dates = reactor_db.times;
@@ -129,6 +141,7 @@ var corelist = Object.getOwnPropertyNames(reactor_db.reactors).map(function(reac
       core_info.power,
       load_factors,
       false, // not a custom reactor
+      elevations[reactor],
     )
   });
 corelist.sort(function(a, b) {
