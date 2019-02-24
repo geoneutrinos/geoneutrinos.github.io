@@ -52,7 +52,7 @@ import download from 'downloadjs';
 var detectorPosition = {
   "lat": 54.555129,
   "lon": -0.800890,
-  "elevation": -1000,
+  "elevation": -1050,
 };
 
 var followMouse = false;
