@@ -41,6 +41,23 @@ reactors = {}
 times = []
 loads = {}
 
+elevation = {}
+
+with open("Ultralytics Worldwide Reactor Database - PRIS MAR2016.csv", 'r') as f:
+    for line in f:
+        parts = line.split(",")
+        if parts[0] == "":
+            continue
+        name = parts[2]
+        lat = float(parts[9])
+        lon = float(parts[10])
+        altitude = float(parts[11])
+        if lat == 0 and lon == 0:
+            continue
+
+        elevation[name] = altitude
+
+
 for year in years:
     file = "DB" + year + ".xls"
 
@@ -55,7 +72,7 @@ for year in years:
     reactor_data[year] = year_data
 
     names = {d[1].strip().upper() for d in data}
-    logging.info(names - all_names)
+    logging.info(all_names - names)
     all_names.update(names)
 
 for name in all_names:
@@ -63,6 +80,11 @@ for name in all_names:
         continue
     empty = [0] * 12
     loads[name] = []
+    ele = 0
+    try:
+        ele = elevation.pop(name)
+    except KeyError:
+        logging.warn(f"No elevation data for {name}")
     for year in years:
         try:
             loads[name].extend([reactor_data[year][name][month] for month in [str(d) for d in range(1,13)]])
@@ -72,11 +94,14 @@ for name in all_names:
                 'power' : reactor_data[year][name]['power'],
                 'type' : reactor_data[year][name]['type'].strip(),
                 'mox' : reactor_data[year][name]['mox'],
+                'elevation': ele, # above WGS85 (not above EGM96)
                 }
         except KeyError:
             loads[name].extend(empty)
 
     loads[name] = list(map(lambda x: max(x, 0), loads[name]))
+
+logging.info(f"Remaining cores in elevation db: {elevation}")
 
 for year in years:
     times.extend(["{0}-{1:0>2}".format(year,m) for m in range(1,13)])
