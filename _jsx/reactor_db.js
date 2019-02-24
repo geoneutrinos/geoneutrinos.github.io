@@ -122,10 +122,6 @@ class ReactorCore {
   }
 }
 
-const elevations = {
-  "HARTLEPOOL A-1": 54.3,
-  "HARTLEPOOL A-2": 54.3
-}
 
 var corelist = Object.getOwnPropertyNames(reactor_db.reactors).map(function(reactor){
   const core_info = reactor_db.reactors[reactor];
@@ -141,7 +137,7 @@ var corelist = Object.getOwnPropertyNames(reactor_db.reactors).map(function(reac
       core_info.power,
       load_factors,
       false, // not a custom reactor
-      elevations[reactor],
+      core_info.elevation,
     )
   });
 corelist.sort(function(a, b) {
