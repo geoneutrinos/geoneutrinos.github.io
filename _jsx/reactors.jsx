@@ -1,4 +1,5 @@
 var React = require('react');
+
 var ReactDOM = require('react-dom');
 
 
@@ -284,8 +285,11 @@ var reactorCircles = corelist.map(function(core){
   ).bindPopup(
     `<b>Core Name:</b> ${core.name}<br />
     <b>Design Power:</b> ${core.power} MW<br />
+    <b>Position</b> ${core.lat}, ${core.lon}<br />
+    <b>Elevation</b> ${core.elevation} m<br />
     <b>Type:</b> ${core.type}
     <b>Mox:</b> ${core.mox}<br />
+    <small>Elevation is meters above the WGS84 reference ellipsoid</small>
     `
   );
 });
