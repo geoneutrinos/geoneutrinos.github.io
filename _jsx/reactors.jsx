@@ -899,6 +899,12 @@ var LocationPanel = React.createClass({
       this.setState({elevation:value});
       return;
     }
+    if (parseFloat(value) > 10000){
+      value = "10000";
+    }
+    if (parseFloat(value) < -10000){
+      value = "-10000";
+    }
     updateDetectorPosition(detectorPosition.lon, detectorPosition.lat, value);
   },
   getInitialState: function(){
