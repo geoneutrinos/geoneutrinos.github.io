@@ -46,12 +46,15 @@ elevation = {}
 with open("Ultralytics Worldwide Reactor Database - PRIS MAR2016.csv", 'r') as f:
     for line in f:
         parts = line.split(",")
+        offset = 0
+        if len(parts) == 15:
+            offset += 1
         if parts[0] == "":
             continue
         name = parts[2]
-        lat = float(parts[9])
-        lon = float(parts[10])
-        altitude = float(parts[11])
+        lat = float(parts[9 + offset])
+        lon = float(parts[10+ offset])
+        altitude = float(parts[11 + offset])
         if lat == 0 and lon == 0:
             continue
 
@@ -96,6 +99,7 @@ for name in all_names:
                 'mox' : reactor_data[year][name]['mox'],
                 'elevation': ele, # above WGS85 (not above EGM96)
                 }
+            logging.warn((name, reactors[name]))
         except KeyError:
             loads[name].extend(empty)
 
