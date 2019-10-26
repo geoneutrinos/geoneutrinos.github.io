@@ -32,6 +32,7 @@ years = [
         "2015",
         "2016",
         "2017",
+        "2018",
     ]
 
 reactor_data = {}
@@ -75,7 +76,7 @@ for year in years:
     reactor_data[year] = year_data
 
     names = {d[1].strip().upper() for d in data}
-    logging.info(all_names - names)
+    logging.info(names - all_names)
     all_names.update(names)
 
 for name in all_names:
@@ -99,7 +100,7 @@ for name in all_names:
                 'mox' : reactor_data[year][name]['mox'],
                 'elevation': ele, # above WGS85 (not above EGM96)
                 }
-            logging.warn((name, reactors[name]))
+            #logging.warn((name, reactors[name]))
         except KeyError:
             loads[name].extend(empty)
 
