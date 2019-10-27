@@ -10,7 +10,7 @@ import {
 
 import defaultSpectrum from './spectrum';
 
-import { R } from './antineutrinos';
+import { R, R2003 } from './antineutrinos';
 
 const memoize = require('memoizee');
 
@@ -117,7 +117,18 @@ class ReactorCore {
         ).reduce((c,n) => c+n, 0);
       });
 
-    return spectrum;
+    const spectrum2003 = bins.map((Ev) => {
+      return Object.keys(fuelFractions).map((isotope) => {
+            let fuelFraction = fuelFractions[isotope];
+            let fissionEnergy = FISSION_ENERGIES[isotope];
+            let vFitParams = V_FIT_PARAMS[isotope];
+        
+            return (SECONDS_PER_YEAR/ELEMENTARY_CHARGE) * 1e22 * fuelFraction * R2003(Ev, fissionEnergy, ...vFitParams);
+          }
+        ).reduce((c,n) => c+n, 0);
+      });
+
+    return {"VB1999": spectrum, "SV2003": spectrum2003};
 
   }
 }

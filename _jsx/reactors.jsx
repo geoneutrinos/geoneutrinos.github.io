@@ -36,6 +36,7 @@ var loadFactorEvent = new Event("loadFactor");
 var customReactorEvent = new Event("customReactorEvent");
 var powerOverrideEvent = new Event("powerOverrideEvent");
 var useMaxPowerEvent = new Event("useMaxPowerEvent");
+var changeCrossSectionEvent = new Event("changeCrossSectionEvent");
 
 import {
   DEG_TO_RAD
@@ -48,6 +49,11 @@ import { corelist, ReactorCore } from './reactor_db';
 import projector from 'ecef-projector';
 import download from 'downloadjs';
 
+const crossSections = {
+  VB1999: "VB1999",
+  SV2003: "SV2003"
+};
+
 
 // Global State Variables
 var detectorPosition = {
@@ -59,8 +65,8 @@ var detectorPosition = {
 var followMouse = false;
 
 var loadFactor = {
-  ystart: "2017",
-  yend: "2017",
+  ystart: "2018",
+  yend: "2018",
   mstart: "01",
   mend: "12",
 };
@@ -103,6 +109,7 @@ var distances = {
   'user': null,
 }
 
+var crossSection = crossSections.SV2003;
 
 // call once to initialize the current operating powers
 updateLoadFactor(loadFactor);
@@ -131,7 +138,6 @@ function updateDetectorPosition(lon, lat, elevation){
   if (isNaN(detectorPosition.elevation)){
     detectorPosition.elevation = 0;
   }
-  console.log(detectorPosition)
     window.dispatchEvent(detectorPositionUpdate);
 }
 
@@ -193,6 +199,11 @@ function updateLoadFactor(newLoadFactor){
 function updateCustomReactor(obj){
   Object.assign(customReactor, obj);
   window.dispatchEvent(customReactorEvent);
+}
+
+function updateCrossSection(xs){
+  crossSection = xs;
+  window.dispatchEvent(changeCrossSectionEvent);
 }
 
 var detectorPresets = [
@@ -385,7 +396,7 @@ function updateSpectrums(){
       power = core.power;
     }
 
-    var spec = osc.nuosc(dist, power, core.spectrum, invertedMass, true);
+    var spec = osc.nuosc(dist, power, core.spectrum[crossSection], invertedMass, true);
     react_spectrum.push(spec);
     if ((dist < min_dist) && (d3.sum(spec) > 0)){
       min_dist = dist;
@@ -403,7 +414,7 @@ function updateSpectrums(){
   }
   var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, customReactor.type, 0, user_power)
   var user_dist = distance(p1, userReactor);
-  var user_react_spectrum = osc.nuosc(user_dist, userReactor.power, userReactor.spectrum, invertedMass, true);
+  var user_react_spectrum = osc.nuosc(user_dist, userReactor.power, userReactor.spectrum[crossSection], invertedMass, true);
 
   var user_spec = squish_array([user_react_spectrum]);
   var iaea = squish_array([squish_array(react_spectrum)]);
@@ -426,6 +437,7 @@ window.addEventListener("loadFactor", updateSpectrums);
 window.addEventListener("customReactorEvent", updateSpectrums);
 window.addEventListener("powerOverrideEvent", updateSpectrums);
 window.addEventListener("useMaxPowerEvent", updateSpectrums);
+window.addEventListener("changeCrossSectionEvent", updateSpectrums);
 
 // On Map Detector Marker
 var detectorMarker = L.marker(detectorPosition);
@@ -738,6 +750,25 @@ var Plot = React.createClass({
   }
 });
 
+var CrossSectionMethod = React.createClass({
+  getInitialState:function(){
+    return {selectValue: crossSection};
+    },
+  handleChange:function(e){
+    var value = e.target.value;
+    updateCrossSection(value);
+    this.setState({selectValue:value});
+    },
+  render: function(){
+    return (
+      <FormControl value={this.state.selectValue} onChange={this.handleChange} componentClass="select" placeholder="select">
+        <option value={crossSections.VB1999}>Vogel and Beacom (1999)</option>
+        <option value={crossSections.SV2003}>Strumia and Vissani (2003)</option>
+      </FormControl>
+    );
+  }
+});
+
 var LocationPresets = React.createClass({
   getInitialState:function(){
     return {selectValue:'none'};
@@ -840,6 +871,16 @@ var StatsPanel = React.createClass({
           <i>Th/U</i><sub>geo</sub> = {this.state.geo_r.toFixed(1)}<br />
       <small>1 TNU = 1 event/10<sup>32</sup> free protons/year</small><br />
           <small>1 kT H<sub>2</sub>O contains 0.668559x10<sup>32</sup> free protons</small>
+          <Form horizontal>
+           <FormGroup controlId="xs_method">
+             <Col componentClass={ControlLabel} sm={6}>
+               Cross Section Function:
+             </Col>
+             <Col sm={6}>
+                <CrossSectionMethod />
+             </Col>
+           </FormGroup>
+           </Form>
         </div>
         );
   }
@@ -1426,7 +1467,7 @@ var ReactorLoadPanel = React.createClass({
     updateUseMaxPower(newUseMaxPower);
   },
   render: function() {
-    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017];
+    const years = [2003, 2004, 2005, 2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018];
     const months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
     const yearOptions = years.map(function(year){
       return <option value={year}>{year}</option>
