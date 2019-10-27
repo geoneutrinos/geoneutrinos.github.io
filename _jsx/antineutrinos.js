@@ -33,7 +33,6 @@ const σ2003 = memoize(function(Ev){ // Neutrino energy in MeV
 
   const sv = a + (b * Math.log(Ev)) + (c * Math.pow(Math.log(Ev), 3));
   const sve = Math.pow(Ev, sv)
-  console.log(sve)
 
   const Ee = Math.max(ELECTRON_REST_MASS, Ev - (NEUTRON_REST_MASS - PROTON_REST_MASS))
 

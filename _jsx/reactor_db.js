@@ -18,7 +18,7 @@ import projector from 'ecef-projector';
 
 const reactor_db = require("../reactor_database/reactors.json");
 
-const ll_to_xyz = memoize(function(lat, lon, elevation = 0){
+const ll_to_xyz = memoize(function(lat, lon, elevation){
   return projector.project(lat, lon, elevation).map((n) => n/1000);
 });
 

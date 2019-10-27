@@ -86,7 +86,8 @@ var customReactor = {
   'power': 0, //mw
   'uncertainty': 0, //kms
   'use': false,
-  'type': "LEU"
+  'type': "LEU",
+  'elevation': 0
 }
 
 var geoneutrinos = {
@@ -210,48 +211,48 @@ var detectorPresets = [
 	{
 		"optgroup": "Asia",
     "children": [
-        {value:"35.05,126.70",label:"Guemseong (950 mwe)"},
-        {value:"9.95,77.28",  label:"INO (3000 mwe)"},
-        {value:"22.12,112.51",label:"Jiangmen (2100 mwe)"},
-        {value:"28.15,101.71",label:"Jinping (6720 mwe)"},
-        {value:"36.42,137.30",label:"Kamioka (2050 mwe)"},
-        {value:"51.771,104.398",label:"Lake Baikal (1100 mwe)"}
+        {value:"35.05,126.70,0",label:"Guemseong (950 mwe)"},
+        {value:"9.95,77.28,0",  label:"INO (3000 mwe)"},
+        {value:"22.12,112.51,0",label:"Jiangmen (2100 mwe)"},
+        {value:"28.15,101.71,0",label:"Jinping (6720 mwe)"},
+        {value:"36.42,137.30,0",label:"Kamioka (2050 mwe)"},
+        {value:"51.771,104.398,0",label:"Lake Baikal (1100 mwe)"}
     ]
 	},
 	{
 		"optgroup": "Europe",
     "children": [
-      {value:"43.24,42.70",label:"Baksan (4900 mwe)"},
-      {value:"54.555129,-0.80089",label:"Boulby (2805 mwe)"},
-      {value:"42.77,-0.56",label:"Canfranc (2450 mwe)"},
-      {value:"45.14,6.69" ,label:"Fréjus (4200 mwe)"},
-      {value:"42.45,13.58",label:"LNGS (3100 mwe)"},
-      {value:"63.66,26.04",label:"Pyhäsalmi (4000 mwe)"}
+      {value:"43.24,42.70,0",label:"Baksan (4900 mwe)"},
+      {value:"54.555129,-0.80089,-1050",label:"Boulby (2805 mwe)"},
+      {value:"42.77,-0.56,0",label:"Canfranc (2450 mwe)"},
+      {value:"45.14,6.69,0" ,label:"Fréjus (4200 mwe)"},
+      {value:"42.45,13.58,0",label:"LNGS (3100 mwe)"},
+      {value:"63.66,26.04,0",label:"Pyhäsalmi (4000 mwe)"}
     ]
 	},
 	{
 		"optgroup": "Mediterranean Sea",
     "children": [
-      {value:"42.80,6.17",label:"Antares (2500 mwe)"},
-      {value:"36.63,21.58",label:"Nestor (4000 mwe)"},
-      {value:"37.551,15.384",label:"NEMO Test (2080 mwe)"}
+      {value:"42.80,6.17,0",label:"Antares (2500 mwe)"},
+      {value:"36.63,21.58,0",label:"Nestor (4000 mwe)"},
+      {value:"37.551,15.384,0",label:"NEMO Test (2080 mwe)"}
     ]
   },
 	{
 		"optgroup": "North America",
     "children": [
-      {value:"41.75,-81.29" ,label:"IMB (1570 mwe)"},
-      {value:"37.38,-80.66" ,label:"KURF (1400 mwe)"},
-      {value:"47.82,-92.24" ,label:"Soudan (1950 mwe)"},
-      {value:"44.36,-103.76",label:"SURF (4300 mwe)"},
-      {value:"32.37,-103.79",label:"WIPP (1600 mwe)"},
-      {value:"46.47,-81.20" ,label:"SNOLAB (6010 mwe)"}
+      {value:"41.75,-81.29,0" ,label:"IMB (1570 mwe)"},
+      {value:"37.38,-80.66,0" ,label:"KURF (1400 mwe)"},
+      {value:"47.82,-92.24,0" ,label:"Soudan (1950 mwe)"},
+      {value:"44.36,-103.76,0",label:"SURF (4300 mwe)"},
+      {value:"32.37,-103.79,0",label:"WIPP (1600 mwe)"},
+      {value:"46.47,-81.20,0" ,label:"SNOLAB (6010 mwe)"}
     ]
   },
 	{
 		"optgroup": "Oceania",
     "children": [
-      {value:"-37.07,142.81", label:"SUPL (2700 mwe)"}
+      {value:"-37.07,142.81,0", label:"SUPL (2700 mwe)"}
     ]
   },
 	{
@@ -412,7 +413,8 @@ function updateSpectrums(){
   } else {
     d3.selectAll(".reac").style("display", "none");
   }
-  var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, customReactor.type, 0, user_power)
+  var userReactor = new ReactorCore("custom_reactor", "UN", customReactor.lat, customReactor.lon, customReactor.type, 0, user_power,undefined, true, customReactor.elevation)
+  console.log(userReactor)
   var user_dist = distance(p1, userReactor);
   var user_react_spectrum = osc.nuosc(user_dist, userReactor.power, userReactor.spectrum[crossSection], invertedMass, true);
 
@@ -662,12 +664,12 @@ var Plot = React.createClass({
     .attr("text-anchor", "end")
     .attr("x", "-2.1em")
     .attr("y", "2.5em")
-    .text("Closest Reactor");
+    .text("Closest Core");
     le.append("text")
     .attr("text-anchor", "end")
     .attr("x", "-2.1em")
     .attr("y", "1.5em")
-    .text("Reactors");
+    .text("Reactor Cores");
     le.append("text")
     .attr("text-anchor", "end")
     .attr("x", "-2.1em")
@@ -788,7 +790,7 @@ var LocationPresets = React.createClass({
     }
 
     this.setState({selectValue:value});
-    updateDetectorPosition(point[1], point[0], 0);
+    updateDetectorPosition(point[1], point[0], point[2]);
     map.panTo([point[0], point[1]]);
     updateFollowMouse(false);
     window.addEventListener("detectorPosition", this.handleDetectorChange);
@@ -1240,9 +1242,9 @@ var CalculatorPanel = React.createClass({
         </Col>
         <Col sm={8}>
           <FormControl onChange={this.handleUserInput} value={this.state.signal} componentClass="select">
-            <option value="all">All Reactors (geoneutrino background)</option>
+            <option value="all">All Cores (geoneutrino background)</option>
             <option value="closest">Closest Core (geonu + other reactors background)</option>
-            <option value="custom">Custom Reactor (geonu + other reactors background)</option>
+            <option value="custom">Custom Core (geonu + other reactors background)</option>
             <option value="geoneutrino">Geoneutrino (reactor background)</option>
             <option value="geo_u">Geoneutrino U (reactor + geo Th background)</option>
             <option value="geo_th">Geoneutrino Th (reactor + geo U background)</option>
@@ -1398,12 +1400,12 @@ var ReactorListPanel = React.createClass({
       )
     })
     return (
-      <Panel  header="Reactor List: Name, Power(MW), Type, Power Override">
+      <Panel  header="Core List: Name, Power(MW), Type, Power Override">
         <div style={{width: "100%", maxHeight:"40vh", overflowX:"scroll"}}>
         <Table fill condensed striped>
           <thead>
             <tr>
-              <th>Name</th>
+              <th>Core Name</th>
               <th>Power&nbsp;(MW)</th>
               <th>Type</th>
               <th>Power&nbsp;Override</th>
@@ -1542,7 +1544,7 @@ var CustomReactorPanel = React.createClass({
       return <option value={type}>{type}</option>
     });
     return (
-    <Panel header="Custom Reactor">
+    <Panel header="Custom Core">
       <Form horizontal>
     	  <FormGroup controlId="power">
     	    <Col componentClass={ControlLabel} sm={2}>
@@ -1569,7 +1571,7 @@ var CustomReactorPanel = React.createClass({
     	    <Col componentClass={ControlLabel} sm={2}>
     	    </Col>
     	    <Col sm={10}>
-    			<Checkbox onChange={this.handleUseCheckbox} checked={this.state.use}>Use Custom Reactor</Checkbox>
+    			<Checkbox onChange={this.handleUseCheckbox} checked={this.state.use}>Use Custom Core</Checkbox>
     	    </Col>
     	  </FormGroup>
       </Form>
@@ -1595,6 +1597,17 @@ var CustomReactorPanel = React.createClass({
               <InputGroup>
     				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.lon} />
                 <InputGroup.Addon>deg E</InputGroup.Addon>
+              </InputGroup>
+    				  </Col>
+    				</FormGroup>
+    				<FormGroup controlId="elevation">
+    				  <Col componentClass={ControlLabel} sm={4}>
+                Elevation (WGS84)
+    				  </Col>
+    				  <Col sm={8}>
+              <InputGroup>
+    				    <FormControl onChange={this.handleUserInput} type="number" value={this.state.elevation} />
+                <InputGroup.Addon>meters</InputGroup.Addon>
               </InputGroup>
     				  </Col>
     				</FormGroup>
@@ -1647,8 +1660,8 @@ var RatPacPanel = React.createClass({
     	    <FormControl onChange={this.handleChange} value={this.state.output} componentClass="select">
             <option value="total">Total</option>
             <option value="iaea">IAEA</option>
-            <option value="closest">Closest Reactor</option>
-            <option value="custom">Custom Reactor</option>
+            <option value="closest">Closest Core</option>
+            <option value="custom">Custom Core</option>
           </FormControl>
     	  </Col>
     	  </FormGroup>
