@@ -1,7 +1,7 @@
 ---
 layout: page
-title: Reactors
-permalink: /reactors/
+title: Reactors Old
+permalink: /reactors_old/
 ---
 <link rel="stylesheet" href="/static/vender/leaflet/leaflet.css" />
 <style>
