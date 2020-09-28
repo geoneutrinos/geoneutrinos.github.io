@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Reactors Old
+title: Reactors (old)
 permalink: /reactors_old/
 ---
 <link rel="stylesheet" href="/static/vender/leaflet/leaflet.css" />
