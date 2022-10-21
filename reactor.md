@@ -59,6 +59,7 @@ permalink: /reactors_old/
       shape-rendering: crispEdges;
     }
 </style>
+<h3>Warning: There are some known bugs in the code for this version of the reactors page. Please use the reactors page located at <a href="https://reactors.geoneutrinos.org/">https://reactors.geoneutrinos.org/</a></h3>
 <div class="col-md-7">
   <div id="map_container">
   </div>
