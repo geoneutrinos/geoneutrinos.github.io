@@ -4,6 +4,8 @@ title: Mantle Tomography
 permalink: /mantle-tomography/
 ---
 
+*This section was contributed by Michael Leyton [mleyton@pasadena.edu]()*
+
 Geoneutrino flux predictions depend on assumptions about how heat-producing elements
 are distributed throughout the crust and mantle. Seismic tomography is one of the few direct
 constraints we have on large-scale mantle structure. This page hosts an interactive

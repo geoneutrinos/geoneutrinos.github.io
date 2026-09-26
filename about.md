@@ -5,9 +5,11 @@ permalink: /about/
 ---
 
 ### Citation
-Please cite use of this website as:
+Please cite use of the Reactor Models as:
 
 Barna, A.M. and Dye, S.T., "Web Application for Modeling Global Antineutrinos," arXiv:1510.05633 (2015).
+
+The Mantle Tomography section/visualizer was contributed by Michael Leyton [mleyton@pasadena.edu]() who should be credited for any use of those visualizations.
 
 ### References
 **Baldoncini, M. et al. (2015)**, *Reference worldwide model for antineutrinos from reactors*, Phys. Rev. D91, 065002.
